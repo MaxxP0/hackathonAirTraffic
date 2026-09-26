@@ -30,19 +30,22 @@ def write_reports(folder, runs, configuration):
              "Every controller sees the same scenario/seed for a matched comparison.", "",
              "The simulation clock pauses during model inference. Model latency is wall time and is reported separately. "
              "The LLM uses fresh JSON observations and native model-generated commands, with no reference fallback.", "",
-             "| Scenario | Seed | Controller | Status | Finished / spawned | Collisions | Emergency resolved / pending / failed | Mean queue wait (min) | Mean emergency wait (min) | Score |",
-             "|---|---:|---|---|---:|---:|---|---:|---:|---:|"]
+             "| Scenario | Seed | Controller | Status | Simulated minutes | Finished / spawned | Collisions | Emergency resolved / pending / failed | Mean queue wait (min) | Mean emergency wait (min) | Score |",
+             "|---|---:|---|---|---:|---:|---:|---|---:|---:|---:|"]
     for run in runs:
         c, m = run["configuration"], run["metrics"]
         ground = "—" if m["ground_wait_mean_seconds"] is None else f"{m['ground_wait_mean_seconds']/60:.2f}"
         emergency = "—" if m["emergency_wait_mean_seconds"] is None else f"{m['emergency_wait_mean_seconds']/60:.2f}"
-        lines.append(f"| {c['scenario']} | {c['seed']} | {c['agent']} | {run.get('status', 'completed')} | "
+        score = f"{m['score']:.1f}" if run.get("status") != "aborted" else "—"
+        elapsed = run["final_observation"]["time_s"] / 60
+        lines.append(f"| {c['scenario']} | {c['seed']} | {c['agent']} | {run.get('status', 'completed')} | {elapsed:.1f} | "
                      f"{m['landed']+m['departed']} / {m['spawned']} | {m['collisions']} | "
                      f"{m['emergency_landings']} / {m['emergencies_unresolved']} / {m['emergencies_failed']} | "
-                     f"{ground} | {emergency} | {m['score']:.1f} |")
+                     f"{ground} | {emergency} | {score} |")
     lines += ["", "Ground queue means include unfinished departures. Emergency means include pending and failed flights up to their "
               "observed endpoint; read them with the outcome counts. An early crash/diversion can shorten a raw wait, but incurs a severe "
               "score penalty. A completed episode can still have unfinished aircraft at its fixed horizon. "
+              "Aborted rows contain partial diagnostics only: their waits, counts and partial scalar score are not comparable to completed episodes. "
               "These are small-sample synthetic tests, not evidence of operational aviation safety.", "",
               "## LLM inference", ""]
     for run in runs:
@@ -53,6 +56,8 @@ def write_reports(folder, runs, configuration):
                      f"{model.get('calls', 0)} calls, {model.get('errors', 0)} errors, "
                      f"mean {model.get('mean_latency_s', 0):.2f}s / total {model.get('total_latency_s', 0):.2f}s wall time. "
                      f"[Full result]({run['result_file']}).")
+        if run.get("error"):
+            lines.append(f"  Aborted: {run['error']}")
     lines += ["", "Full results retain the prompt/version, actual compact observations, commands, command rejections, "
               "model summaries, token counts, safety events, per-aircraft timers and final outcomes. "
               "Scores from benchmark 0.1.0 are not directly comparable with these 0.2.0 scores.", ""]
@@ -75,6 +80,7 @@ def main():
                      "duration_s": args.duration, "step_seconds": args.step_seconds,
                      "requested_model": args.model, "base_url": args.base_url}
     runs = []
+    failures = 0
     # Finish cheap baselines first, then run one model request at a time.
     for agent in ("reference", "noop", "lmstudio"):
         for scenario in args.scenarios:
@@ -91,10 +97,10 @@ def main():
                 print(f"Finished {agent}, {scenario}, seed {seed}: {run['metrics']['score']:.1f}, "
                       f"{time.monotonic()-started:.1f}s wall time", file=sys.stderr, flush=True)
                 if run.get("status") == "aborted":
-                    print(f"Stopped after model failure; partial evidence saved: {run['error']}", file=sys.stderr)
-                    return 2
+                    failures += 1
+                    print(f"Model failure; partial evidence saved: {run['error']}. Continuing independent episodes.", file=sys.stderr)
     print(f"Saved {folder / 'report.md'}")
-    return 0
+    return 2 if failures else 0
 
 
 if __name__ == "__main__":
