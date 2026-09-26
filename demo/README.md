@@ -29,8 +29,8 @@ The server binds to your own computer. A teammate should clone the repository an
 
 1. Open the human-controller page, choose a scenario and start an episode. Seed **7** matches the published LLM comparison.
 2. Read the aircraft, runway and weather telemetry. Expand the exact model observation and instructions to inspect what the LLM receives.
-3. Write or update your operational plan. Keep future sequencing and emergency priorities in this field, which persists across turns.
-4. Enter one command per line and a brief decision summary. The command reference gives the supported syntax. Use callsigns and runways from the current observation.
+3. Review the prefilled operational plan and edit it if useful. This field persists across turns, so you can keep future sequencing and emergency priorities in it.
+4. Use the clickable command builder: select an aircraft, choose an action, select its runway or value, and add it to the queue. Repeat for additional commands. Remove an item if you change your mind. You can optionally edit the plan and add a brief decision summary.
 5. Submit the decision. The simulator applies the batch and advances **120 simulated seconds**, then pauses again. An empty batch lets existing clearances continue.
 6. Check accepted and rejected commands, events, proximity penalties and waiting times before your next decision. After **15 turns / 30 simulated minutes**, inspect your final score and download your decisions.
 

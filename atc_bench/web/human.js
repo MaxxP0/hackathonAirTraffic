@@ -25,9 +25,11 @@
 
   function setBusy(value) {
     busy = value;
-    for (const id of ['start', 'scenario', 'seed', 'plan', 'commands', 'summary', 'submit-decision']) {
-      $(id).disabled = value || (['plan', 'commands', 'summary', 'submit-decision'].includes(id) && (!state || state.done));
+    for (const id of ['start', 'scenario', 'seed', 'plan', 'commands', 'summary', 'submit-decision', 'command-flight', 'command-action', 'command-value', 'add-command']) {
+      $(id).disabled = value || (!['start', 'scenario', 'seed'].includes(id) && (!state || state.done));
     }
+    for (const button of $('command-queue').querySelectorAll('button')) button.disabled = value || !state || state.done;
+    if (state && !(state.model_observation.aircraft || []).length) $('add-command').disabled = true;
     $('submit-decision').textContent = value ? 'Advancing simulation…' : 'Apply decision & advance 2 min ↗';
     if (state) $('sim-status').textContent = value ? 'APPLYING DECISION' : state.done ? 'EPISODE COMPLETE' : 'PAUSED · YOUR TURN';
   }
@@ -178,19 +180,91 @@
     $('finished').hidden = !state.done;
     $('finished-summary').textContent = `Score ${num(state.observation.metrics?.score, 1)} after ${num(state.decision_count)} decisions. Your run includes every command, plan and observed outcome.`;
     if (resetDraft) {
-      $('plan').value = state.latest_plan || '';
+      $('plan').value = state.latest_plan || 'Prioritize safe separation and urgent arrivals, then reduce waiting. Reassess after each control window.';
       $('commands').value = '';
       $('summary').value = '';
     }
     renderObservation(state.model_observation);
     renderMetrics();
     renderFeedback();
+    renderBuilder();
     counts();
     setBusy(busy);
   }
 
   function commandLines() {
     return $('commands').value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  }
+
+  function aircraftRows() {
+    return (state?.model_observation.aircraft || []).map(values => Object.fromEntries(state.model_observation.aircraft_columns.map((key, index) => [key, values[index]])));
+  }
+
+  function options(select, values, preferred) {
+    select.replaceChildren();
+    for (const [value, label] of values) {
+      const option = node('option', label);
+      option.value = String(value);
+      select.append(option);
+    }
+    if (values.some(([value]) => String(value) === String(preferred))) select.value = String(preferred);
+  }
+
+  function renderBuilder() {
+    const chosen = $('command-flight').value;
+    options($('command-flight'), aircraftRows().map(aircraft => [aircraft.callsign, `${aircraft.callsign} · ${aircraft.type} · ${aircraft.status.replaceAll('_', ' ')}`]), chosen);
+    renderCommandValues();
+  }
+
+  function renderCommandValues() {
+    if (!state) return;
+    const action = $('command-action').value;
+    const model = state.model_observation;
+    const aircraft = aircraftRows().find(item => item.callsign === $('command-flight').value);
+    const spec = model.aircraft_types?.[aircraft?.type] || {};
+    let choices = [], label = '', preferred;
+    if (['APPROACH', 'TAKEOFF'].includes(action)) {
+      label = 'Runway';
+      choices = (model.airport.runways || []).filter(runway => action === 'APPROACH' ? runway.arrival : runway.departure).map(runway => [runway.id, `${runway.id} · ${runway.length_m} m${model.runway_state?.[runway.id]?.closed ? ' · CLOSED' : ''}`]);
+      preferred = `${model.weather?.active_direction || '25'}C`;
+    } else if (action === 'HEADING') {
+      label = 'Heading'; choices = Array.from({length: 12}, (_, index) => [index * 30, `${index * 30}°`]);
+      preferred = 240;
+    } else if (action === 'ALTITUDE') {
+      label = 'Altitude above airport'; choices = Array.from({length: 18}, (_, index) => [(index + 1) * 1000, `${num((index + 1) * 1000)} ft`]);
+      preferred = 5000;
+    } else if (action === 'SPEED') {
+      label = 'Airspeed';
+      const minimum = Number(spec.min_speed_kt || 140), maximum = Number(spec.max_speed_kt || 300);
+      choices = [...new Set([minimum, ...Array.from({length: 35}, (_, index) => index * 10).filter(value => value >= minimum && value <= maximum), maximum])].sort((a, b) => a - b).map(value => [value, `${value} kt`]);
+      preferred = 220;
+    } else if (action === 'DIRECT') {
+      label = 'Navigation fix'; choices = Object.keys(model.airport.fixes || {}).map(fix => [fix, fix]);
+    }
+    $('command-value-field').hidden = choices.length === 0;
+    $('command-value-label').textContent = label;
+    options($('command-value'), choices, preferred);
+  }
+
+  function renderQueue() {
+    $('command-queue').replaceChildren();
+    const commands = commandLines();
+    commands.forEach((command, index) => {
+      const chip = node('div', undefined, 'command-chip');
+      const remove = node('button', 'Remove');
+      remove.type = 'button';
+      remove.setAttribute('aria-label', `Remove ${command}`);
+      remove.disabled = busy || !state || state.done;
+      remove.addEventListener('click', () => {
+        const remaining = commandLines();
+        remaining.splice(index, 1);
+        $('commands').value = remaining.join('\n');
+        counts();
+      });
+      chip.append(node('code', command), remove);
+      $('command-queue').append(chip);
+    });
+    if (!commands.length) $('command-queue').append(node('p', 'No new commands queued. You can advance to let existing clearances continue.', 'field-note'));
   }
 
   function counts() {
@@ -200,9 +274,21 @@
     $('commands-count').textContent = `${commands.length} / 32`;
     $('commands').setCustomValidity(commands.length > 32 ? 'Use at most 32 commands per decision.' : commands.some(command => command.length > 80) ? 'Each command must be at most 80 characters.' : new Set(commands).size !== commands.length ? 'Remove duplicate commands.' : '');
     $('plan').setCustomValidity($('plan').value.trim() ? '' : 'Write an operational plan before advancing.');
+    renderQueue();
   }
 
   for (const id of ['plan', 'commands', 'summary']) $(id).addEventListener('input', counts);
+  for (const id of ['command-flight', 'command-action']) $(id).addEventListener('change', renderCommandValues);
+  $('add-command').addEventListener('click', () => {
+    if (busy || !state || state.done || !$('command-flight').value) return;
+    const command = `${$('command-action').value} ${$('command-flight').value}${$('command-value-field').hidden ? '' : ` ${$('command-value').value}`}`;
+    const commands = commandLines();
+    if (commands.length >= 32) return notice('Queue at most 32 commands before advancing.');
+    if (commands.includes(command)) return notice('That exact command is already queued.');
+    $('commands').value = [...commands, command].join('\n');
+    notice('');
+    counts();
+  });
 
   $('setup').addEventListener('submit', async event => {
     event.preventDefault();
