@@ -34,6 +34,7 @@
   const controllerKind = () => observation?.controller?.kind || 'reference';
   const controllerName = () => controllerKind() === 'lmstudio' ? 'LM Studio' : 'Reference';
   const llmEnabled = () => controllerKind() === 'lmstudio' && $('autopilot').checked;
+  const decisionInterval = () => number($('decision-interval').value, 120);
   const externalThinking = () => inferenceStartedAt === null && observation?.controller?.status === 'thinking';
 
   function clock(seconds, hours = false) {
@@ -72,7 +73,10 @@
     $('controller-model').disabled = busy || $('controller-kind').value !== 'lmstudio';
     $('apply-controller').disabled = busy || !observation;
     $('autopilot').disabled = busy;
-    $('step').title = `Advance ${llmEnabled() ? 30 : 10} simulation seconds`;
+    $('decision-interval').disabled = busy;
+    $('speed').disabled = busy || llmEnabled();
+    $('speed').title = llmEnabled() ? 'LLM mode advances the selected decision window immediately' : 'Reference playback speed';
+    $('step').title = `Advance ${llmEnabled() ? decisionInterval() : 10} simulation seconds`;
     $('step').setAttribute('aria-label', $('step').title);
     syncControllerPolling();
     renderController();
@@ -170,9 +174,9 @@
     if (!running || observation?.done) return;
     const llm = llmEnabled();
     playbackTimer = setTimeout(async () => {
-      await advance(llm ? 30 : number($('speed').value, 10));
+      await advance(llm ? decisionInterval() : number($('speed').value, 10));
       scheduleTick();
-    }, immediate ? 0 : llm ? 30000 / number($('speed').value, 10) : 1000);
+    }, immediate || llm ? 0 : 1000);
   }
 
   function renderController() {
@@ -186,8 +190,8 @@
     $('controller-model-name').textContent = llm ? controller?.model || 'LM Studio · automatic model selection' : 'Rule-based reference controller';
     const decision = controller?.last_decision;
     const latency = decision?.latency_s;
-    $('controller-timing').textContent = thinking && inferenceStartedAt !== null ? `${format((performance.now() - inferenceStartedAt) / 1000, 1)}s elapsed · simulation waiting` : thinking && externalInferenceStartedAt !== null ? `Observing for ${format((performance.now() - externalInferenceStartedAt) / 1000, 1)}s · waiting for current decision` : `${number(controller?.decision_count)} decisions${latency != null ? ` · last call ${format(latency, 1)}s` : ''}`;
-    if (thinking) $('controller-summary').textContent = externalThinking() ? 'A controller decision is already in progress. Waiting for its result before enabling controls.' : pauseRequestedDuringInference ? 'Pause requested. The current decision will finish; no further decisions will run.' : 'Waiting for model commands. Simulation time is paused during inference.';
+    $('controller-timing').textContent = thinking && inferenceStartedAt !== null ? `${format((performance.now() - inferenceStartedAt) / 1000, 1)}s elapsed · simulation waiting` : thinking && externalInferenceStartedAt !== null ? `Observing for ${format((performance.now() - externalInferenceStartedAt) / 1000, 1)}s · waiting for current decision` : `${number(controller?.decision_count)} decisions${latency != null ? ` · last call ${format(latency, 1)}s` : ''}${decision?.memory_turns != null ? ` · ${decision.memory_turns} turns in memory` : ''}`;
+    if (thinking) $('controller-summary').textContent = externalThinking() ? 'A controller decision is already in progress. Waiting for its result before enabling controls.' : pauseRequestedDuringInference ? 'Pause requested. The current decision will finish; no further decisions will run.' : `Planning the next ${decisionInterval()} simulated seconds. Simulation time is paused while the model thinks.`;
     else if (controller?.error) $('controller-summary').textContent = controller.error;
     else if (decision) {
       const commands = Array.isArray(decision.commands) ? decision.commands : [];
@@ -197,7 +201,9 @@
         lastDecisionFingerprint = fingerprint;
         addConsoleLine(`${controllerName().toUpperCase()} #${number(controller.decision_count)}`, `${commands.length} command${commands.length === 1 ? '' : 's'}${latency != null ? ` · ${format(latency, 1)}s` : ''}${decision.summary ? ` · ${decision.summary}` : ''}`, true);
       }
-    } else $('controller-summary').textContent = controller?.message || (llm ? 'JSON observations → model commands · one decision every 30 simulated seconds. Start with Run or Step.' : 'The reference controller uses fixed rules. Start with Run or Step.');
+    } else $('controller-summary').textContent = controller?.message || (llm ? 'Persistent conversation and plans → model commands. Start with Run or Step.' : 'The reference controller uses fixed rules. Start with Run or Step.');
+    $('controller-plan').textContent = decision?.plan || 'The model’s operational plan will appear after its first decision.';
+    $('decision-window-note').textContent = llm ? `${decisionInterval()} simulated seconds per decision · advances immediately after commands arrive` : 'Reference playback follows the selected speed.';
   }
 
   function activeAircraft() {
@@ -528,7 +534,8 @@
   }
 
   $('play').addEventListener('click', () => { if (running) pause(); else { running = true; updateControls(); scheduleTick(true); } });
-  $('step').addEventListener('click', () => { pause(); advance(llmEnabled() ? 30 : 10); });
+  $('step').addEventListener('click', () => { pause(); advance(llmEnabled() ? decisionInterval() : 10); });
+  $('decision-interval').addEventListener('change', updateControls);
   $('controller-kind').addEventListener('change', () => { pause(); updateControls(); });
   $('apply-controller').addEventListener('click', async () => {
     if (pending || externalThinking() || !observation) return;

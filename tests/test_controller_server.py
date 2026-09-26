@@ -103,6 +103,56 @@ class ControllerServerTests(unittest.TestCase):
             self.assertEqual(state["controller"]["decision_count"], 0)
             self.assertEqual(loader.call_args.kwargs["model"], "local-model")
 
+    def test_large_step_calls_model_once_and_preserves_rejected_command_feedback(self):
+        class RecordingAgent:
+            model = "local-model"
+            last_decision = None
+
+            def __init__(self):
+                self.observations = []
+
+            def act(self, observation):
+                self.observations.append(observation)
+                return ["HEADING UNKNOWN 250"]
+
+        self.request("/api/reset", {"duration_s": 700})
+        agent = RecordingAgent()
+        self.server.agent = agent
+        self.server.controller["kind"] = "lmstudio"
+        code, state = self.request("/api/step", {"seconds": 300, "autopilot": True})
+        self.assertEqual(code, 200)
+        self.assertEqual(state["time_s"], 300)
+        self.assertEqual(len(agent.observations), 1)
+        self.assertEqual(agent.observations[0]["decision_interval_s"], 300)
+        self.assertEqual(state["metrics"]["invalid_commands"], 1)
+        self.assertFalse(state["command_results"][0]["accepted"])
+        self.assertEqual(self.request("/api/state")[1]["command_results"], state["command_results"])
+        code, state = self.request("/api/step", {"seconds": 600, "autopilot": True})
+        self.assertEqual(code, 200)
+        self.assertEqual(state["time_s"], 700)
+        self.assertTrue(state["done"])
+        self.assertEqual(len(agent.observations), 2)
+        self.assertEqual(agent.observations[1]["time_s"], 300)
+        self.assertEqual(agent.observations[1]["decision_interval_s"], 600)
+        self.assertFalse(agent.observations[1]["command_results"][0]["accepted"])
+        self.assertEqual(state["metrics"]["invalid_commands"], 2)
+
+    def test_interval_above_600_is_rejected_without_a_model_call(self):
+        class UnexpectedAgent:
+            def act(self, observation):
+                raise AssertionError("invalid intervals must not call the model")
+
+        self.server.agent = UnexpectedAgent()
+        initial = self.server.env.observe()
+        code, body = self.request("/api/step", {"seconds": 601, "autopilot": True})
+        self.assertEqual(code, 400)
+        self.assertIn("600", body["error"])
+        self.assertEqual(self.server.env.observe(), initial)
+
+    def test_server_uses_extended_reasoning_defaults(self):
+        self.assertEqual(self.server.agent_options["timeout_s"], 900)
+        self.assertEqual(self.server.agent_options["max_tokens"], 8192)
+
 
 if __name__ == "__main__":
     unittest.main()

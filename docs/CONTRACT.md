@@ -29,38 +29,146 @@ Waiting metrics use two prefixes, `ground_wait` and `emergency_wait`. Each has `
 
 ## Agents and LM Studio
 
-`atc_bench.agents.ReferenceAgent.act(observation) -> list[str]`, `NoOpAgent.act(observation)`. Agents receive observations only, never environment internals. ReferenceAgent prioritizes emergencies, arrivals by fuel, and the departure queue using suitable runways; it is a heuristic performance baseline, not an LLM or optimal controller.
+`atc_bench.agents.ReferenceAgent.act(observation) -> list[str]` and
+`NoOpAgent.act(observation)` receive observations only, never environment
+internals. The reference controller is a heuristic baseline, not an LLM or an
+optimal controller.
 
-`atc_bench.lmstudio.LMStudioAgent(base_url="http://127.0.0.1:1234", model=None, timeout_s=120, max_tokens=1024, temperature=0).act(observation) -> list[str]`. Base URLs ending in `/v1` are also accepted. The adapter discovers already loaded language models from `/api/v1/models`, with `/api/v0/models` as a compatibility fallback. If `model` is supplied it must match a loaded instance ID or model key; otherwise discovery selects the first loaded instance by sorted ID. It never downloads, loads or unloads models.
+`LMStudioAgent(base_url="http://127.0.0.1:1234", model=None, timeout_s=900,
+max_tokens=8192, temperature=0, max_memory_turns=4).act(observation) -> list[str]`
+is defined in [atc_bench/lmstudio.py](../atc_bench/lmstudio.py). A base URL ending
+in `/v1` is also accepted. Discovery uses `/api/v1/models`, falling back to
+`/api/v0/models` for compatibility, and selects an already loaded language model.
+An explicit model must match a loaded instance ID or model key; otherwise the
+first loaded instance by sorted ID is selected. No model is downloaded, loaded
+or unloaded by the adapter.
 
-Every decision sends a fresh system prompt and compact JSON observation as text to `/v1/chat/completions`, with temperature 0 by default, non-streaming output and a strict JSON response schema `{commands:[string,...],summary:string}`. The runner, not the model, sets the simulation interval. Compact input keeps current airport/weather/conflicts, unfinished aircraft with performance and waiting fields, scalar metrics and `prior_command_errors`. It excludes radar trails, finished aircraft, repeated event logs and nested metrics; aggregate outcomes remain in scalar metrics. There is no image/UI input or prior chat transcript. Prompt text/version/hash and observation format are recorded in run metadata. If the loaded model advertises a reasoning-off capability, requests include `reasoning_effort:"none"`; this request-local option is recorded and does not alter saved LM Studio settings.
+Requests to `/v1/chat/completions` contain the system prompt, up to four recent
+successful user/assistant exchanges, and a fresh compact observation as the
+latest user message. The observation also includes `controller_memory` with
+`latest_plan`, `successful_decisions` and `prior_decision_error`. Successful
+responses update the public operational plan and bounded dialogue. Errors retain
+the prior plan/history. A new instance or episode resets the conversation.
 
-The model supplies every LLM command; the reference controller is never a fallback. Invalid response shape, missing/truncated JSON, unavailable model, HTTP failure or timeout raises `LMStudioError` before the simulator steps. Valid commands still pass through normal simulator validation and can be rejected individually. `last_decision` records `{status,model,time_s,commands,summary,usage,observation,latency_s}` and, when available, `finish_reason`, `reasoning_effort` or `error`. `metadata()` records model information, prompt/configuration, calls/errors, total/mean latency and token usage. Latency uses wall-clock seconds and does not count toward simulated aircraft waiting.
+The strict response shape is `{commands:[string,...],summary:string,plan:string}`:
+at most 32 commands of 1–80 characters, a summary of at most 240 characters and a
+nonempty plan of at most 1,200 characters. The plan describes intended sequencing,
+priorities and reconsideration conditions. Private reasoning text is not copied
+into the dialogue or decision record. The model does not choose the time step;
+the harness supplies `decision_interval_s` in the observation.
 
-The current `compact-v2` wire format stores aircraft rows under shared `aircraft_columns` and performance limits in `aircraft_types`. Static runway geometry stays in `airport.runways`; current occupancy, availability and closure move to `runway_state`, keyed by runway ID. Packing adds no numeric rounding. See [the wire-format reference](AGENT_PROMPT.md#compact-v2-wire-format) for decoding and the exact metric subset. Full simulator and HTTP observations retain their original object format.
+The adapter does not override `reasoning_effort`. Metadata records
+`reasoning_mode:"model_default"` and `advertised_reasoning_default`; the locally
+observed Qwen model advertises `on`. Actual `reasoning_tokens` are retained when
+the response exposes them. Defaults are 8,192 output tokens and 900 wall-clock
+seconds per request. The model supplies every LLM command; no reference fallback
+is used.
+
+`last_decision` contains status, model, simulation time, commands, summary, plan,
+compact observation, usage, wall-clock latency, `memory_turns` and
+`input_memory_turns`; it also includes finish reason, reasoning metadata or error
+when available. `metadata()` includes model inventory, prompt text/version/hash,
+response schema, decoding settings, history policy, latest plan, calls/errors,
+latency totals/mean and token usage. Current prompt version is
+`frankfurt-controller-v3`.
+
+The unchanged `compact-v2` packing uses `aircraft_columns` and dense aircraft
+rows, with type performance limits in `aircraft_types`. Static runway geometry
+stays in `airport.runways`; `runway_state` contains current occupancy,
+availability and closure keyed by runway ID. All active-aircraft values except
+radar trails are preserved at original precision. Input omits finished aircraft,
+event logs and nested metric reports; selected scalar outcomes and rejection
+feedback remain. See [the wire-format reference](AGENT_PROMPT.md#compact-v2-wire-format).
+Full environment, radar, HTTP and JSON-lines observations retain aircraft objects.
+
+## Decision windows and timing
+
+Simulation time is **paused during model inference**. After a valid decision,
+the harness applies its commands once, then quickly advances the requested
+control window. Default high-level window: 120 simulated seconds; accepted CLI
+windows: 1–600; HTTP also permits zero for commands without time advance. The
+low-level `env.step` contract remains 0–60 seconds, so longer windows are split
+into supported chunks with empty commands after the first chunk. Movement and
+safety are still evaluated in substeps of at most one second. A final window is
+clipped to the remaining horizon. Command rejection feedback from the
+command-bearing chunk must remain visible in the returned observation.
+
+Longer windows require fewer model calls, but also reduce the frequency of
+control opportunities. The model receives `decision_interval_s` and plans for
+that upcoming window. Automatic turns have no artificial real-time delay between
+responses. Measured wall time still depends on model latency; simulation batching
+does not guarantee faster-than-real-time total execution.
+
+Ground wait, emergency wait, fuel and weather evolve only during simulated time
+advance. Model `latency_s` is measured in wall-clock seconds and contributes to
+neither waiting score. Invalid JSON, truncation, unavailable models, HTTP errors
+or timeouts raise `LMStudioError` before time advances. Valid decisions pass
+through normal per-command validation; rejected commands do not invalidate the
+rest of the batch. The last valid state and prior operational plan survive a
+model failure.
 
 ## HTTP
 
-`python3 -m atc_bench serve --port 8000 --agent lmstudio`: localhost standard-library HTTP server. The default controller without `--agent` is `reference`; the server accepts `reference` or `lmstudio`.
+`python3 -m atc_bench serve --port 8000 --agent lmstudio` starts the localhost
+standard-library HTTP server. Without `--agent`, the default is `reference`.
 
 | Endpoint | Behavior |
 | --- | --- |
-| `GET /api/state` | Full current observation plus `controller`. Remains readable during inference. |
+| `GET /api/state` | Full current observation plus controller status; remains readable during inference. |
 | `GET /api/scenarios` | `{scenarios:[...]}`. |
-| `POST /api/controller` | `{kind:"reference" or "lmstudio",base_url?:string,model?:string or null}`. Sets the controller; omitting options retains existing settings. Null/empty model enables discovery. Returns observation. |
-| `POST /api/step` | `{commands:[],seconds:10,autopilot:false}`. With `autopilot:true`, call the selected controller, combine commands, then step. Manual commands override automatic commands for the same callsign. |
-| `POST /api/reset` | `{seed:7,scenario:"mixed",duration_s:1800}`. Replaces the episode and resets controller decision history while retaining controller kind/settings. |
+| `POST /api/controller` | `{kind:"reference" or "lmstudio",base_url?:string,model?:string or null}` selects the controller. Omitted options retain settings; null/empty model enables discovery. The replacement starts fresh dialogue. |
+| `POST /api/step` | `{commands:[],seconds:120,autopilot:false}` applies commands and advances 0–600 simulated seconds. `autopilot:true` first requests a decision from the selected controller. Manual commands override automatic commands for the same callsign. |
+| `POST /api/reset` | `{seed:7,scenario:"mixed",duration_s:1800}` replaces the episode and clears controller history while retaining kind/settings. |
 
-`controller` contains `{kind,model,base_url,status,message,decision_count,last_decision,error}`. Status is `idle`, `thinking`, `ready` or `error`; the UI can distinguish waiting for inference from an empty but successful decision. Model discovery happens on the first automatic step. Episode completion sets idle status and a completion message. All POST bodies must use `Content-Type: application/json`.
+Controller state includes its kind/model/base URL, status, message, decision
+count, last decision and error. Status distinguishes idle, thinking, ready and
+error. The last decision includes the model's public plan. Discovery occurs on
+the first model call. All POST bodies use `Content-Type: application/json`.
+Invalid input returns HTTP 400; model failures return a visible JSON error
+without advancing time. Concurrent conflicting mutations during inference are
+rejected rather than interleaved. Static radar assets are served at `/`.
 
-Model failures return HTTP 502 with `{error,controller}` and leave simulation time unchanged. Invalid input returns HTTP 400. Concurrent mutation while a decision is in progress returns HTTP 409; GET state is available throughout. Static radar assets are served at `/`.
+The radar starts paused, defaults to a 120-second control window, and offers
+30/60/120/300/600-second choices. Run/pause controls automatic decision cycles;
+single step requests one cycle. It shows weather, aircraft, scores, events,
+command results and controller decisions/plans. This remains a mock airport
+with abstract ground queues.
 
-## CLI and results
+## CLI, results and reproducibility
 
-`python3 -m atc_bench run --scenario mixed --seed 7 --duration 1800 --agent lmstudio --base-url http://127.0.0.1:1234 --model qwen3.8-27b-splash --step-seconds 30 --output results/run.json` runs one episode. `benchmark --seeds 1 2 3 --scenarios mixed emergency --duration 1800 --agent lmstudio --output results/benchmark.json` runs several episodes. `run`/`benchmark` support `--agent reference|noop|lmstudio|module:Class`; custom classes are zero-argument local Python code with `act(obs)`. `--step-seconds` is an integer 1–60, default 10.
+```sh
+python3 -m atc_bench run --agent lmstudio --scenario mixed --seed 7 --duration 1800 --step-seconds 120 --output results/run.json
+python3 -m atc_bench benchmark --agent lmstudio --seeds 1 2 3 --scenarios mixed emergency --duration 1800 --step-seconds 120 --output results/benchmark.json
+```
 
-`run`, `benchmark` and `serve` accept `--base-url` (default localhost:1234), `--model` (default auto-detect), `--llm-timeout` (default 120 seconds), and `--max-tokens` (default 1024). CLI output files retain configuration, metrics, rank fields/key, initial/final observations and command/event replay. LLM runs additionally retain model/prompt metadata and each decision's compact observation, commands, summary, latency and available usage. A model error saves a partial run with `status:"aborted"`, its error and failed decision; no failed step advances the clock. `run`/`benchmark` exit with code 2 on such an error, and a benchmark stops at its first failed run. Completed LLM runs have `status:"completed"`. Benchmark `mean_metrics` uses completed runs only and skips null diagnostics; `metric_sample_counts` reports each metric's contributing count. `completed_run_count` and `aborted_run_count` distinguish the two populations. With no completed runs, the means are empty and `mean_rank_key` is null.
+`run`/`benchmark` support `--agent reference|noop|lmstudio|module:Class`; custom
+classes are zero-argument local Python code exposing `act(observation)`. High-level
+`--step-seconds` accepts 1–600 and defaults to 120. `run`, `benchmark` and `serve`
+accept `--base-url` (localhost:1234), `--model` (automatic loaded-model discovery),
+`--llm-timeout` (900 seconds) and `--max-tokens` (8192). The simulation advances
+as fast as its computation allows between model calls.
 
-`stdio --seed 7 --scenario mixed` emits an initial observation followed by one JSON response for each JSON-line request `{commands:[],seconds:10}` or `{reset:{seed:8,scenario:"storm"}}`. This bridge does not call a model; an external harness supplies its own decisions. Standard output is reserved for the protocol.
+Results retain version/configuration, metrics, rank, initial/final observations
+and command/event replay. LLM results additionally retain model/prompt/reasoning
+metadata, compact observations, summaries/plans, simulation timestamps, latency
+and usage. Model errors produce a partial/aborted run, its failed decision and a
+visible error; they are not completed episodes. Benchmark means use completed
+runs only and skip null diagnostics. `metric_sample_counts` records each mean's
+population, and completed/aborted counts distinguish the two sets. With no
+completed runs the means are empty and mean rank is null.
 
-Frontend: radar with map runways, vectors/trails, weather cells, aircraft selection/flight board, command console, play/pause, single step/speed, scenario/seed/reset, controller selection, live metrics/events and command accepted/rejected feedback. The server owns controller selection and reports model/status/last decision. Default simulation state is paused. The interface identifies the mock airport and abstracted ground queues.
+Use equal scenario, seed, horizon and control window when comparing agents, and
+report both simulated horizon and measured `wall_duration_s`. The simulator is
+deterministic for a given command timeline; model outputs need not be identical
+on repeated requests. Replay saved commands at their simulation timestamps to
+reproduce a trajectory. Version 0.3 adds persistent planning, model-default
+reasoning and larger configurable windows. Version 0.2 stateless-controller
+results remain legacy evidence, not validation of this controller; match actual
+settings before comparisons. The scoring formula is unchanged from version 0.2.
+
+`stdio --seed 7 --scenario mixed` emits an initial observation and then one JSON
+response per JSON-line request `{commands:[],seconds:10}` or
+`{reset:{seed:8,scenario:"storm"}}`. This low-level bridge accepts 0–60 seconds
+and does not call a model. External harnesses implementing longer control windows
+must apply commands once, advance subsequent chunks with empty commands, and
+retain command rejection feedback. Standard output is reserved for the protocol.

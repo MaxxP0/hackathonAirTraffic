@@ -2,6 +2,8 @@
 
 These rules describe the synthetic benchmark. They are not operational aviation standards.
 
+Version **0.3.0** keeps the version 0.2 score formula and paused-inference timing, adds persistent operational plans/recent dialogue, and supports larger control windows. Saved version 0.2 stateless-model experiments are legacy evidence, not validation of the new controller. Match window sizes and other settings before comparing outcomes. Version 0.1 used different scalar weights.
+
 ## Ranking
 
 The saved `rank_key` is compared lexicographically, with **lower values better**. Its fields are, in order:
@@ -50,7 +52,7 @@ The two explicit waiting components are `ground_wait_score_component = -ground_w
 
 ## Waiting diagnostics
 
-Each aircraft exposes `ground_wait_s`, `emergency_wait_s`, `emergency_declared_time_s` and `emergency_touchdown_time_s`. Times use **simulated seconds**, not model inference or wall-clock time.
+Each aircraft exposes `ground_wait_s`, `emergency_wait_s`, `emergency_declared_time_s` and `emergency_touchdown_time_s`. Timers use **simulated seconds**. The clock pauses while the model reasons, then advances the configured control window after its commands are applied. Ten minutes of inference costs ten minutes of wall time but does not increase simulated waiting or burn fuel. Model latency is reported separately in wall-clock seconds.
 
 - **Ground waiting:** a departure accumulates queue time from spawning ready for departure while its status is `ground`. The timer stops as soon as an accepted takeoff clearance starts the takeoff roll. It excludes takeoff/landing roll and the fixed taxi-in time. All spawned departures form the denominator, including departures with zero waiting and departures still queued at the measurement time. Unspawned flights and arrivals are excluded.
 - **Emergency waiting:** elapsed time from the public emergency declaration until touchdown. It includes approach flight time and is therefore response time, not just holding delay. Crash or sector exit freezes the observed timer; an unfinished flight accumulates through the measurement time or episode horizon. Missing the emergency deadline records a failure but does not stop the timer while the aircraft still needs to land. Subsequent touchdown records its timestamp even after a deadline failure. All declared emergencies form the denominator, including pending and failed emergencies; future scheduled emergencies are never exposed or counted.
@@ -68,9 +70,9 @@ Thus zero waiting scores 100; a five-minute mean departure queue scores 50; a th
 
 `emergency_wait_by_outcome` contains `resolved`, `pending` and `failed` groups, each with `count`, `seconds`, `mean_seconds` and `max_seconds`. Resolved means successful touchdown before a recorded failure; pending means neither successful touchdown nor failure yet; failed includes missed deadlines, crashes and diversions. The groups are disjoint and cover every declared emergency. A failed emergency can still be airborne and accumulating waiting time, or can subsequently touch down, without moving into the resolved group.
 
-These means include **censored observations**: unfinished queues and emergencies have only their observed waiting time, while crashes and diversions have their observed time until termination, not a successful landing time. Ending an episode early can artificially reduce a mean. Compare the same scenario, seed and horizon, and report the outcome breakdown and unfinished counts. Do not compare successful emergency response times using the overall mean; use the resolved subgroup and report how many emergencies failed or remain pending.
+These means include **censored observations**: unfinished queues and emergencies have only their observed waiting time, while crashes and diversions have their observed time until termination, not a successful landing time. Ending an episode early can artificially reduce a mean. Compare the same scenario, seed, horizon and control-window length, and report the outcome breakdown and unfinished counts. Include wall-clock duration and actual controller latency to distinguish simulated performance from computational throughput. Larger windows reduce the number of model calls but also give the controller fewer chances to react. Do not compare successful emergency response times using the overall mean; use the resolved subgroup and report how many emergencies failed or remain pending.
 
-These full metrics are available through the environment, radar/HTTP state and saved results. The LM Studio `compact-v2` input supplies per-aircraft waiting timers, the two waiting totals and their 0–100 diagnostics, but omits aggregate waiting counts, means, maxima, signed components and outcome groups. Use the full result metrics for evaluation rather than treating the compact decision input as a complete metric report. Model request latency remains a separate wall-clock measurement and contributes to neither waiting timer nor score.
+These full metrics are available through the environment, radar/HTTP state and saved results. The LM Studio `compact-v2` input supplies per-aircraft waiting timers, the two waiting totals and their 0–100 diagnostics, but omits aggregate waiting counts, means, maxima, signed components and outcome groups. Use the full result metrics for evaluation rather than treating the compact decision input as a complete metric report. Model request latency is a separate wall-clock measurement and does not itself contribute to simulated waiting or the score. Waiting, fuel burn, deadline failures and other outcomes evolve during the simulated window after a decision. High-level windows are split into at most 60-second environment steps; movement and safety remain integrated in substeps no longer than one second.
 
 ## Metric interpretation
 
@@ -96,7 +98,9 @@ These full metrics are available through the environment, radar/HTTP state and s
 | `unfinished` | Aircraft not yet landed, departed, diverted or crashed when measured. |
 | `completion_rate` | Successfully landed/departed aircraft divided by spawned traffic. |
 
-Ground and airborne time continue accumulating for unfinished aircraft. Do not drop unfinished or diverted traffic from a comparison. Always include episode duration and pending emergency counts: stopping before an emergency deadline is not evidence that the emergency was resolved. Benchmark summaries retain each run's outcomes as well as means so that rare failures stay inspectable.
+Ground and airborne time continue accumulating for unfinished aircraft. Do not drop unfinished or diverted traffic from a comparison. Always include episode duration and pending emergency counts: stopping before an emergency deadline is not evidence that the emergency was resolved. Benchmark summaries retain each run's outcomes as well as means so that rare failures stay inspectable. A model error leaves the world at its previous valid state; an interrupted evaluation is partial and must not be compared to a full-horizon baseline. Reference/no-op baselines use the same control windows without model requests.
+
+For a given scenario and applied command timeline, the simulator is deterministic. Model outputs can still vary across runs. Retain simulation timestamps, model/prompt/reasoning configuration, control window, simulated horizon, model latency and elapsed `wall_duration_s`; replay the saved commands at their recorded simulation timestamps to reproduce the trajectory. Do not infer end-to-end computational speed from the instantaneous simulation advance or a single unusually fast model call.
 
 ## Simplifications that affect results
 

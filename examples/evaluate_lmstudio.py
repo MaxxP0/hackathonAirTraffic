@@ -14,7 +14,11 @@ from atc_bench import __version__
 
 
 def write_reports(folder, runs, configuration):
-    summary = {"benchmark_version": __version__, "configuration": configuration, "runs": []}
+    versions = {run["benchmark_version"] for run in runs}
+    if len(versions) > 1:
+        raise ValueError("Report one benchmark version at a time")
+    version = next(iter(versions), __version__)
+    summary = {"benchmark_version": version, "configuration": configuration, "runs": []}
     for run in runs:
         summary["runs"].append({
             "configuration": run["configuration"], "status": run.get("status", "completed"),
@@ -22,14 +26,16 @@ def write_reports(folder, runs, configuration):
             "controller": {key: run.get("controller", {}).get(key) for key in
                            ("model", "reasoning_effort", "calls", "errors", "mean_latency_s", "total_latency_s", "usage")},
             "error": run.get("error"),
+            "wall_duration_s": run.get("wall_duration_s"),
         })
     (folder / "summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")
     lines = ["# LM Studio evaluation", "",
-             f"Benchmark {__version__}; {configuration['duration_s']} simulated seconds per episode; "
+             f"Benchmark {version}; {configuration['duration_s']} simulated seconds per episode; "
              f"one decision every {configuration['step_seconds']} simulated seconds. "
              "Every controller sees the same scenario/seed for a matched comparison.", "",
              "The simulation clock pauses during model inference. Model latency is wall time and is reported separately. "
-             "The LLM uses fresh JSON observations and native model-generated commands, with no reference fallback.", "",
+             "The LLM receives JSON telemetry and generates its own commands, with no reference fallback. "
+             "Controller metadata records whether it uses persistent conversation and plan memory.", "",
              "| Scenario | Seed | Controller | Status | Simulated minutes | Finished / spawned | Collisions | Emergency resolved / pending / failed | Mean queue wait (min) | Mean emergency wait (min) | Score |",
              "|---|---:|---|---|---:|---:|---:|---|---:|---:|---:|"]
     for run in runs:
@@ -60,7 +66,8 @@ def write_reports(folder, runs, configuration):
             lines.append(f"  Aborted: {run['error']}")
     lines += ["", "Full results retain the prompt/version, actual compact observations, commands, command rejections, "
               "model summaries, token counts, safety events, per-aircraft timers and final outcomes. "
-              "Scores from benchmark 0.1.0 are not directly comparable with these 0.2.0 scores.", ""]
+              "Scores from benchmark 0.1.0 use different waiting penalties. "
+              "Versions 0.2.0 and 0.3.0 use different controller prompts, memory and decoding settings; compare configurations explicitly.", ""]
     (folder / "report.md").write_text("\n".join(lines))
 
 
@@ -69,16 +76,20 @@ def main():
     parser.add_argument("--scenarios", nargs="+", choices=SCENARIOS, default=["mixed", "emergency", "storm"])
     parser.add_argument("--seeds", nargs="+", type=int, default=[7, 11])
     parser.add_argument("--duration", type=positive_duration, default=1800)
-    parser.add_argument("--step-seconds", type=int, choices=range(1, 61), default=60)
+    parser.add_argument("--step-seconds", type=int, choices=range(1, 601), default=120, metavar="1..600")
     parser.add_argument("--base-url", default="http://127.0.0.1:1234")
     parser.add_argument("--model", default=None)
+    parser.add_argument("--max-tokens", type=int, default=8192)
+    parser.add_argument("--llm-timeout", type=float, default=900)
     parser.add_argument("--output", default="results/lmstudio-evaluation")
     args = parser.parse_args()
     folder = Path(args.output)
     folder.mkdir(parents=True, exist_ok=True)
     configuration = {"scenarios": args.scenarios, "seeds": args.seeds,
                      "duration_s": args.duration, "step_seconds": args.step_seconds,
-                     "requested_model": args.model, "base_url": args.base_url}
+                     "requested_model": args.model, "base_url": args.base_url,
+                     "time_mode": "paused_during_inference", "max_tokens": args.max_tokens,
+                     "llm_timeout_s": args.llm_timeout}
     runs = []
     failures = 0
     # Finish cheap baselines first, then run one model request at a time.
@@ -89,7 +100,9 @@ def main():
                 started = time.monotonic()
                 run = run_episode(seed=seed, scenario=scenario, duration=args.duration,
                                   agent_spec=agent, step_seconds=args.step_seconds,
-                                  agent_options={"base_url": args.base_url, "model": args.model})
+                                  agent_options={"base_url": args.base_url, "model": args.model,
+                                                 "max_tokens": args.max_tokens, "timeout_s": args.llm_timeout})
+                run["wall_duration_s"] = round(time.monotonic() - started, 3)
                 run["result_file"] = f"{agent}-{scenario}-{seed}.json"
                 (folder / run["result_file"]).write_text(json.dumps(run, indent=2, allow_nan=False) + "\n")
                 runs.append(run)

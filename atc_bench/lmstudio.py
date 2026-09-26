@@ -17,10 +17,27 @@ from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 
-PROMPT_VERSION = "frankfurt-controller-v2"
+PROMPT_VERSION = "frankfurt-controller-v3"
+MAX_COMMANDS = 32
+MAX_COMMAND_CHARS = 80
+MAX_SUMMARY_CHARS = 240
+MAX_PLAN_CHARS = 1200
 SYSTEM_PROMPT = """Control this simplified Frankfurt air traffic simulation using only the observation.
-Return {"commands":[strings],"summary":"brief operational decision, <=2 sentences"}.
-No reasoning transcript. Empty commands means let existing clearances execute.
+Return {"commands":[strings],"summary":"brief operational decision","plan":"operational plan"}.
+Summary <=240 characters; plan 1..1200 characters; command strings <=80 characters.
+Plan should retain future sequencing, runway reservations, priorities and when
+to reconsider them. This is a public operational plan, not a reasoning transcript.
+Keep useful intentions across turns, updating them against fresh observations.
+Recent dialogue and controller_memory.latest_plan preserve earlier decisions.
+Empty commands means let existing clearances execute.
+
+The simulation pauses while you reason. After your commands are validated and
+applied, it advances decision_interval_s simulated seconds quickly before your
+next observation. Plan for this entire upcoming control window; longer windows
+mean fewer chances to react. Model wall-clock latency does not burn aircraft
+fuel or increase simulated waiting. Use the latest observation over older
+dialogue, review command rejections, and revise the operational plan. Do not
+assume a previously planned command was accepted. Future events stay hidden.
 
 Read aircraft rows by aircraft_columns; join each row's type to aircraft_types
 for performance limits. Merge airport.runways geometry with runway_state by id.
@@ -41,7 +58,7 @@ APPROACH C R
 TAKEOFF C R
 GO_AROUND C
 DIVERT C
-At most 100 commands, applied in order. Review prior_command_errors; rejected
+At most 32 commands, no duplicates, applied in order. Review prior_command_errors; rejected
 commands do not cancel others. Use existing clearances rather than reissuing.
 
 APPROACH automatically intercepts approach_fix at 3200 ft, then descends/tracks
@@ -72,10 +89,13 @@ RESPONSE_FORMAT = {
         "schema": {
             "type": "object",
             "properties": {
-                "commands": {"type": "array", "items": {"type": "string"}, "maxItems": 100},
-                "summary": {"type": "string"},
+                "commands": {"type": "array", "items": {"type": "string", "minLength": 1,
+                                                           "maxLength": MAX_COMMAND_CHARS},
+                             "maxItems": MAX_COMMANDS},
+                "summary": {"type": "string", "maxLength": MAX_SUMMARY_CHARS},
+                "plan": {"type": "string", "minLength": 1, "maxLength": MAX_PLAN_CHARS},
             },
-            "required": ["commands", "summary"],
+            "required": ["commands", "summary", "plan"],
             "additionalProperties": False,
         },
     },
@@ -125,7 +145,7 @@ def compact_observation(observation: dict) -> dict:
     compact = {"airport": airport, "aircraft_types": dict(sorted(aircraft_types.items())),
                "aircraft_columns": columns}
     compact.update({key: deepcopy(observation[key]) for key in (
-        "time_s", "duration_s", "scenario", "done", "weather", "conflicts"
+        "time_s", "duration_s", "decision_interval_s", "scenario", "done", "weather", "conflicts"
     ) if key in observation})
     compact["runway_state"] = runway_state
     compact["aircraft"] = [[deepcopy(plane.get(key)) for key in columns] for plane in aircraft]
@@ -140,7 +160,8 @@ def compact_observation(observation: dict) -> dict:
 
 class LMStudioAgent:
     def __init__(self, base_url: str = "http://127.0.0.1:1234", model: str | None = None,
-                 timeout_s: float = 120, max_tokens: int = 1024, temperature: float = 0):
+                 timeout_s: float = 900, max_tokens: int = 8192, temperature: float = 0,
+                 max_memory_turns: int = 4):
         base_url = base_url.rstrip("/")
         # Accept the standard OpenAI-client base URL as well as the server root.
         if base_url.endswith("/v1"):
@@ -154,16 +175,27 @@ class LMStudioAgent:
             raise ValueError("LM Studio max_tokens must be a positive integer")
         if isinstance(temperature, bool) or not math.isfinite(temperature) or not 0 <= temperature <= 2:
             raise ValueError("LM Studio temperature must be between 0 and 2")
+        if isinstance(max_memory_turns, bool) or not isinstance(max_memory_turns, int) or not 1 <= max_memory_turns <= 16:
+            raise ValueError("LM Studio max_memory_turns must be an integer between 1 and 16")
         self.base_url, self.model = base_url, model
         self.timeout_s, self.max_tokens, self.temperature = timeout_s, max_tokens, temperature
         self.requested_model = model
         self.model_info: dict = {}
         self.reasoning_effort: str | None = None
+        self.advertised_reasoning_default: str | None = None
+        self.reasoning_mode = "model_default"
         self.last_decision: dict | None = None
         self._resolved_model = False
         self._calls = self._errors = 0
         self._latencies: list[float] = []
         self._usage: dict[str, int] = {}
+        self.max_memory_turns = max_memory_turns
+        self.latest_plan = ""
+        self._conversation: list[dict] = []
+        self._successful_decisions = 0
+        self._last_decision_error: str | None = None
+        self._episode_identity: tuple | None = None
+        self._last_observation_time_s: float | None = None
 
     def _json_request(self, path: str, payload: dict | None = None) -> dict:
         request = Request(self.base_url + path,
@@ -216,12 +248,12 @@ class LMStudioAgent:
             raise LMStudioError(f"No already loaded language model{requested} found in LM Studio; load a model there first")
         instance_id, _, info = sorted(candidates, key=lambda item: item[0])[0]
         self.model, self.model_info = instance_id, deepcopy(info)
-        # Request-local decoding option: leave LM Studio's saved settings alone.
-        # Only advertise an off request when this model exposes that capability.
+        # Keep the loaded model's reasoning settings and report the actual
+        # wall-clock latency separately from simulated aircraft waiting.
         capabilities = info.get("capabilities", {})
         reasoning = capabilities.get("reasoning", {}) if isinstance(capabilities, dict) else {}
-        if isinstance(reasoning, dict) and "off" in reasoning.get("allowed_options", []):
-            self.reasoning_effort = "none"
+        if isinstance(reasoning, dict):
+            self.advertised_reasoning_default = reasoning.get("default")
         self._resolved_model = True
 
     def describe(self) -> dict:
@@ -231,8 +263,13 @@ class LMStudioAgent:
                 "prompt_sha256": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest(),
                 "temperature": self.temperature, "max_tokens": self.max_tokens,
                 "reasoning_effort": self.reasoning_effort,
+                "reasoning_mode": self.reasoning_mode,
+                "advertised_reasoning_default": self.advertised_reasoning_default,
                 "timeout_s": self.timeout_s, "response_format": deepcopy(RESPONSE_FORMAT),
-                "observation_format": "compact-v2", "history": "fresh observation only"}
+                "observation_format": "compact-v2", "history": "bounded persistent dialogue",
+                "max_memory_turns": self.max_memory_turns,
+                "memory_turns": len(self._conversation) // 2,
+                "successful_decisions": self._successful_decisions, "latest_plan": self.latest_plan}
 
     def metadata(self) -> dict:
         return {**self.describe(), "calls": self._calls, "errors": self._errors,
@@ -241,14 +278,35 @@ class LMStudioAgent:
                 "usage": dict(self._usage)}
 
     def act(self, observation: dict) -> list[str]:
+        identity = tuple(observation.get(key) for key in ("seed", "scenario", "duration_s"))
+        observed_time = observation.get("time_s")
+        if self._episode_identity is not None and (
+            identity != self._episode_identity or
+            (observed_time is not None and self._last_observation_time_s is not None
+             and observed_time < self._last_observation_time_s)
+        ):
+            self._conversation.clear()
+            self.latest_plan = ""
+            self._successful_decisions = 0
+            self._last_decision_error = None
+        self._episode_identity = identity
+        self._last_observation_time_s = observed_time
         if observation.get("done"):
             self.last_decision = {"status": "done", "model": self.model, "time_s": observation.get("time_s"),
-                                  "commands": [], "summary": "Episode complete.", "latency_s": 0, "usage": {}}
+                                  "commands": [], "summary": "Episode complete.", "latency_s": 0, "usage": {},
+                                  "plan": self.latest_plan, "memory_turns": len(self._conversation) // 2}
             return []
         started = time.perf_counter()
         compact = compact_observation(observation)
+        compact["controller_memory"] = {"latest_plan": self.latest_plan,
+                                        "successful_decisions": self._successful_decisions,
+                                        "prior_decision_error": self._last_decision_error}
+        user_message = {"role": "user", "content": json.dumps(compact, separators=(",", ":"), allow_nan=False)}
+        memory_turns = len(self._conversation) // 2
         self.last_decision = {"status": "requesting", "model": self.model, "time_s": observation.get("time_s"),
-                              "commands": [], "summary": "", "usage": {}, "observation": compact}
+                              "commands": [], "summary": "", "usage": {}, "observation": compact,
+                              "plan": self.latest_plan, "memory_turns": memory_turns,
+                              "input_memory_turns": memory_turns}
         try:
             if not self._resolved_model:
                 self._discover_model()
@@ -258,13 +316,13 @@ class LMStudioAgent:
             payload = {
                 "model": self.model,
                 "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-                             {"role": "user", "content": json.dumps(compact, separators=(",", ":"), allow_nan=False)}],
+                             *deepcopy(self._conversation), user_message],
                 "temperature": self.temperature, "max_tokens": self.max_tokens,
                 "response_format": RESPONSE_FORMAT, "stream": False,
             }
-            if self.reasoning_effort is not None:
-                payload["reasoning_effort"] = self.reasoning_effort
             self.last_decision["reasoning_effort"] = self.reasoning_effort
+            self.last_decision["reasoning_mode"] = self.reasoning_mode
+            self.last_decision["advertised_reasoning_default"] = self.advertised_reasoning_default
             response = self._json_request("/v1/chat/completions", payload)
             usage = response.get("usage", {})
             if isinstance(usage, dict):
@@ -293,19 +351,28 @@ class LMStudioAgent:
                 decision = json.loads(content)
             except ValueError as error:
                 raise LMStudioError("LM Studio returned invalid decision JSON; no commands applied") from error
-            if not isinstance(decision, dict) or set(decision) != {"commands", "summary"}:
-                raise LMStudioError("LM Studio decision must contain only commands and summary")
-            commands, summary = decision["commands"], decision["summary"]
-            if not isinstance(commands, list) or len(commands) > 100 or any(
-                not isinstance(command, str) or not command.strip() or len(command) > 256 for command in commands
+            if not isinstance(decision, dict) or set(decision) != {"commands", "summary", "plan"}:
+                raise LMStudioError("LM Studio decision must contain only commands, summary and plan")
+            commands, summary, plan = decision["commands"], decision["summary"], decision["plan"]
+            if not isinstance(commands, list) or len(commands) > MAX_COMMANDS or any(
+                not isinstance(command, str) or not command.strip() or len(command) > MAX_COMMAND_CHARS for command in commands
             ):
-                raise LMStudioError("LM Studio commands must be an array of at most 100 nonempty command strings")
-            if not isinstance(summary, str) or len(summary) > 4000:
-                raise LMStudioError("LM Studio summary must be a short string")
-            self.last_decision.update(status="ok", commands=commands, summary=summary)
+                raise LMStudioError(f"LM Studio commands must be at most {MAX_COMMANDS} nonempty strings of at most {MAX_COMMAND_CHARS} characters")
+            if not isinstance(summary, str) or len(summary) > MAX_SUMMARY_CHARS:
+                raise LMStudioError(f"LM Studio summary must be a string of at most {MAX_SUMMARY_CHARS} characters")
+            if not isinstance(plan, str) or not plan.strip() or len(plan) > MAX_PLAN_CHARS:
+                raise LMStudioError(f"LM Studio plan must be a nonempty string of at most {MAX_PLAN_CHARS} characters")
+            self.latest_plan = plan
+            self._successful_decisions += 1
+            self._last_decision_error = None
+            self._conversation.extend([user_message, {"role": "assistant", "content": json.dumps(decision, separators=(",", ":"))}])
+            self._conversation = self._conversation[-2 * self.max_memory_turns:]
+            self.last_decision.update(status="ok", commands=commands, summary=summary, plan=plan,
+                                      memory_turns=len(self._conversation) // 2)
             return commands
         except LMStudioError as error:
             self._errors += 1
+            self._last_decision_error = str(error)
             self.last_decision.update(status="error", error=str(error))
             raise
         finally:

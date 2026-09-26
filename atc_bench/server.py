@@ -12,7 +12,7 @@ import threading
 import time
 from urllib.parse import unquote, urlsplit
 
-from .cli import SCENARIOS, load_agent, validate_reset, validate_step
+from .cli import SCENARIOS, advance_simulation, load_agent, validate_reset, validate_step
 from .environment import AirTrafficEnv
 
 
@@ -25,7 +25,7 @@ class SimulationServer(ThreadingHTTPServer):
 
     def __init__(self, address, *, seed=7, scenario="mixed", duration=1800,
                  agent_spec="reference", base_url="http://127.0.0.1:1234", model=None,
-                 llm_timeout=120, max_tokens=1024):
+                 llm_timeout=900, max_tokens=8192):
         self.env = AirTrafficEnv(seed=seed, scenario=scenario, duration_s=duration)
         self.state_lock = threading.Lock()
         # Model inference may take seconds. Serialize mutations but allow state
@@ -156,12 +156,13 @@ class SimulationHandler(BaseHTTPRequestHandler):
         self.server.set_controller(payload.get("kind"), options)
 
     def _step(self, payload):
-        commands, seconds, autopilot = validate_step(payload, allow_autopilot=True)
+        commands, seconds, autopilot = validate_step(payload, allow_autopilot=True, max_seconds=600)
         if autopilot and not self.server.env.done:
             controller = self.server.controller
             with self.server.state_lock:
                 controller.update(status="thinking", message="Requesting a decision from LM Studio" if controller["kind"] == "lmstudio" else "Evaluating reference policy", error=None)
                 before = self.server.env.observe()
+                before["decision_interval_s"] = seconds
             started = time.monotonic()
             try:
                 automatic = self.server.agent.act(before)
@@ -190,14 +191,14 @@ class SimulationHandler(BaseHTTPRequestHandler):
             automatic = [command for command in automatic if callsign(command) not in manual_callsigns]
             commands = commands + automatic[:100 - len(commands)]
         with self.server.state_lock:
-            self.server.env.step(commands, seconds=seconds)
+            advance_simulation(self.server.env, commands, seconds)
             if self.server.env.done:
                 self.server.controller.update(status="idle", message="Episode complete. Start a new episode to continue.")
 
 
 def serve(*, port: int = 8000, seed: int = 7, scenario: str = "mixed", duration: int = 1800,
           agent_spec="reference", base_url="http://127.0.0.1:1234", model=None,
-          llm_timeout=120, max_tokens=1024) -> None:
+          llm_timeout=900, max_tokens=8192) -> None:
     if isinstance(port, bool) or not isinstance(port, int) or not 0 <= port <= 65535:
         raise ValueError("port must be an integer between 0 and 65535")
     with SimulationServer(("127.0.0.1", port), seed=seed, scenario=scenario, duration=duration,

@@ -9,14 +9,77 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-from atc_bench.cli import rank_key
+from atc_bench import AirTrafficEnv
+from atc_bench.cli import advance_simulation, rank_key, run_episode
 from atc_bench.server import SimulationServer
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+class AcceleratedDecisionTests(unittest.TestCase):
+    def test_large_advance_applies_commands_once_and_preserves_feedback(self):
+        env = AirTrafficEnv(seed=7, duration_s=400)
+        departure = next(a for a in env.observe()["aircraft"] if a["kind"] == "departure")
+        commands = [f"TAKEOFF {departure['callsign']} 25C", "HEADING NO_SUCH_FLIGHT 250"]
+        observation, events = advance_simulation(env, commands, 300)
+        self.assertEqual(observation["time_s"], 300)
+        self.assertEqual(observation["metrics"]["invalid_commands"], 1)
+        self.assertEqual([result["accepted"] for result in observation["command_results"]], [True, False])
+        self.assertEqual(env.observe()["command_results"], observation["command_results"])
+        takeoff_clearances = [event for event in events if "cleared for takeoff" in event["message"]]
+        self.assertEqual(len(takeoff_clearances), 1)
+
+    def test_large_advance_stops_exactly_at_episode_horizon(self):
+        env = AirTrafficEnv(seed=7, duration_s=125)
+        env.step([], seconds=10)
+        observation, _ = advance_simulation(env, [], 600)
+        self.assertEqual(observation["time_s"], 125)
+        self.assertTrue(observation["done"])
+
+    def test_replay_collects_events_before_the_rolling_log_rotates(self):
+        class EventfulEnvironment(AirTrafficEnv):
+            def _tick(self, seconds):
+                super()._tick(seconds)
+                self._event("test_tick", f"Tick {self.time_s}")
+
+        env = EventfulEnvironment(seed=7, duration_s=300)
+        observation, events = advance_simulation(env, [], 300)
+        self.assertLessEqual(len(observation["events"]), 100)
+        ticks = [event for event in events if event["type"] == "test_tick"]
+        self.assertEqual(len(ticks), 300)
+        self.assertEqual([event["time_s"] for event in ticks], list(range(1, 301)))
+
+    def test_one_decision_per_large_interval_and_rejected_feedback_reaches_next_observation(self):
+        class RecordingAgent:
+            def __init__(self):
+                self.observations = []
+
+            def act(self, observation):
+                self.observations.append(observation)
+                return ["HEADING UNKNOWN 250"] if len(self.observations) == 1 else []
+
+        agent = RecordingAgent()
+        with patch("atc_bench.cli.load_agent", return_value=agent):
+            result = run_episode(seed=7, scenario="mixed", duration=250,
+                                 agent_spec="recording", step_seconds=120)
+        self.assertEqual([item["time_s"] for item in agent.observations], [0, 120, 240])
+        self.assertEqual([item["decision_interval_s"] for item in agent.observations], [120, 120, 120])
+        self.assertFalse(agent.observations[1]["command_results"][0]["accepted"])
+        self.assertEqual([step["seconds"] for step in result["replay"]], [120, 120, 10])
+        self.assertEqual(result["metrics"]["invalid_commands"], 1)
+
+    def test_large_interval_limit_is_validated_before_mutating_the_environment(self):
+        env = AirTrafficEnv(seed=7)
+        initial = env.observe()
+        for seconds in (601, -1, True):
+            with self.subTest(seconds=seconds), self.assertRaises(ValueError):
+                advance_simulation(env, ["HEADING UNKNOWN 250"], seconds)
+        self.assertEqual(env.observe(), initial)
 
 
 class CliTests(unittest.TestCase):
@@ -76,6 +139,15 @@ class CliTests(unittest.TestCase):
         self.assertLess(rank_key(safe), rank_key(unsafe))
         emergency_failure = {"collisions": 0, "emergencies_failed": 1, "landed": 10000}
         self.assertLess(rank_key(safe), rank_key(emergency_failure))
+
+    def test_cli_default_interval_is_120_seconds_and_stdio_still_limits_steps_to_60(self):
+        result = json.loads(self.command("run", "--agent", "noop", "--duration", "250").stdout)
+        self.assertEqual(result["configuration"]["step_seconds"], 120)
+        self.assertEqual([step["seconds"] for step in result["replay"]], [120, 120, 10])
+        response = self.command("stdio", "--duration", "120", input='{"seconds":61}\n{"seconds":60}\n')
+        lines = [json.loads(line) for line in response.stdout.splitlines()]
+        self.assertIn("error", lines[1])
+        self.assertEqual(lines[2]["time_s"], 60)
 
     def test_fuel_exhaustion_crash_ranks_below_safe_unfinished_flight(self):
         from atc_bench import AirTrafficEnv

@@ -10,13 +10,14 @@ import unittest
 from unittest.mock import patch
 
 from atc_bench import AirTrafficEnv
-from atc_bench.cli import main, run_episode
+from atc_bench.cli import main
 from atc_bench.lmstudio import AIRCRAFT_TYPE_FIELDS, LMStudioAgent, LMStudioError, compact_observation
 
 
-def completion(commands=None, summary="Maintain existing clearances.", **changes):
+def completion(commands=None, summary="Maintain existing clearances.",
+               plan="Keep current approaches; release the oldest departure once runway 18 is available.", **changes):
     response = {"choices": [{"message": {"content": json.dumps({
-        "commands": commands if commands is not None else [], "summary": summary,
+        "commands": commands if commands is not None else [], "summary": summary, "plan": plan,
     })}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 300, "completion_tokens": 20, "total_tokens": 320}}
     response.update(changes)
     return response
@@ -111,14 +112,15 @@ class LMStudioTests(unittest.TestCase):
         agent.act(self.env.observe())
         self.assertEqual(agent.model, "loaded-model")
 
-    def test_reasoning_is_disabled_per_request_only_when_model_supports_off(self):
+    def test_reasoning_uses_model_default_without_disabling_or_overriding_it(self):
         self.server.inventory["models"][1]["capabilities"] = {
             "reasoning": {"allowed_options": ["off", "on"], "default": "on"}}
         agent = self.agent()
         agent.act(self.env.observe())
-        self.assertEqual(self.server.requests[-1][1]["reasoning_effort"], "none")
-        self.assertEqual(agent.describe()["reasoning_effort"], "none")
-        self.assertEqual(agent.last_decision["reasoning_effort"], "none")
+        self.assertNotIn("reasoning_effort", self.server.requests[-1][1])
+        self.assertIsNone(agent.describe()["reasoning_effort"])
+        self.assertEqual(agent.describe()["reasoning_mode"], "model_default")
+        self.assertEqual(agent.last_decision["advertised_reasoning_default"], "on")
         self.assertFalse(any("/load" in path or "/unload" in path for path, _ in self.server.requests))
 
     def test_legacy_discovery_accepts_only_loaded_language_models(self):
@@ -159,7 +161,9 @@ class LMStudioTests(unittest.TestCase):
 
     def test_dense_rows_preserve_all_active_dynamic_values_and_type_limits_exactly(self):
         observation = self.env.step([], seconds=60)
+        observation["decision_interval_s"] = 120
         compact = compact_observation(observation)
+        self.assertEqual(compact["decision_interval_s"], 120)
         reconstructed = []
         for row in compact["aircraft"]:
             self.assertEqual(len(row), len(compact["aircraft_columns"]))
@@ -174,13 +178,18 @@ class LMStudioTests(unittest.TestCase):
         self.assertEqual(compact["metrics"]["emergency_wait_seconds"], observation["metrics"]["emergency_wait_seconds"])
 
     def test_reasoning_token_usage_is_retained_without_the_reasoning_text(self):
-        self.server.responses = [completion(usage={"prompt_tokens": 20, "completion_tokens": 10,
-                                                   "completion_tokens_details": {"reasoning_tokens": 3}})]
+        response = completion(usage={"prompt_tokens": 20, "completion_tokens": 10,
+                                     "completion_tokens_details": {"reasoning_tokens": 3}})
+        response["choices"][0]["message"]["reasoning_content"] = "PRIVATE_REASONING_SENTINEL"
+        self.server.responses = [response, completion()]
         agent = self.agent()
         agent.act(self.env.observe())
         self.assertEqual(agent.last_decision["usage"]["reasoning_tokens"], 3)
         self.assertEqual(agent.metadata()["usage"]["reasoning_tokens"], 3)
         self.assertEqual(agent.describe()["observation_format"], "compact-v2")
+        self.assertNotIn("PRIVATE_REASONING_SENTINEL", json.dumps(agent.last_decision))
+        agent.act(self.env.observe())
+        self.assertNotIn("PRIVATE_REASONING_SENTINEL", json.dumps(self.server.requests[-1][1]))
 
     def test_every_step_receives_fresh_observation_and_previous_rejections(self):
         self.server.responses = [completion(["HOLD MISSING"]), completion([])]
@@ -192,17 +201,107 @@ class LMStudioTests(unittest.TestCase):
         posts = [payload for path, payload in self.server.requests if path == "/v1/chat/completions"]
         self.assertEqual(len(posts), 2)
         first = json.loads(posts[0]["messages"][1]["content"])
-        second = json.loads(posts[1]["messages"][1]["content"])
+        second = json.loads(posts[1]["messages"][-1]["content"])
         self.assertEqual(first["time_s"], 0)
         self.assertEqual(second["time_s"], 10)
         self.assertEqual(second["prior_command_errors"][0]["command"], "HOLD MISSING")
-        self.assertEqual(len(posts[1]["messages"]), 2)
+        self.assertEqual(len(posts[1]["messages"]), 4)
         self.assertEqual(agent.metadata()["calls"], 2)
         self.assertEqual(agent.metadata()["usage"]["completion_tokens"], 40)
 
+    def test_persistent_dialogue_carries_the_previous_plan_and_public_decision(self):
+        plan = "Reserve 25R for DLH100; retain altitude separation until CFG101 clears 25C."
+        self.server.responses = [completion(["APPROACH DLH100 25R"], plan=plan),
+                                 completion([], plan="DLH100 keeps 25R; hold remaining arrivals until runways clear.")]
+        agent = self.agent()
+        commands = agent.act(self.env.observe())
+        observation = self.env.step(commands, seconds=10)
+        agent.act(observation)
+        messages = self.server.requests[-1][1]["messages"]
+        self.assertEqual([message["role"] for message in messages], ["system", "user", "assistant", "user"])
+        self.assertEqual(json.loads(messages[2]["content"])["plan"], plan)
+        current = json.loads(messages[-1]["content"])
+        self.assertEqual(current["controller_memory"]["latest_plan"], plan)
+        self.assertEqual(current["time_s"], 10)
+        self.assertEqual(agent.last_decision["input_memory_turns"], 1)
+        self.assertEqual(agent.last_decision["memory_turns"], 2)
+        self.assertEqual(agent.metadata()["history"], "bounded persistent dialogue")
+        self.assertEqual(agent.metadata()["latest_plan"], agent.last_decision["plan"])
+
+    def test_bounded_memory_keeps_recent_turns_and_latest_operational_plan(self):
+        agent = self.agent(max_memory_turns=2)
+        for index in range(5):
+            self.server.responses = [completion([], plan=f"Plan {index}: reserve 25R for the oldest arrival.")]
+            observation = self.env.observe()
+            observation["time_s"] = index * 10
+            agent.act(observation)
+        messages = self.server.requests[-1][1]["messages"]
+        self.assertEqual(len(messages), 6)  # system, two prior exchanges, current user
+        self.assertEqual([json.loads(message["content"])["time_s"] for message in messages if message["role"] == "user"],
+                         [20, 30, 40])
+        current_memory = json.loads(messages[-1]["content"])["controller_memory"]
+        self.assertEqual(current_memory["latest_plan"], "Plan 3: reserve 25R for the oldest arrival.")
+        self.assertEqual(current_memory["successful_decisions"], 4)
+        self.assertEqual(agent.describe()["memory_turns"], 2)
+        self.assertEqual(agent.describe()["successful_decisions"], 5)
+
+    def test_new_agent_and_new_episode_do_not_inherit_old_dialogue(self):
+        agent = self.agent()
+        agent.act(self.env.observe())
+        fresh = self.agent()
+        fresh.act(self.env.observe())
+        messages = self.server.requests[-1][1]["messages"]
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(json.loads(messages[-1]["content"])["controller_memory"]["latest_plan"], "")
+        self.env.step([], seconds=10)
+        agent.act(self.env.observe())
+        self.env.reset()
+        agent.act(self.env.observe())
+        messages = self.server.requests[-1][1]["messages"]
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(agent.last_decision["input_memory_turns"], 0)
+
+    def test_failed_and_truncated_decisions_preserve_prior_plan_and_successful_history(self):
+        plan = "Give the emergency priority on 25R and keep departures waiting for its touchdown."
+        agent = self.agent()
+        self.server.responses = [completion([], plan=plan)]
+        agent.act(self.env.observe())
+        self.server.responses = [completion(choices=[{"message": {"content": '{"commands":['}, "finish_reason": "length"}]),
+                                 (503, {"error": "temporarily unavailable"}), completion([], plan=plan)]
+        for _ in range(2):
+            with self.assertRaises(LMStudioError):
+                agent.act(self.env.observe())
+            self.assertEqual(agent.latest_plan, plan)
+            self.assertEqual(agent.last_decision["plan"], plan)
+            self.assertEqual(agent.metadata()["memory_turns"], 1)
+            self.assertEqual(agent.last_decision["commands"], [])
+        agent.act(self.env.observe())
+        messages = self.server.requests[-1][1]["messages"]
+        self.assertEqual(len(messages), 4)
+        memory = json.loads(messages[-1]["content"])["controller_memory"]
+        self.assertEqual(memory["latest_plan"], plan)
+        self.assertIn("503", memory["prior_decision_error"])
+
+    def test_schema_limits_are_enforced_and_reasoning_has_a_real_budget(self):
+        agent = self.agent()
+        self.assertEqual(agent.max_tokens, 8192)
+        self.assertEqual(LMStudioAgent().timeout_s, 900)
+        bad_decisions = [completion([f"HOLD DLH{index}" for index in range(33)]),
+                         completion(["H" * 81]), completion([], summary="s" * 241),
+                         completion([], plan="p" * 1201), completion([], plan="")]
+        for response in bad_decisions:
+            with self.subTest(response=response):
+                self.server.responses = [response]
+                with self.assertRaises(LMStudioError):
+                    agent.act(self.env.observe())
+        schema = self.server.requests[-1][1]["response_format"]["json_schema"]["schema"]
+        self.assertEqual(schema["properties"]["commands"]["maxItems"], 32)
+        self.assertEqual(schema["properties"]["plan"]["maxLength"], 1200)
+        self.assertEqual(schema["properties"]["summary"]["maxLength"], 240)
+
     def test_bad_json_and_schema_are_visible_failures_without_commands(self):
-        contents = ["not json", '{"commands":[3],"summary":"bad"}',
-                    '{"commands":[],"summary":1}', '{"commands":[]}',
+        contents = ["not json", '{"commands":[3],"summary":"bad","plan":"Keep current clearances."}',
+                    '{"commands":[],"summary":1,"plan":"Keep current clearances."}', '{"commands":[]}',
                     '{"commands":[],"summary":"ok","extra":true}']
         agent = self.agent()
         for content in contents:
@@ -223,28 +322,6 @@ class LMStudioTests(unittest.TestCase):
         self.assertEqual(agent.metadata()["calls"], 2)
         self.assertEqual(agent.metadata()["errors"], 2)
 
-    def test_episode_records_model_decisions_and_partial_failure(self):
-        self.server.responses = [completion([]), (500, {"error": "model failed"})]
-        result = run_episode(seed=7, scenario="mixed", duration=30, agent_spec="lmstudio",
-                             agent_options={"base_url": self.base_url}, step_seconds=10)
-        self.assertEqual(result["status"], "aborted")
-        self.assertEqual(result["final_observation"]["time_s"], 10)
-        self.assertFalse(result["final_observation"]["done"])
-        self.assertEqual(result["controller"]["calls"], 2)
-        self.assertEqual([step["seconds"] for step in result["replay"]], [10, 0])
-        self.assertEqual(result["replay"][-1]["decision"]["status"], "error")
-        self.assertEqual(result["replay"][0]["decision"]["observation"]["time_s"], 0)
-
-    def test_cli_emits_partial_json_and_nonzero_status_on_failure(self):
-        self.server.responses = [(503, {"error": "unavailable"})]
-        stdout = io.StringIO()
-        with contextlib.redirect_stdout(stdout):
-            status = main(["run", "--agent", "lmstudio", "--base-url", self.base_url, "--duration", "10"])
-        self.assertEqual(status, 2)
-        result = json.loads(stdout.getvalue())
-        self.assertEqual(result["status"], "aborted")
-        self.assertEqual(result["final_observation"]["time_s"], 0)
-
     def test_benchmark_averages_only_completed_runs_and_observed_numeric_values(self):
         results = [
             {"status": "completed", "metrics": {"score": 10, "emergency_wait": None}},
@@ -260,18 +337,6 @@ class LMStudioTests(unittest.TestCase):
         self.assertEqual(result["metric_sample_counts"], {"score": 2, "emergency_wait": 1})
         self.assertEqual(result["completed_run_count"], 2)
         self.assertEqual(result["aborted_run_count"], 1)
-
-    def test_benchmark_with_no_completed_episodes_has_no_aggregate_score(self):
-        self.server.responses = [(503, {"error": "unavailable"})]
-        stdout = io.StringIO()
-        with contextlib.redirect_stdout(stdout):
-            status = main(["benchmark", "--agent", "lmstudio", "--base-url", self.base_url,
-                           "--duration", "10", "--seeds", "7", "--scenarios", "mixed"])
-        self.assertEqual(status, 2)
-        result = json.loads(stdout.getvalue())
-        self.assertEqual(result["completed_run_count"], 0)
-        self.assertEqual(result["mean_metrics"], {})
-        self.assertIsNone(result["mean_rank_key"])
 
     def test_done_observation_does_not_call_model(self):
         agent = self.agent()

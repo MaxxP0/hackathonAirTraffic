@@ -18,7 +18,7 @@ const state = (controller = {}, time = 0) => ({
   },
 });
 const ready = () => state({status: 'ready', decision_count: 1,
-  last_decision: {commands: [], summary: '', latency_s: 12}}, 30);
+  last_decision: {commands: [], summary: '', latency_s: 12, plan: 'Reserve 25R for the emergency; release departures from 18.', memory_turns: 1}}, 30);
 const flush = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 
 function harness(initial = state()) {
@@ -45,6 +45,7 @@ function harness(initial = state()) {
       const node = element();
       if (id === 'autopilot') node.checked = true;
       if (id === 'speed') node.value = '10';
+      if (id === 'decision-interval') node.value = '120';
       if (id === 'controller-kind') node.value = 'lmstudio';
       elements.set(id, node);
     }
@@ -81,7 +82,7 @@ test('Run begins immediately; Pause during inference permits only the current de
   ui.click('play');
   assert.equal([...ui.timers.values()][0].delay, 0);
   const request = ui.tick(); await flush();
-  assert.deepEqual(ui.requests[1].body, {seconds: 30, commands: [], autopilot: true});
+  assert.deepEqual(ui.requests[1].body, {seconds: 120, commands: [], autopilot: true});
   ui.click('play');
   assert.equal(ui.get('radar-state').textContent, 'PAUSING');
   ui.resolve(ready()); await request;
@@ -89,16 +90,18 @@ test('Run begins immediately; Pause during inference permits only the current de
   assert.equal(ui.intervals.size, 0);
   assert.equal(ui.requests.length, 2);
   assert.match(ui.get('controller-summary').textContent, /No commands/);
-  assert.equal(ui.get('controller-timing').textContent, '1 decisions · last call 12.0s');
+  assert.equal(ui.get('controller-timing').textContent, '1 decisions · last call 12.0s · 1 turns in memory');
+  assert.match(ui.get('controller-plan').textContent, /Reserve 25R/);
+  assert.match(ui.get('decision-window-note').textContent, /120 simulated seconds/);
 });
 
-test('later decisions retain playback delay and model failures stop the loop', async () => {
+test('LLM decisions continue immediately after accelerated steps and failures stop the loop', async () => {
   const ui = harness(); await flush();
   ui.get('speed').value = '1'; ui.click('play');
   const first = ui.tick(); await flush(); ui.resolve(ready()); await first;
-  assert.equal([...ui.timers.values()][0].delay, 30000);
+  assert.equal([...ui.timers.values()][0].delay, 0);
   const second = ui.tick(); await flush();
-  assert.equal(ui.requests[2].body.seconds, 30);
+  assert.equal(ui.requests[2].body.seconds, 120);
   ui.resolve({error: 'Model offline', controller: state({status: 'error', error: 'Model offline'}).controller}, 502);
   await second;
   assert.equal(ui.timers.size, 0);

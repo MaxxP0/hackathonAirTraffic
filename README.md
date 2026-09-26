@@ -1,6 +1,6 @@
 # Frankfurt ATC benchmark
 
-A deterministic, command-driven airport simulation for evaluating AI air traffic controllers. Direct incoming traffic, select approaches, release departures, manage changing weather and prioritize emergencies. The airport is a simplified mock of Frankfurt (EDDF).
+A command-driven airport simulation for evaluating AI air traffic controllers. The LLM keeps an operational plan across decisions; the simulator pauses while it reasons, then advances traffic in fast batches. The simulation is deterministic for a given scenario and command timeline. Direct incoming traffic, select approaches, release departures, manage changing weather and prioritize emergencies. The airport is a simplified mock of Frankfurt (EDDF).
 
 This first phase covers airborne traffic and runway scheduling. Ground time is already measured through departure queues and abstracted runway/taxi phases; taxi routes, gate allocation, pushback and turnaround operations are future extensions.
 
@@ -27,20 +27,37 @@ python3 -m atc_bench serve --port 8000 --agent lmstudio --base-url http://127.0.
 The adapter discovers an already loaded model; `--model` selects a particular model or loaded instance. For the model used in this local setup:
 
 ```sh
-python3 -m atc_bench run --agent lmstudio --model qwen3.8-27b-splash --scenario emergency --seed 7 --duration 1800 --step-seconds 30 --output results/lmstudio-emergency.json
+python3 -m atc_bench run --agent lmstudio --model qwen3.8-27b-splash --scenario emergency --seed 7 --duration 1800 --step-seconds 120 --output results/lmstudio-emergency.json
 ```
 
-`run`, `benchmark` and `serve` accept `--base-url` (default `http://127.0.0.1:1234`), `--model` (default automatic discovery), `--llm-timeout` (default 120 wall-clock seconds per request) and `--max-tokens` (default 1024). The adapter uses an already loaded model and does not download or load one. It sends the model compact JSON observations as text and requests structured JSON commands plus a short decision summary. It does not send screenshots or use the radar UI as model input.
+`run`, `benchmark` and `serve` accept `--base-url` (default `http://127.0.0.1:1234`), `--model` (default automatic discovery), `--llm-timeout` (default 900 wall-clock seconds per request) and `--max-tokens` (default 8192). The adapter uses an already loaded model and does not download or load one. It sends the model compact JSON observations as text and requests structured JSON commands, a short decision summary and a persistent operational plan. It keeps the latest plan and four recent observation/response exchanges for continuity, and leaves the loaded model’s reasoning settings at their default. The currently observed Qwen model advertises reasoning enabled. It does not send screenshots or use the radar UI as model input.
 
 The LM request uses `compact-v2`: each active aircraft is an array mapped by `aircraft_columns`, with wake/performance limits stored once per type in `aircraft_types`. Runway geometry and permissions remain in `airport.runways`; live occupancy, availability and closure are in `runway_state`, keyed by runway ID. Packing preserves the full observation's numeric precision. The radar, Python environment, HTTP state and JSON-lines bridge still use the full observation with aircraft objects. [The compact wire format](docs/AGENT_PROMPT.md#compact-v2-wire-format) describes decoding and omitted fields.
 
-Each automatic step calls the selected model again. The UI exposes thinking/ready/error status and the last decision. Simulation time pauses during inference, so a slow model can visibly pause the radar without increasing aircraft waiting times. Model latency is measured separately in wall-clock seconds. An empty command list lets existing clearances continue when the step advances.
+The default control window is **120 simulated seconds**. The model sees the
+window length, current observation, its latest operational plan and up to four
+recent exchanges. After its response, the simulator applies valid commands and
+advances that window in fast batches. It then asks the model again immediately,
+without an artificial real-time delay. Choose a 30/60/120/300/600-second window
+in the radar; CLI windows may range from 1 to 600 seconds. Longer windows need
+fewer model calls but give the controller fewer opportunities to react.
 
-Model discovery, connection, timeout, truncated output and invalid decision JSON errors stop that step without advancing simulation time. The error is visible, and there is no heuristic fallback. CLI runs save partial results with `status: "aborted"` and exit with code 2; these are not completed benchmark episodes. Scenario resets retain the selected controller and its settings.
+Simulation time is paused during inference. Ten minutes of thinking costs ten
+minutes of wall time, but does not advance aircraft or their waiting timers.
+Total run speed depends on actual model latency and the selected window; a fast
+simulation does not guarantee a faster-than-real-time end-to-end model run.
+The UI exposes thinking/ready/error status, the last decision and its plan.
 
-Saved LLM results include model identity, prompt text/version/hash, decoding settings, request latency, token usage when supplied by LM Studio, compact input observations, generated commands and command acceptance/rejections. This makes it possible to inspect the actual decisions that produced a score. The built-in prompt and the external-agent protocol are described in [docs/AGENT_PROMPT.md](docs/AGENT_PROMPT.md).
+Model discovery, connection, timeout, truncation and invalid-JSON failures leave
+the simulation at its last valid state, with a visible error and no heuristic
+fallback. CLI failures retain partial results rather than masquerading as
+completed episodes. Errors preserve the prior plan. Resetting an episode or
+replacing its controller starts a fresh conversation; controller settings are
+retained on reset.
 
-To run reproducible episodes without the browser:
+Saved LLM results include model identity, prompt text/version/hash, decoding settings, request latency, available token usage including reasoning tokens, compact input observations, public summaries/plans, simulation timestamps, generated commands and command acceptance/rejections. This makes it possible to inspect the actual decisions that produced a score. The built-in prompt and the external-agent protocol are described in [docs/AGENT_PROMPT.md](docs/AGENT_PROMPT.md).
+
+To run fast reference baselines and checks without the browser:
 
 ```sh
 python3 -m atc_bench run --scenario mixed --seed 7 --duration 1800 --agent reference --output results/run.json
@@ -49,11 +66,23 @@ python3 -m atc_bench benchmark --seeds 1 2 3 --scenarios mixed emergency --durat
 python3 -m unittest discover -s tests -v
 ```
 
-Use the same scenario, seed, duration and decision interval when comparing agents. Run several seeds and report individual safety outcomes alongside averages. JSON episode results retain configuration, metrics and command/event replay data. Benchmark means exclude aborted runs and null diagnostics; `metric_sample_counts` records how many completed runs contributed to each mean.
+`--duration` is the simulated episode horizon and `--step-seconds` is the
+control window (default 120, range 1–600). The model reasons once per window;
+a 1,800-second horizon at 120-second windows needs up to 15 calls. The low-level
+simulator still integrates movement and safety in substeps no longer than one
+second. Reference/no-op baselines run the same windows without model requests.
+
+Compare equal scenario, seed, horizon and control window. Retain the model,
+prompt, reasoning settings and memory configuration, and report both simulated
+horizon and measured `wall_duration_s`. Replay saved commands at their recorded
+simulation timestamps to reproduce a trajectory. Run several seeds and report
+individual safety outcomes and unfinished traffic alongside averages. Benchmark
+means exclude aborted runs and null diagnostics; `metric_sample_counts` records
+how many completed runs contributed to each mean.
 
 ## Controller interface
 
-The agent receives a JSON-compatible observation and returns a list of commands. Coordinates are local nautical miles: x points east, y points north. Headings are degrees clockwise from north; speeds are knots; altitudes are feet above the simulated airport; times are seconds.
+The agent receives a JSON-compatible observation and returns a list of commands. The low-level example below advances 10 seconds per call; the CLI and radar can split longer control windows into supported simulator steps. Coordinates are local nautical miles: x points east, y points north. Headings are degrees clockwise from north; speeds are knots; altitudes are feet above the simulated airport; times are seconds.
 
 ```python
 from atc_bench import AirTrafficEnv
@@ -122,11 +151,11 @@ The browser uses the same observation/command interface over localhost HTTP:
 
 | Endpoint | Request / response |
 | --- | --- |
-| `GET /api/state` | Current observation, including selected controller and its status. |
+| `GET /api/state` | Current observation, selected controller and decision status. |
 | `GET /api/scenarios` | Scenario names. |
-| `POST /api/step` | `{"commands":[],"seconds":10,"autopilot":false}` → observation. Set `autopilot` to `true` to call the selected reference or LM Studio controller. |
+| `POST /api/step` | `{"commands":[],"seconds":120,"autopilot":true}` → ask the selected controller, apply commands, then advance up to 600 seconds in supported simulator chunks. Use `autopilot:false` for manual commands. |
 | `POST /api/controller` | `{"kind":"lmstudio","base_url":"http://127.0.0.1:1234","model":null}` → select the local LLM. Use `{"kind":"reference"}` for the heuristic. |
-| `POST /api/reset` | `{"seed":7,"scenario":"mixed","duration_s":1800}` → initial observation; controller selection/settings persist. |
+| `POST /api/reset` | `{"seed":7,"scenario":"mixed","duration_s":1800}` → initial observation; controller selection/settings persist and dialogue restarts. |
 
 Malformed HTTP requests return a JSON `error`. The full schema is in [docs/CONTRACT.md](docs/CONTRACT.md).
 
@@ -147,7 +176,15 @@ Metrics expose collisions, separation losses and duration, runway incursions, wa
 
 The corresponding `ground_wait_seconds` and `emergency_wait_seconds` totals also have counts, means, maxima and 0–100 delay diagnostics. A five-minute mean ground queue scores 50; a three-minute mean emergency response scores 50. `emergency_wait_by_outcome` separates resolved, pending and failed emergencies. No eligible flights gives `null` for the mean, maximum and diagnostic score. These diagnostics include incomplete observations, so early episode termination can make waiting appear shorter. Compare equal seeds/scenarios/horizons and report safety, unfinished counts and emergency outcomes alongside waiting.
 
-Benchmark version **0.2.0** adds scalar penalties of 1 point per departure queue minute and 5 points per emergency response minute, in addition to the existing total ground/airborne costs. Its scalar scores are not directly comparable to saved version 0.1 results. The ten-field lexicographic rank schema is unchanged.
+Benchmark version **0.3.0** adds persistent operational plans, recent dialogue,
+model-default reasoning and configurable control windows up to 600 seconds. The
+clock pauses during inference, and model latency is measured separately. The
+score formula retains version 0.2's penalties of 1 point per departure queue
+minute and 5 points per emergency response minute, plus total ground/airborne
+costs. Saved version 0.2 stateless-controller experiments are legacy evidence;
+they are not validation of the current controller. Match control windows and
+other settings before comparing scores. Version 0.1 used different scalar
+weights. The ten-field lexicographic rank schema is unchanged.
 
 Use the saved lexicographic rank key as well as the scalar score; lower rank keys are better. Safety must be compared before throughput and delay; collision and emergency-failure episodes cannot outscore safe episodes. [Scoring rules and metric definitions](docs/SCORING.md) specify the weights, safety envelopes and time accounting. The reference agent is a transparent heuristic baseline, not an optimal controller or an LLM. Custom agents receive observations only through the public interface; Python plugins execute locally and are not a security sandbox.
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 import importlib
 import json
 import math
@@ -52,10 +53,46 @@ def rank_key(metrics: dict) -> list[float]:
     return [values.get(field, 0) for field in RANK_FIELDS]
 
 
+def advance_simulation(env: AirTrafficEnv, commands: list, seconds: int) -> tuple[dict, list]:
+    """Apply one batch, then fast-forward up to 600 seconds without decisions.
+
+    The low-level environment retains its 60-second limit. A zero-time command
+    phase captures its events before integration can rotate the event log.
+    Subsequent chunks contain no commands, and the batch's feedback remains
+    available in both the returned observation and the next env.observe().
+    """
+    commands, seconds, _ = validate_step({"commands": commands, "seconds": seconds}, max_seconds=600)
+    previous_events = env.observe()["events"]
+    events = []
+
+    def collect(observation):
+        nonlocal previous_events
+        current = observation["events"]
+        overlap = min(len(previous_events), len(current))
+        while overlap and previous_events[-overlap:] != current[:overlap]:
+            overlap -= 1
+        events.extend(deepcopy(current[overlap:]))
+        previous_events = deepcopy(current)
+
+    observation = env.step(commands, seconds=0)
+    collect(observation)
+    command_results = deepcopy(observation["command_results"])
+    remaining = seconds
+    while remaining > 0 and not env.done:
+        chunk = min(60, remaining)
+        previous_time = env.time_s
+        observation = env.step([], seconds=chunk)
+        collect(observation)
+        remaining -= int(env.time_s - previous_time)
+    env.command_results = deepcopy(command_results)
+    observation["command_results"] = command_results
+    return observation, events
+
+
 def run_episode(*, seed: int, scenario: str, duration: int, agent_spec: str,
-                step_seconds: int = 10, agent_options: dict | None = None) -> dict:
-    if isinstance(step_seconds, bool) or not isinstance(step_seconds, int) or not 1 <= step_seconds <= 60:
-        raise ValueError("step_seconds must be an integer between 1 and 60")
+                step_seconds: int = 120, agent_options: dict | None = None) -> dict:
+    if isinstance(step_seconds, bool) or not isinstance(step_seconds, int) or not 1 <= step_seconds <= 600:
+        raise ValueError("step_seconds must be an integer between 1 and 600")
     env = AirTrafficEnv(seed=seed, scenario=scenario, duration_s=duration)
     agent = load_agent(agent_spec, **(agent_options or {}))
     observation = env.observe()
@@ -65,7 +102,9 @@ def run_episode(*, seed: int, scenario: str, duration: int, agent_spec: str,
     while not env.done:
         # A plugin receives a detached JSON value, never live environment data.
         try:
-            commands = agent.act(json.loads(json.dumps(observation)))
+            agent_observation = json.loads(json.dumps(observation))
+            agent_observation["decision_interval_s"] = step_seconds
+            commands = agent.act(agent_observation)
         except LMStudioError as error:
             # Preserve the last valid simulation state and the failed request.
             # Never replace the LLM with a heuristic or advance on an API error.
@@ -78,21 +117,13 @@ def run_episode(*, seed: int, scenario: str, duration: int, agent_spec: str,
             raise ValueError("agent.act() must return a list of command strings or objects")
         commands = json.loads(json.dumps(commands, allow_nan=False))
         previous_time = observation["time_s"]
-        previous_events = observation["events"]
-        observation = env.step(commands, seconds=min(step_seconds, duration - int(env.time_s)))
-        current_events = observation["events"]
-        # Events occur both when a command is applied (at previous_time) and
-        # during integration. Match the rolling log, rather than filtering
-        # timestamps and losing events exactly on a step boundary.
-        overlap = min(len(previous_events), len(current_events))
-        while overlap and previous_events[-overlap:] != current_events[:overlap]:
-            overlap -= 1
+        observation, events = advance_simulation(env, commands, step_seconds)
         replay.append({
             "time_s": previous_time,
             "seconds": observation["time_s"] - previous_time,
             "commands": commands,
             "command_results": observation["command_results"],
-            "events": current_events[overlap:],
+            "events": events,
         })
         if isinstance(agent, LMStudioAgent):
             replay[-1]["decision"] = json.loads(json.dumps(agent.last_decision))
@@ -145,7 +176,8 @@ def validate_reset(payload: object, current: AirTrafficEnv) -> dict:
     return {"seed": seed, "scenario": scenario, "duration_s": duration}
 
 
-def validate_step(payload: object, *, allow_autopilot: bool = False) -> tuple[list, int, bool]:
+def validate_step(payload: object, *, allow_autopilot: bool = False,
+                  max_seconds: int = 60) -> tuple[list, int, bool]:
     if not isinstance(payload, dict):
         raise ValueError("request must be a JSON object")
     allowed = {"commands", "seconds"} | ({"autopilot"} if allow_autopilot else set())
@@ -157,8 +189,8 @@ def validate_step(payload: object, *, allow_autopilot: bool = False) -> tuple[li
     autopilot = payload.get("autopilot", False)
     if not isinstance(commands, list) or len(commands) > 100:
         raise ValueError("commands must be a list with at most 100 entries")
-    if isinstance(seconds, bool) or not isinstance(seconds, int) or not 0 <= seconds <= 60:
-        raise ValueError("seconds must be an integer between 0 and 60")
+    if isinstance(seconds, bool) or not isinstance(seconds, int) or not 0 <= seconds <= max_seconds:
+        raise ValueError(f"seconds must be an integer between 0 and {max_seconds}")
     if not isinstance(autopilot, bool):
         raise ValueError("autopilot must be a boolean")
     return commands, seconds, autopilot
@@ -203,8 +235,8 @@ def add_agent_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--agent", default="reference", help="reference, noop, lmstudio, or module:Class")
     parser.add_argument("--base-url", default="http://127.0.0.1:1234", help="LM Studio server URL")
     parser.add_argument("--model", help="already loaded LM Studio model ID (auto-detected if omitted)")
-    parser.add_argument("--llm-timeout", type=float, default=120, help="seconds allowed for a model request")
-    parser.add_argument("--max-tokens", type=int, default=1024, help="LM Studio output token limit")
+    parser.add_argument("--llm-timeout", type=float, default=900, help="seconds allowed for a model request")
+    parser.add_argument("--max-tokens", type=int, default=8192, help="LM Studio output token limit")
 
 
 def agent_options(args: argparse.Namespace) -> dict:
@@ -224,7 +256,7 @@ def main(argv: list[str] | None = None) -> int:
             add_agent_arguments(child)
         if name == "run":
             child.add_argument("--output")
-            child.add_argument("--step-seconds", type=int, choices=range(1, 61), default=10, metavar="1..60")
+            child.add_argument("--step-seconds", type=int, choices=range(1, 601), default=120, metavar="1..600")
         if name == "serve":
             child.add_argument("--port", type=int, default=8000)
     benchmark = subparsers.add_parser("benchmark")
@@ -233,7 +265,7 @@ def main(argv: list[str] | None = None) -> int:
     benchmark.add_argument("--duration", type=positive_duration, default=1800)
     add_agent_arguments(benchmark)
     benchmark.add_argument("--output")
-    benchmark.add_argument("--step-seconds", type=int, choices=range(1, 61), default=10, metavar="1..60")
+    benchmark.add_argument("--step-seconds", type=int, choices=range(1, 601), default=120, metavar="1..600")
     args = parser.parse_args(argv)
     try:
         if args.command == "stdio":
