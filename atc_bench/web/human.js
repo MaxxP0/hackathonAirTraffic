@@ -5,6 +5,12 @@
   const storageKey = 'vector-human-session-v1';
   let state = null;
   let busy = false;
+  const radar = new window.HumanRadar($('human-radar'), {onSelect: callsign => {
+    if (busy || !state || state.done) return;
+    $('command-flight').value = callsign;
+    renderCommandValues();
+    renderRadarSelection();
+  }});
   const num = (value, digits = 0) => typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('en-US', {maximumFractionDigits: digits, minimumFractionDigits: digits}) : '—';
   const minutes = value => typeof value === 'number' && Number.isFinite(value) ? `${num(value / 60, 1)} min` : '—';
   const clock = value => `${String(Math.floor((value || 0) / 60)).padStart(2, '0')}:${String(Math.floor((value || 0) % 60)).padStart(2, '0')}`;
@@ -188,6 +194,8 @@
     renderMetrics();
     renderFeedback();
     renderBuilder();
+    radar.update(state.model_observation, $('command-flight').value, state.id);
+    renderRadarSelection();
     counts();
     setBusy(busy);
   }
@@ -245,6 +253,23 @@
     $('command-value-label').textContent = label;
     options($('command-value'), choices, preferred);
   }
+
+  function renderRadarSelection() {
+    if (!state) return;
+    const model = state.model_observation;
+    const aircraft = aircraftRows().find(item => item.callsign === $('command-flight').value);
+    radar.select(aircraft?.callsign || null);
+    $('radar-time').textContent = `${state.done ? 'COMPLETE' : 'PAUSED'} · T+ ${clock(model.time_s)}`;
+    $('radar-weather').textContent = `WIND ${num(model.weather?.wind_from_deg)}° / ${num(model.weather?.wind_speed_kt)} KT · FLOW ${model.weather?.active_direction || '—'}`;
+    $('radar-selection').textContent = aircraft
+      ? `${aircraft.callsign} · ${aircraft.type} · ${aircraft.status.replaceAll('_', ' ')} · ${num(aircraft.altitude_ft)} ft · ${num(aircraft.speed_kt)} kt${aircraft.emergency ? ' · EMERGENCY' : ''} — selected for commands`
+      : 'No active aircraft. Advance the episode to admit scheduled traffic.';
+  }
+
+  $('radar-zoom-in').addEventListener('click', () => radar.zoom(-1));
+  $('radar-zoom-out').addEventListener('click', () => radar.zoom(1));
+  $('radar-reset').addEventListener('click', () => radar.reset());
+  $('command-flight').addEventListener('change', renderRadarSelection);
 
   function renderQueue() {
     $('command-queue').replaceChildren();

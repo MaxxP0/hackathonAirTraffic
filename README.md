@@ -76,7 +76,7 @@ Provider pins retain the same spending guards and are recorded in result metadat
 
 See the [web demo setup README](demo/README.md) for clone-and-run instructions, controls and troubleshooting.
 
-Open [the human controller demo](http://127.0.0.1:8000/human.html). Read the same compact telemetry and instructions as the model, choose aircraft/actions with clickable controls, keep an operational plan, and submit the queued command batch to advance exactly 120 simulated seconds. Each episode lasts 30 simulated minutes. Choose runway closure, emergency arrivals or wind reversal, then inspect your score, waiting times and command feedback. You can export your recorded decisions after playing.
+Open [the human controller demo](http://127.0.0.1:8000/human.html). Its radar visualizes your episode's current aircraft, runways, weather and conflicts alongside the same compact telemetry and instructions the model receives. Click an aircraft on the map or choose it from the dropdown, queue actions with the clickable controls, keep an operational plan, and submit the batch to advance exactly 120 simulated seconds. The radar updates after each decision. Each episode lasts 30 simulated minutes. Choose runway closure, emergency arrivals or wind reversal, then inspect your score, waiting times and command feedback. You can export your recorded decisions after playing.
 
 Human episodes use isolated in-memory sessions and make no model/API calls. They preserve the last four observation/decision exchanges plus your latest plan. Reloading the page resumes its browser session while the server remains running. A restart clears sessions, and starting more than 32 sessions expires the oldest.
 

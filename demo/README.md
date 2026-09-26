@@ -1,6 +1,6 @@
 # Run the interactive web demo
 
-The human-controller demo lets you experience the benchmark from the model's perspective. Read the model's text telemetry, write a plan, issue commands and see what happens during the next two simulated minutes. It uses the same flight dynamics and scores as the recorded LLM runs.
+The human-controller demo lets you experience the benchmark from the model's perspective. Inspect the radar and the model's text telemetry, choose clickable commands, keep a plan and see what happens during the next two simulated minutes. It uses the same flight dynamics and scores as the recorded LLM runs.
 
 ## Quick start
 
@@ -28,7 +28,7 @@ The server binds to your own computer. A teammate should clone the repository an
 ## Play an episode
 
 1. Open the human-controller page, choose a scenario and start an episode. Seed **7** matches the published LLM comparison.
-2. Read the aircraft, runway and weather telemetry. Expand the exact model observation and instructions to inspect what the LLM receives.
+2. Inspect your episode’s radar and read the aircraft, runway and weather telemetry. Click an aircraft on the radar to select it in the command builder; zoom in to inspect the airport. The map updates after each decision and shows observed aircraft, runway closures, weather cells and current conflicts. Expand the exact model observation and instructions to inspect what the LLM receives.
 3. Review the prefilled operational plan and edit it if useful. This field persists across turns, so you can keep future sequencing and emergency priorities in it.
 4. Use the clickable command builder: select an aircraft, choose an action, select its runway or value, and add it to the queue. Repeat for additional commands. Remove an item if you change your mind. You can optionally edit the plan and add a brief decision summary.
 5. Submit the decision. The simulator applies the batch and advances **120 simulated seconds**, then pauses again. An empty batch lets existing clearances continue.
