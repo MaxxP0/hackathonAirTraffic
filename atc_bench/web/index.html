@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10161c">
+  <title>VECTOR — Frankfurt ATC Benchmark</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Vector air traffic benchmark"><span class="brand-mark">↗</span><span>VECTOR<span class="brand-sub">AIR TRAFFIC BENCHMARK</span></span></a>
+      <div class="workspace-title"><span class="airport-code">EDDF</span><span>Frankfurt control<span class="muted"> / </span><span class="workspace-sub">Airspace simulation</span></span></div>
+      <div class="header-right"><span class="connection" id="connection"><i></i>CONNECTING</span><button class="icon-button help-button" id="help-button" title="Command reference" aria-label="Open command reference">?</button><span class="version">V.01</span></div>
+    </header>
+
+    <section class="toolbar" aria-label="Simulation settings">
+      <div class="scenario-control"><label for="scenario">SCENARIO</label><select id="scenario"><option value="mixed">Mixed traffic</option><option value="rush_hour">Rush hour</option><option value="low_visibility">Low visibility</option><option value="storm">Convective weather</option><option value="emergency">Emergency arrival</option><option value="wind_shift">Wind shift</option></select></div>
+      <div class="seed-control"><label for="seed">SEED</label><input id="seed" type="number" step="1" value="7" aria-label="Random seed"></div>
+      <button class="reset-button" id="reset" title="Reset with the selected scenario and seed"><span>↻</span> New episode</button>
+      <div class="toolbar-divider"></div>
+      <label class="controller-control" for="autopilot"><span class="switch"><input type="checkbox" id="autopilot" checked><span class="switch-track"></span></span><span><span id="controller-label">Automatic controller</span><span class="control-sub">AUTOMATIC COMMANDS</span></span></label>
+      <div class="playback"><span class="sim-clock" id="sim-clock">T+ 00:00:00</span><select id="speed" aria-label="Playback speed"><option value="1">1×</option><option value="5">5×</option><option value="10" selected>10×</option><option value="30">30×</option></select><button class="icon-button step-button" id="step" title="Advance 10 simulation seconds" aria-label="Advance 10 seconds">▹|</button><button class="play-button" id="play"><span id="play-icon">▶</span><span id="play-label">Run simulation</span></button></div>
+    </section>
+
+    <div class="notice" id="notice" role="status" hidden></div>
+
+    <section class="controller-panel" aria-label="Agent controller">
+      <div class="controller-settings"><label for="controller-kind">CONTROLLER</label><select id="controller-kind"><option value="lmstudio">LM Studio · LLM</option><option value="reference">Reference · heuristic</option></select><label for="controller-model">MODEL</label><input id="controller-model" placeholder="Auto-select loaded model" aria-label="LM Studio model identifier"><button id="apply-controller" class="reset-button">Connect</button></div>
+      <div class="controller-status-line"><span id="controller-status" class="controller-status">CONNECTING</span><span id="controller-model-name">Waiting for simulator</span><span id="controller-timing"></span></div>
+      <p id="controller-summary">The LLM receives JSON telemetry and returns text commands. Decisions advance 30 simulated seconds.</p>
+    </section>
+
+    <section class="metric-strip" aria-label="Episode performance">
+      <div class="metric score-metric"><span class="metric-label">BENCHMARK SCORE <span class="metric-info" title="Safety-first score. Collisions and failed emergencies rank below safe episodes.">ⓘ</span></span><strong id="metric-score">—</strong><span class="metric-detail">Safety first</span></div>
+      <div class="metric"><span class="metric-label">ACTIVE AIRCRAFT</span><strong id="metric-active">0</strong><span class="metric-detail" id="active-detail">0 inbound · 0 outbound</span></div>
+      <div class="metric"><span class="metric-label">COMPLETED FLIGHTS</span><strong id="metric-completed">0<span class="metric-unit"> / 0</span></strong><span class="metric-detail" id="completed-detail">0 landed · 0 departed</span></div>
+      <div class="metric"><span class="metric-label">SEPARATION LOSSES</span><strong id="metric-separation">0</strong><span class="metric-detail" id="separation-detail">No active conflicts</span></div>
+      <div class="metric"><span class="metric-label">GROUND TIME</span><strong id="metric-delay">0<span class="metric-unit"> min</span></strong><span class="metric-detail">Queue, runway & taxi time</span></div>
+      <div class="metric safety-metric"><span class="metric-label">COLLISIONS</span><strong id="metric-collisions">0</strong><span class="metric-detail" id="collision-detail"><i class="status-dot"></i> Airspace clear</span></div>
+      <div class="metric wait-metric"><span class="metric-label" title="Departure queue waiting only; higher is better. Active and completed departures count.">GROUND WAIT SCORE</span><strong id="metric-ground-score">—</strong><span class="metric-detail" id="ground-wait-detail">Mean — · max —</span></div>
+      <div class="metric wait-metric"><span class="metric-label" title="Emergency declaration to touchdown or resolution; active emergencies also count. Higher is better. Check emergency outcomes as well as waiting time.">EMERGENCY WAIT SCORE</span><strong id="metric-emergency-score">—</strong><span class="metric-detail" id="emergency-wait-detail">No emergencies yet</span><span class="metric-outcomes" id="emergency-outcomes"></span></div>
+    </section>
+
+    <main class="main-grid">
+      <section class="radar-panel" aria-label="Interactive airspace radar">
+        <div class="panel-heading"><div><span class="eyebrow">LIVE AIRSPACE</span><h1>Frankfurt Terminal Area <span class="tag">EDDF</span></h1></div><div class="radar-state"><span class="pulse-dot" id="pulse-dot"></span><span id="radar-state">PAUSED</span></div></div>
+        <div class="radar-container" id="radar-container">
+          <canvas id="radar" tabindex="0" aria-label="Radar map. Select an aircraft from the flight list for detailed telemetry and commands."></canvas>
+          <div class="radar-map-caption"><span>FRANKFURT / MAIN</span><span>50°02′ N &nbsp; 008°34′ E</span></div>
+          <div class="map-weather" id="map-weather"><span class="weather-icon">↘</span><span><strong id="wind-label">—° / — kt</strong><small id="visibility-label">VIS — · CEILING —</small></span></div>
+          <div class="north-marker"><span>N</span><span>↑</span></div>
+          <div class="map-controls"><button id="zoom-in" aria-label="Zoom in" title="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out" title="Zoom out">−</button><button id="reset-view" aria-label="Reset radar view" title="Reset view">⌖</button></div>
+          <div class="map-bottom"><div class="legend"><span><i class="legend-arrival"></i>Arrival</span><span><i class="legend-departure"></i>Departure</span><span><i class="legend-emergency"></i>Emergency</span></div><span class="range-label" id="range-label">40 NM RANGE</span></div>
+          <div class="empty-radar" id="empty-radar" hidden><span>Airspace is clear</span><small>Advance the simulation to admit scheduled traffic.</small></div>
+          <div class="aircraft-card" id="aircraft-card" hidden></div>
+        </div>
+        <div class="runway-strip" id="runway-strip"><span class="runway-strip-label">RUNWAYS</span><span class="muted">Awaiting airport data</span></div>
+        <div class="radar-footnote"><span><i></i>SIMPLIFIED FRANKFURT AIRPORT</span><span>Phase 01 · Airborne & runway operations</span></div>
+      </section>
+
+      <aside class="traffic-panel">
+        <div class="panel-heading traffic-heading"><div><span class="eyebrow">FLIGHT MANAGEMENT</span><h2>Traffic board <span class="count-tag" id="traffic-count">0</span></h2></div><button class="icon-button" id="clear-selection" title="Clear selected aircraft" aria-label="Clear selected aircraft">⌖</button></div>
+        <div class="traffic-tabs" role="tablist" aria-label="Flight filter"><button role="tab" aria-selected="true" data-filter="all" class="active">All traffic <span id="all-count">0</span></button><button role="tab" aria-selected="false" data-filter="arrival">Arrivals <span id="arrival-count">0</span></button><button role="tab" aria-selected="false" data-filter="departure">Departures <span id="departure-count">0</span></button></div>
+        <div class="flight-list-heading"><span>AIRCRAFT / STATUS</span><span>ALTITUDE / SPEED</span></div>
+        <div class="flight-list" id="flight-list"><div class="empty-list">Connecting to the simulation…</div></div>
+        <section class="weather-panel"><div class="section-title"><span>WEATHER CONDITIONS</span><span id="weather-tag" class="weather-tag">—</span></div><p id="weather-description">Awaiting weather report</p><div class="weather-grid"><div><span>WIND</span><strong id="weather-wind">—</strong></div><div><span>VISIBILITY</span><strong id="weather-visibility">—</strong></div><div><span>CEILING</span><strong id="weather-ceiling">—</strong></div><div><span>ACTIVE FLOW</span><strong id="weather-flow">—</strong></div></div></section>
+        <div class="phase-note"><span class="phase-symbol">▦</span><p><strong>Ground operations, simplified.</strong> Departures wait in an abstract queue. Detailed gates and taxi routes come next.</p></div>
+      </aside>
+
+      <section class="command-panel">
+        <div class="console-heading"><div><span class="terminal-icon">›_</span><h2>Command console</h2><span class="console-sub">AGENT INTERFACE</span></div><button class="text-button" id="reference-button">Command reference ↗</button></div>
+        <div class="command-history" id="command-history" aria-live="polite"><div class="console-welcome"><span class="console-time">SYSTEM</span><span>Control the airspace with text commands. Select a flight to begin.</span></div></div>
+        <form class="command-form" id="command-form"><span class="prompt">›</span><input id="command" autocomplete="off" spellcheck="false" placeholder="e.g. HEADING DLH101 250" aria-label="Air traffic command"><kbd>↵</kbd><button type="submit" id="send-command">Send command <span>↗</span></button></form>
+        <div class="command-examples"><span>QUICK COMMANDS</span><button data-template="HEADING">Heading</button><button data-template="ALTITUDE">Altitude</button><button data-template="APPROACH">Approach</button><button data-template="TAKEOFF">Takeoff</button><button data-template="HOLD">Hold</button><button data-template="GO_AROUND">Go around</button></div>
+      </section>
+
+      <section class="events-panel"><div class="events-heading"><h2>Activity log</h2><span class="eyebrow" id="event-count">0 EVENTS</span></div><div class="event-list" id="event-list" aria-live="polite"><div class="empty-events">Episode events will appear here.</div></div></section>
+    </main>
+
+    <footer class="app-footer"><span><span class="footer-dot"></span>DETERMINISTIC SIMULATION <span class="footer-separator">/</span> <span id="episode-footer">SEED 7 · MIXED</span></span><span>Research benchmark · Not for operational use</span></footer>
+  </div>
+
+  <dialog id="reference-dialog"><div class="dialog-header"><div><span class="eyebrow">AGENT INTERFACE</span><h2>Command reference</h2></div><button class="icon-button" id="close-reference" aria-label="Close command reference">×</button></div><p>Issue one command per line, or separate commands with a semicolon. Commands apply immediately; use Run or Step to advance time.</p><div class="reference-table"><div><code>HEADING DLH101 250</code><span>Set a heading in degrees</span></div><div><code>ALTITUDE DLH101 5000</code><span>Set altitude in feet above airport level</span></div><div><code>SPEED DLH101 210</code><span>Set airspeed in knots</span></div><div><code>DIRECT DLH101 NORTH</code><span>Fly to NORTH, EAST, SOUTH, or WEST</span></div><div><code>DIRECT DLH101 10 15</code><span>Fly to local coordinates, nautical miles</span></div><div><code>HOLD DLH101</code><span>Enter an airborne holding pattern</span></div><div><code>APPROACH DLH101 25R</code><span>Assign an approach and landing runway</span></div><div><code>TAKEOFF DLH102 25C</code><span>Clear a waiting departure for takeoff</span></div><div><code>GO_AROUND DLH101</code><span>Discontinue an approach</span></div><div><code>DIVERT DLH101</code><span>Send a flight to an alternate airport</span></div></div><div class="dialog-note">The selected controller issues commands when automatic control is enabled. LM Studio receives JSON observations and chooses commands every 30 simulated seconds; inference pauses simulation time. Playback speed changes the pause between decisions. Pause stops after the current decision completes. Switch automatic control off to control the episode yourself. Runway assignment does not guarantee a safe approach: monitor spacing, weather, and aircraft limits.</div></dialog>
+  <script src="/app.js"></script>
+</body>
+</html>

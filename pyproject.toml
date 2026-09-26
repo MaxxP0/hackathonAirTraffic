@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "frankfurt-atc-bench"
+version = "0.2.0"
+description = "A deterministic, command-driven air traffic control benchmark inspired by Frankfurt Airport"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+bluesky = ["bluesky-simulator==1.1.1"]
+
+[project.scripts]
+atc-bench = "atc_bench.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["atc_bench*"]
+
+[tool.setuptools.package-data]
+atc_bench = ["web/*"]
