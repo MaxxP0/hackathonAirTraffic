@@ -1,0 +1,2246 @@
+{
+  "title": "GLM 5.3 Flash and GPT 6 Luna — matched ATC episodes",
+  "date": "2026-09-26",
+  "models": {
+    "glm": "z-ai/glm-5.3-flash",
+    "luna": "openai/gpt-6-luna"
+  },
+  "benchmark_version": "0.3.0",
+  "seed": 7,
+  "duration_s": 1800,
+  "decision_interval_s": 120,
+  "status": "incomplete",
+  "conditions": [
+    "One seed (7), three synthetic scenarios, one trajectory per model/scenario; no uncertainty estimate or claim of general superiority.",
+    "All controllers use the same 30-minute horizon and 120-second control windows.",
+    "The simulation pauses during inference and advances immediately afterward; API latency is separate from simulated aircraft waiting.",
+    "Both models use low reasoning effort, an 8,192-token output limit, four recent dialogue exchanges and a persistent operational plan. GLM uses temperature 0; Luna omits temperature because its provider catalog does not support that parameter.",
+    "The three original GLM processes ran concurrently alongside two dashboard calls, sharing a provider budget and default prompt caching. All stopped after HTTP 429 interruptions at 1,440 simulated seconds. Only closure resumed from saved state and memory, reaching 1,680 seconds before further connection failures; emergency and wind were never resumed. GPT 6 Luna ran sequentially while GLM remained interrupted. Wall times are not an isolated throughput benchmark.",
+    "Active wall time includes initial execution plus continuation/backoff, but excludes the manual checkpoint gap. Summed call latency includes failed controller attempts and internal request retries/backoff where recorded. Resumed runs retain their interruption in the replay.",
+    "Per-run confirmed API cost sums replay decision.cost_usd; other tests/dashboard calls are excluded. Three original GLM HTTP 429 charges were reconciled at zero using provider-account usage; their historical records retain null cost.",
+    "OpenRouter routing changed from price preference to throughput preference only for the GLM closure continuation at 1,680 seconds; emergency and wind retained their original price preference. Luna used throughput preference. The GLM model, prompt and provider price caps were retained. Later timeout costs remain unconfirmed unless independently reconciled. Routing and interruptions confound wall-time comparisons.",
+    "Partial or failed runs receive no completed score or waiting-time comparison; their raw records remain available.",
+    "Landing wait is arrival sector entry to touchdown, including normal approach flight, holding and go-arounds. Pending arrivals retain elapsed time at the horizon; failed diversions count from the diversion command but accrue airborne time until exit. Mean/max and score include all spawned arrivals. Landed outcome means touchdown, before rollout/taxi are complete. The supplemental score is 100/(1 + mean_seconds/600) and does not change the benchmark score or rank; read it with landed/pending/failed counts.",
+    "Doing nothing can produce few separation losses while completing no flights. Read safety, completions, emergency outcomes and waiting together."
+  ],
+  "scenarios": [
+    {
+      "id": "runway_closure",
+      "title": "Runway closure",
+      "runs": [
+        {
+          "agent": "openrouter",
+          "cohort": "glm",
+          "label": "GLM 5.3 Flash",
+          "status": "partial",
+          "configuration": {
+            "seed": 7,
+            "scenario": "runway_closure",
+            "duration_s": 1800,
+            "agent": "openrouter",
+            "step_seconds": 120
+          },
+          "final_time_s": 1680.0,
+          "metrics": null,
+          "landing_metrics": null,
+          "wall_duration_s": 701.13,
+          "error": "OpenRouter returned HTTP 429; response details withheld",
+          "record_file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json",
+          "record_sha256": "ad8bc392418b4378ddb3fd1febdbb426d288e93ac012d58a52fb70f8ad25d0e8",
+          "resume_info": {
+            "source_file": "openrouter-runway_closure-7-interrupted-1680s.json",
+            "source_sha256": "59f749b882a2ee68f30a98f76412b7be1f2595f2cded18487677696111fc3fce",
+            "resumed_at_sim_s": 1680.0,
+            "prior_wall_duration_s": 607.597,
+            "continuation_wall_duration_s": 93.533,
+            "checkpoint_verified_exactly": true,
+            "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."
+          },
+          "previous_resumes": [
+            {
+              "source_file": "openrouter-runway_closure-7.json",
+              "resumed_at_sim_s": 1440.0,
+              "prior_wall_duration_s": 286.232,
+              "continuation_wall_duration_s": 321.365,
+              "checkpoint_verified_exactly": true,
+              "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."
+            }
+          ],
+          "initial_world_sha256": "914d328979e4fa4fbf1cf3bb95b1404649d7ddc9fb211cbd609a6d3c67499d15",
+          "decision_count": 17,
+          "successful_decisions": 14,
+          "mean_call_latency_s": 41.226705882352945,
+          "median_call_latency_s": 25.695,
+          "total_call_latency_s": 700.854,
+          "known_api_cost_usd": 0.00881107,
+          "api_cost_usd": null,
+          "reported_cost_calls": 14,
+          "unknown_cost_calls": 2,
+          "reconciled_zero_cost_calls": 1,
+          "failed_attempts": [
+            {
+              "time_s": 1440.0,
+              "error": "OpenRouter returned HTTP 429; response details withheld",
+              "latency_s": 1.323
+            },
+            {
+              "time_s": 1680.0,
+              "error": "OpenRouter connection, timeout, or response-decoding failure",
+              "latency_s": 223.642
+            },
+            {
+              "time_s": 1680.0,
+              "error": "OpenRouter returned HTTP 429; response details withheld",
+              "latency_s": 93.532
+            }
+          ],
+          "providers": [
+            "InferenceNet"
+          ],
+          "provider_routing": [
+            {
+              "time_s": 0.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 120.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 240.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 360.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 480.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 600.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 720.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 840.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 960.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1080.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1200.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1320.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "price",
+              "provider": null,
+              "status": "error"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1560.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "price",
+              "provider": null,
+              "status": "error"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "throughput",
+              "provider": null,
+              "status": "error"
+            }
+          ],
+          "memory": {
+            "final_input_successful_decisions": 13,
+            "successful_decisions_counter": 14,
+            "final_input_memory_turns": 4,
+            "final_retained_memory_turns": 4,
+            "checked_plan_transitions": 13,
+            "matched_plan_transitions": 13,
+            "last_input_plan": "CFG101 missed its 25L approach (now inbound, 3372ft, 1.7NM west). AFR116 is on 25L intercept at 7.2NM, so APPROACH CFG101 25L slots it behind AFR116. UAL108 keeps holding at 6000ft (3.4NM) until the 25L sequence (AFR116, CFG101) clears, then re-approach first next window. DLH118 on 25C intercept (8.3NM): APPROACH UAL120 25C behind it (heavy, 11NM out). Departures: TAKEOFF BAW115 25C (DLH118 8NM out, roll completes first; wake timer long expired). CFG119/BAW121/KLM123 queue: CFG119 on 25L after CFG101 lands, BAW121 on 18 once KLM117's wake clears, KLM123 after. AFR122 (2.5NM, 9000ft) and DLH124 (8NM, 7000ft) need slots next windows — AFR122 may need holding altitude separation from UAL108. 25R/07L open as overflow. Next window: re-approach UAL108, slot AFR122/DLH124, launch CFG119.",
+            "last_output_plan": "CFG101 on 25L intercept (2NM) lands in ~1min. AFR116 went around (10NM, 3237ft): APPROACH AFR116 25L behind CFG101. UAL108 keeps holding 6000ft; after CFG101 lands, UAL108 approaches 25L before AFR116 (it's closer). DLH118 on 25C final (9.5NM), UAL120 behind on intercept (3.3NM, descending) — watch closure; go-around UAL120 if it overtakes. DLH124 (0.5NM from field, 7000ft): APPROACH 25R (arrival-only, free, A320 fits). AFR122 (0.7NM west, 9000ft): HOLD to keep it in sector; slot on 25L after UAL108/AFR116, or 25R behind DLH124. Departures: TAKEOFF BAW115 18 (free, avoids 25C final traffic). CFG119 next on 25L after CFG101 sequence; BAW121/KLM123 follow on 18/25C. Next window: re-approach UAL108, slot AFR122, launch CFG119, verify UAL120/DLH118 spacing."
+          },
+          "findings": [
+            {
+              "title": "First decision after the closure",
+              "event_time_s": 585.85,
+              "observation_time_s": 600.0,
+              "closed_runways": [
+                "07L",
+                "25R"
+              ],
+              "event": "Runway 07L / 25R closed unexpectedly for inspection; arrivals must use another runway.",
+              "commands": [
+                {
+                  "command": "APPROACH CFG101 25L",
+                  "accepted": true,
+                  "message": "CFG101 APPROACH accepted"
+                },
+                {
+                  "command": "ALTITUDE DLH112 6000",
+                  "accepted": true,
+                  "message": "DLH112 ALTITUDE accepted"
+                },
+                {
+                  "command": "TAKEOFF CFG113 25C",
+                  "accepted": true,
+                  "message": "CFG113 cleared for takeoff runway 25C"
+                }
+              ],
+              "input_plan": "BAW109: TAKEOFF 25C (wake timer now expired, runway free; AFR110 still ~10NM out so roll completes first). KLM111: TAKEOFF 18 to avoid stacking departures on 25C. DLH112 (A320, 18NM east): APPROACH 25R, trailing CFG101 by ~14NM. Conflict AFR104/BAW103 at 12000ft/1.4NM: ALTITUDE BAW103 14000 for vertical separation; AFR104 stays 12000. AFR110 continues 25C approach; UAL102 on final 25L with UAL108 ~7NM behind. Next window: confirm BAW109/KLM111 departures, DLH106/CFG101 landings, and recheck BAW103/AFR104 separation.",
+              "output_plan": "Runway closure hit NW pair (25R/07L, ~30s). CFG101 aborted at ~950ft, now climbing to 4000: APPROACH CFG101 25L, slotting behind UAL108 (12.6NM) — UAL102 lands first. DLH112 at 4000 conflicts with AFR110 (3200, 25C approach): ALTITUDE DLH112 6000 now; issue APPROACH DLH112 25C next window once AFR110 is on final, keeping sequence CFG101-free. CFG113: TAKEOFF 25C (BAW109 departed 75s ago, wake cleared; AFR110 ~10NM out). UAL102 on short final 25L. Next window: reassign DLH112 approach, verify CFG101 capture on 25L, check closure status on 25R before reusing it.",
+              "closed_runway_assignments": [],
+              "note": "Closure go-arounds can be initiated automatically by the simulator; they are not proof of a model command."
+            }
+          ],
+          "prompt_version": "frankfurt-controller-v3",
+          "model": "z-ai/glm-5.3-flash",
+          "settings": {
+            "temperature": 0,
+            "max_tokens": 8192,
+            "reasoning_effort": "low",
+            "timeout_s": 180,
+            "provider_sort": "throughput",
+            "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
+          },
+          "interruption_records": [
+            {
+              "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1440s-1failures.json",
+              "time_s": 1440.0,
+              "url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-runway_closure-seed7-interrupted-1440s-1failures.json"
+            },
+            {
+              "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-2failures.json",
+              "time_s": 1680.0,
+              "url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-runway_closure-seed7-interrupted-1680s-2failures.json"
+            }
+          ]
+        },
+        {
+          "agent": "openrouter",
+          "cohort": "luna",
+          "label": "GPT 6 Luna",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "runway_closure",
+            "duration_s": 1800,
+            "agent": "openrouter",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 3,
+            "separation_loss_seconds": 132.0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 0,
+            "invalid_commands": 0,
+            "runway_closures": 1,
+            "closure_go_arounds": 1,
+            "score": 121.529,
+            "landed": 4,
+            "departed": 9,
+            "diverted": 3,
+            "crashed": 0,
+            "unfinished": 9,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 5053.0,
+            "airborne_seconds": 17113.0,
+            "ground_wait_seconds": 3682.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 306.833,
+            "ground_wait_max_seconds": 391.0,
+            "ground_wait_score": 49.437,
+            "ground_wait_score_component": -61.367,
+            "emergency_wait_seconds": 0,
+            "emergency_wait_count": 0,
+            "emergency_wait_mean_seconds": null,
+            "emergency_wait_max_seconds": null,
+            "emergency_wait_score": null,
+            "emergency_wait_score_component": 0.0,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.52,
+            "safety_violations": 3,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              132.0,
+              0,
+              -13,
+              5053.0,
+              17113.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 11533.0,
+            "landing_wait_mean_seconds": 887.154,
+            "landing_wait_max_seconds": 1286.0,
+            "landing_wait_score": 40.346,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 5,
+                "seconds": 4531.0,
+                "mean_seconds": 906.2,
+                "max_seconds": 1286.0
+              },
+              "pending": {
+                "count": 5,
+                "seconds": 4071.0,
+                "mean_seconds": 814.2,
+                "max_seconds": 1081.0
+              },
+              "failed": {
+                "count": 3,
+                "seconds": 2931.0,
+                "mean_seconds": 977.0,
+                "max_seconds": 1056.0
+              }
+            }
+          },
+          "wall_duration_s": 61.451,
+          "error": null,
+          "record_file": "gpt-6-luna-runway_closure-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/gpt-6-luna-runway_closure-seed7.json",
+          "record_sha256": "da46c587c2ac7a70a99614118d528ad3f113a34ebc558cb614657e8e5ad47acf",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "914d328979e4fa4fbf1cf3bb95b1404649d7ddc9fb211cbd609a6d3c67499d15",
+          "decision_count": 15,
+          "successful_decisions": 15,
+          "mean_call_latency_s": 4.078,
+          "median_call_latency_s": 3.873,
+          "total_call_latency_s": 61.17,
+          "known_api_cost_usd": 0.022365415,
+          "api_cost_usd": 0.022365415,
+          "reported_cost_calls": 15,
+          "unknown_cost_calls": 0,
+          "reconciled_zero_cost_calls": 0,
+          "failed_attempts": [],
+          "providers": [
+            "OpenAI"
+          ],
+          "provider_routing": [
+            {
+              "time_s": 0.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 120.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 240.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 360.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 480.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 600.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 720.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 840.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 960.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1080.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1200.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1320.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1560.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            }
+          ],
+          "memory": {
+            "final_input_successful_decisions": 14,
+            "successful_decisions_counter": 15,
+            "final_input_memory_turns": 4,
+            "final_retained_memory_turns": 4,
+            "checked_plan_transitions": 14,
+            "matched_plan_transitions": 14,
+            "last_input_plan": "Reserve 25R for UAL114 through touchdown and clearance, 25L for AFR116, and 25C for DLH118. Do not change their established approaches; no other arrivals should be assigned to these physical runways until clear. UAL120 remains holding at 11,000 ft, AFR122 at 9,000 ft, and DLH124 at 7,000 ft, providing altitude separation; keep holds while the three approaches progress, then sequence them onto newly available runways. Runway 18 is clear, so KLM123 departs now. Reassess finals, runway availability, and hold separation at the next observation.",
+            "last_output_plan": "Preserve the existing runway reservations: UAL114 on 25R, AFR116 on 25L, and DLH118 on 25C. UAL114 is very close to touchdown; do not interrupt its final. Keep UAL120 holding at 11,000 ft, AFR122 at 9,000 ft, and DLH124 at 7,000 ft until runway capacity frees, maintaining their altitude separation. Runway 18 has a 65-second availability timer; do not launch another departure until clear, then prioritize KLM123 if still waiting. Reassess touchdown, runway status, and holds at the next observation."
+          },
+          "findings": [
+            {
+              "title": "First decision after the closure",
+              "event_time_s": 585.85,
+              "observation_time_s": 600.0,
+              "closed_runways": [
+                "07L",
+                "25R"
+              ],
+              "event": "Runway 07L / 25R closed unexpectedly for inspection; arrivals must use another runway.",
+              "commands": [
+                {
+                  "command": "APPROACH CFG101 25C",
+                  "accepted": true,
+                  "message": "CFG101 APPROACH accepted"
+                },
+                {
+                  "command": "TAKEOFF BAW109 18",
+                  "accepted": true,
+                  "message": "BAW109 cleared for takeoff runway 18"
+                }
+              ],
+              "input_plan": "Preserve 25R for CFG101 and 25L for UAL102 until each lands and clears. DLH106 remains holding; do not send it into the 25C approach area while UAL102 is nearby on final. After UAL102 clears, assign DLH106 to available 25C if spacing and runway status remain suitable. Runway 18 is clear and departure-only: CFG107 is released now; launch BAW109 and KLM111 sequentially only after confirming runway 18 is clear each time. Keep UAL108, AFR110, and DLH112 inbound unassigned until suitable runway capacity opens. Reassess approach progress, spacing, and closures next observation.",
+              "output_plan": "Protect UAL102's 25L approach through landing and runway clearance. 25R/NW is closed; CFG101 has no approach clearance, so route it to open 25C while monitoring its low altitude and separation. Keep DLH106 holding until the approach paths and spacing are safe, then prioritize it on an available runway. Launch BAW109 on runway 18; release KLM111 and CFG113 sequentially only after confirming runway 18 is clear. Keep UAL108, AFR110, and DLH112 inbound unassigned until suitable arrival runway capacity opens. Reassess runway closures, arrival spacing, and progress next observation.",
+              "closed_runway_assignments": [],
+              "note": "Closure go-arounds can be initiated automatically by the simulator; they are not proof of a model command."
+            }
+          ],
+          "prompt_version": "frankfurt-controller-v3",
+          "model": "openai/gpt-6-luna",
+          "settings": {
+            "temperature": 0,
+            "max_tokens": 8192,
+            "reasoning_effort": "low",
+            "timeout_s": 180,
+            "provider_sort": "throughput",
+            "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
+          },
+          "interruption_records": []
+        },
+        {
+          "agent": "reference",
+          "cohort": "reference",
+          "label": "Reference policy",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "runway_closure",
+            "duration_s": 1800,
+            "agent": "reference",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 2,
+            "separation_loss_seconds": 69.0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 0,
+            "invalid_commands": 0,
+            "runway_closures": 1,
+            "closure_go_arounds": 1,
+            "score": 324.151,
+            "landed": 5,
+            "departed": 9,
+            "diverted": 0,
+            "crashed": 0,
+            "unfinished": 11,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 4982.0,
+            "airborne_seconds": 18451.0,
+            "ground_wait_seconds": 3562.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 296.833,
+            "ground_wait_max_seconds": 391.0,
+            "ground_wait_score": 50.265,
+            "ground_wait_score_component": -59.367,
+            "emergency_wait_seconds": 0,
+            "emergency_wait_count": 0,
+            "emergency_wait_mean_seconds": null,
+            "emergency_wait_max_seconds": null,
+            "emergency_wait_score": null,
+            "emergency_wait_score_component": 0.0,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.56,
+            "safety_violations": 2,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              69.0,
+              0,
+              -14,
+              4982.0,
+              18451.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 12871.0,
+            "landing_wait_mean_seconds": 990.077,
+            "landing_wait_max_seconds": 1598.0,
+            "landing_wait_score": 37.734,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 5,
+                "seconds": 4669.0,
+                "mean_seconds": 933.8,
+                "max_seconds": 1558.0
+              },
+              "pending": {
+                "count": 8,
+                "seconds": 8202.0,
+                "mean_seconds": 1025.25,
+                "max_seconds": 1598.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            }
+          },
+          "wall_duration_s": 0.271,
+          "error": null,
+          "record_file": "reference-runway_closure-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/reference-runway_closure-seed7.json",
+          "record_sha256": "4d177a2d4ed5a38d4a1b53df12f1692dc98658416292f08c25a3ed17d9bdbccd",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "914d328979e4fa4fbf1cf3bb95b1404649d7ddc9fb211cbd609a6d3c67499d15"
+        },
+        {
+          "agent": "noop",
+          "cohort": "noop",
+          "label": "No commands",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "runway_closure",
+            "duration_s": 1800,
+            "agent": "noop",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 0,
+            "separation_loss_seconds": 0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 0,
+            "invalid_commands": 0,
+            "runway_closures": 1,
+            "closure_go_arounds": 0,
+            "score": -973.516,
+            "landed": 0,
+            "departed": 0,
+            "diverted": 10,
+            "crashed": 0,
+            "unfinished": 15,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 15682.0,
+            "airborne_seconds": 11851.0,
+            "ground_wait_seconds": 15682.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 1306.833,
+            "ground_wait_max_seconds": 1800.0,
+            "ground_wait_score": 18.67,
+            "ground_wait_score_component": -261.367,
+            "emergency_wait_seconds": 0,
+            "emergency_wait_count": 0,
+            "emergency_wait_mean_seconds": null,
+            "emergency_wait_max_seconds": null,
+            "emergency_wait_score": null,
+            "emergency_wait_score_component": 0.0,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.0,
+            "safety_violations": 0,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              15682.0,
+              11851.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 11851.0,
+            "landing_wait_mean_seconds": 911.615,
+            "landing_wait_max_seconds": 1066.0,
+            "landing_wait_score": 39.693,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 3,
+                "seconds": 2053.0,
+                "mean_seconds": 684.333,
+                "max_seconds": 816.0
+              },
+              "failed": {
+                "count": 10,
+                "seconds": 9798.0,
+                "mean_seconds": 979.8,
+                "max_seconds": 1066.0
+              }
+            }
+          },
+          "wall_duration_s": 0.128,
+          "error": null,
+          "record_file": "noop-runway_closure-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/noop-runway_closure-seed7.json",
+          "record_sha256": "ca7069d6531c92da556dad156b61cae1c57cdd9aa124bf0932862266b5809af6",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "914d328979e4fa4fbf1cf3bb95b1404649d7ddc9fb211cbd609a6d3c67499d15"
+        }
+      ]
+    },
+    {
+      "id": "emergency",
+      "title": "Emergency arrivals",
+      "runs": [
+        {
+          "agent": "openrouter",
+          "cohort": "glm",
+          "label": "GLM 5.3 Flash",
+          "status": "partial",
+          "configuration": {
+            "seed": 7,
+            "scenario": "emergency",
+            "duration_s": 1800,
+            "agent": "openrouter",
+            "step_seconds": 120
+          },
+          "final_time_s": 1440.0,
+          "metrics": null,
+          "landing_metrics": null,
+          "wall_duration_s": 223.494,
+          "error": "OpenRouter returned HTTP 429; response details withheld",
+          "record_file": "glm-5.3-flash-emergency-seed7-interrupted-1440s-1failures.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-emergency-seed7-interrupted-1440s-1failures.json",
+          "record_sha256": "84b5ce4fbadab807f5ec7a51a9936e828f35dce7d682f1713091940e1c2d5e23",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "032fe3ca0fbe250b55f69e94bb841bb214a971d4d5846195375dd664a3511af2",
+          "decision_count": 13,
+          "successful_decisions": 12,
+          "mean_call_latency_s": 17.17323076923077,
+          "median_call_latency_s": 19.513,
+          "total_call_latency_s": 223.252,
+          "known_api_cost_usd": 0.006351245,
+          "api_cost_usd": 0.006351245,
+          "reported_cost_calls": 12,
+          "unknown_cost_calls": 0,
+          "reconciled_zero_cost_calls": 1,
+          "failed_attempts": [
+            {
+              "time_s": 1440.0,
+              "error": "OpenRouter returned HTTP 429; response details withheld",
+              "latency_s": 1.092
+            }
+          ],
+          "providers": [
+            "InferenceNet"
+          ],
+          "provider_routing": [
+            {
+              "time_s": 0.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 120.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 240.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 360.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 480.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 600.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 720.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 840.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 960.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1080.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1200.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1320.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "price",
+              "provider": null,
+              "status": "error"
+            }
+          ],
+          "memory": {
+            "final_input_successful_decisions": 11,
+            "successful_decisions_counter": 12,
+            "final_input_memory_turns": 4,
+            "final_retained_memory_turns": 4,
+            "checked_plan_transitions": 11,
+            "matched_plan_transitions": 11,
+            "last_input_plan": "UAL114 lands 25C within ~2min (fuel 461s). DLH106->25R and AFR110->25L touchdown imminent; AFR116 and DLH112 finals behind. APPROACH DLH118 25R now (transit covers DLH106 release). UAL120 stays 11000ft, sequence to 25C next; AFR122 (9000ft) behind it. CFG119 TAKEOFF 18 now; BAW121 and KLM123 queue. Recheck UAL114 touchdown and DLH118 intercept next window.",
+            "last_output_plan": "UAL114 touchdown complete. DLH112 (25C) leads DLH118 (25R) by only ~2NM at same altitude; slow DLH118 to 150kt to restore spacing, both finals continue. DLH106 and AFR110 touchdown imminent; AFR116 final 25L behind. UAL120 stays 11000ft, then AFR122 9000ft, DLH124 7000ft — sequence UAL120->25C, AFR122->25L, DLH124->25R next windows. CFG119 TAKEOFF 18 retry (wake from KLM117 should lapse); BAW121, KLM123 queue. Recheck DLH112/DLH118 spacing next window; go-around DLH118 if still <3NM."
+          },
+          "findings": [
+            {
+              "title": "Emergency response: DLH100",
+              "event_time_s": 15.0,
+              "observation_time_s": 120.0,
+              "event": "MAYDAY DLH100: medical",
+              "commands": [],
+              "final_status": "landed",
+              "emergency_wait_s": 274.0,
+              "input_plan": "Assign each arrival a separate physical runway: DLH100 (closest, 4800ft near 25C fix) -> APPROACH 25C; CFG101 from north -> APPROACH 25R; UAL102 from southeast -> APPROACH 25L. Preserve these runway reservations until touchdown; no reissue. Departures BAW103/AFR104/KLM105 queue on departure-only runway 18 (tailwind ~3kt within limit); release BAW103 now, then AFR104 and KLM105 in later windows as 18 clears. Reconsider if weather deteriorates or conflicts appear between CFG101 and DLH100 on converging finals.",
+              "output_plan": "Keep reservations: DLH100->25C (emergency, on final, ETA well within deadline 735s), CFG101->25R, UAL102->25L. Do not interrupt DLH100's approach. New arrival DLH106 (E190) holds at 7000ft until physical CENTER (25C) clears after DLH100 lands; then APPROACH DLH106 07C. AFR104 departs runway 18 next window once available_in_s=0, then KLM105. Recheck DLH100 touchdown and CFG101/UAL102 spacing next observation.",
+              "note": "This is the first model observation containing the declared emergency. Simulated emergency wait is measured from declaration to touchdown or terminal failure, not API latency."
+            },
+            {
+              "title": "Emergency response: UAL108",
+              "event_time_s": 262.0,
+              "observation_time_s": 360.0,
+              "event": "MAYDAY UAL108: low_fuel",
+              "commands": [
+                {
+                  "command": "APPROACH UAL108 25C",
+                  "accepted": true,
+                  "message": "UAL108 APPROACH accepted"
+                }
+              ],
+              "final_status": "landed",
+              "emergency_wait_s": 620.0,
+              "input_plan": "DLH100 lands 25C shortly; keep CFG101->25R, UAL102->25L. AFR104 TAKEOFF 18 (available now). DLH106: APPROACH 07C — its long transit to the fix gives CENTER time to clear after DLH100; if conflict risk appears, HOLD again. KLM105 departs 18 next window after AFR104 clears. UAL108 (new inbound, southeast) will get 07R or 25L after UAL102 lands; decide next window. Recheck DLH100 touchdown and CFG101/UAL102 final spacing.",
+              "output_plan": "UAL108 (low fuel, urgent) -> APPROACH 25C: CENTER frees in ~109s after DLH100, and UAL108's transit covers that. CFG101->25R and UAL102->25L unchanged. DLH106 stays holding at 7000ft; sequence it to 25C behind UAL108 (or 25R after CFG101 clears) next window. KLM105 TAKEOFF 18 now; CFG107 and BAW109 queue behind on 18. AFR110 (north inbound) holds until a runway frees. Recheck UAL108 fuel burn vs ETA and CFG101/UAL102 finals.",
+              "note": "This is the first model observation containing the declared emergency. Simulated emergency wait is measured from declaration to touchdown or terminal failure, not API latency."
+            },
+            {
+              "title": "Emergency response: UAL114",
+              "event_time_s": 662.0,
+              "observation_time_s": 720.0,
+              "event": "MAYDAY UAL114: low_fuel",
+              "commands": [
+                {
+                  "command": "APPROACH UAL114 25C",
+                  "accepted": true,
+                  "message": "UAL114 APPROACH accepted"
+                }
+              ],
+              "final_status": "taxi_in",
+              "emergency_wait_s": 638.0,
+              "input_plan": "CFG101 lands 25R and UAL102 lands 25L within minutes; UAL108 lands 25C shortly after (fuel 661s > ETA). BAW109 TAKEOFF 18 now; KLM111 and CFG113 queue behind. Arrival stack: DLH106 holds 7000ft, AFR110 holds 9000ft, DLH112 at 6000ft — keep vertical separation; sequence DLH106->25C after UAL108 clears, then AFR110->25L, then DLH112->25R next windows. Recheck UAL108 fuel vs ETA and stack spacing next observation.",
+              "output_plan": "UAL114 -> APPROACH 25C behind UAL108 (long transit covers runway release). HOLD AFR110 near field at 9000ft to keep it in sequence. DLH106 holds 7000ft, DLH112 6000ft; DLH106 -> 25C next window after UAL108 clears, then AFR110, DLH112. KLM111 TAKEOFF 18 now; CFG113 and BAW115 queue. UAL102 lands 25L momentarily. Recheck UAL108/UAL114 fuel vs ETA and stack next window.",
+              "note": "This is the first model observation containing the declared emergency. Simulated emergency wait is measured from declaration to touchdown or terminal failure, not API latency."
+            }
+          ],
+          "prompt_version": "frankfurt-controller-v3",
+          "model": "z-ai/glm-5.3-flash",
+          "settings": {
+            "temperature": 0,
+            "max_tokens": 8192,
+            "reasoning_effort": "low",
+            "timeout_s": 180,
+            "provider_sort": null,
+            "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
+          },
+          "interruption_records": []
+        },
+        {
+          "agent": "openrouter",
+          "cohort": "luna",
+          "label": "GPT 6 Luna",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "emergency",
+            "duration_s": 1800,
+            "agent": "openrouter",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 7,
+            "separation_loss_seconds": 378.0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 3,
+            "emergencies_failed": 0,
+            "invalid_commands": 1,
+            "runway_closures": 0,
+            "closure_go_arounds": 0,
+            "score": 99.639,
+            "landed": 8,
+            "departed": 8,
+            "diverted": 0,
+            "crashed": 0,
+            "unfinished": 9,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 7494.0,
+            "airborne_seconds": 15217.0,
+            "ground_wait_seconds": 5602.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 466.833,
+            "ground_wait_max_seconds": 871.0,
+            "ground_wait_score": 39.122,
+            "ground_wait_score_component": -93.367,
+            "emergency_wait_seconds": 1558.0,
+            "emergency_wait_count": 3,
+            "emergency_wait_mean_seconds": 519.333,
+            "emergency_wait_max_seconds": 678.0,
+            "emergency_wait_score": 25.739,
+            "emergency_wait_score_component": -129.833,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 3,
+                "seconds": 1558.0,
+                "mean_seconds": 519.333,
+                "max_seconds": 678.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.64,
+            "safety_violations": 7,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              378.0,
+              0,
+              -16,
+              7494.0,
+              15217.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 10412.0,
+            "landing_wait_mean_seconds": 800.923,
+            "landing_wait_max_seconds": 1439.0,
+            "landing_wait_score": 42.829,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 9,
+                "seconds": 7024.0,
+                "mean_seconds": 780.444,
+                "max_seconds": 1439.0
+              },
+              "pending": {
+                "count": 4,
+                "seconds": 3388.0,
+                "mean_seconds": 847.0,
+                "max_seconds": 1335.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            }
+          },
+          "wall_duration_s": 63.642,
+          "error": null,
+          "record_file": "gpt-6-luna-emergency-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/gpt-6-luna-emergency-seed7.json",
+          "record_sha256": "c41284cadbe9cac9b04a5314a8345bf4c781f499a6ded9a60ec786f0c4fe2a05",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "032fe3ca0fbe250b55f69e94bb841bb214a971d4d5846195375dd664a3511af2",
+          "decision_count": 15,
+          "successful_decisions": 15,
+          "mean_call_latency_s": 4.226266666666667,
+          "median_call_latency_s": 4.345,
+          "total_call_latency_s": 63.394,
+          "known_api_cost_usd": 0.023105815000000002,
+          "api_cost_usd": 0.023105815000000002,
+          "reported_cost_calls": 15,
+          "unknown_cost_calls": 0,
+          "reconciled_zero_cost_calls": 0,
+          "failed_attempts": [],
+          "providers": [
+            "OpenAI"
+          ],
+          "provider_routing": [
+            {
+              "time_s": 0.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 120.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 240.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 360.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 480.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 600.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 720.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 840.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 960.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1080.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1200.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1320.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1560.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            }
+          ],
+          "memory": {
+            "final_input_successful_decisions": 14,
+            "successful_decisions_counter": 15,
+            "final_input_memory_turns": 4,
+            "final_retained_memory_turns": 4,
+            "checked_plan_transitions": 14,
+            "matched_plan_transitions": 14,
+            "last_input_plan": "AFR110 and AFR122 are on final for SOUTH/25L with only 1.954 NM and 128.6 ft separation. Go around AFR122 to restore spacing and preserve AFR110’s approach; reassess both next turn and do not resequence AFR122 onto an occupied physical runway. DLH112 remains on approach to 25L; hold further SOUTH assignments until the sequence is safe. AFR116 has landed; UAL120 remains assigned CENTER/25C. DLH124 is climbing at 11000 ft after its prior proximity to UAL120; monitor their separation. NW/25R is still unavailable for 36 s after DLH118’s landing. BAW121’s prior takeoff was rejected due to runway/wake availability; runway 18 now reports clear, so retry and verify acceptance.",
+            "last_output_plan": "Protect AFR110’s SOUTH/25L final; DLH112 is still at intercept and conflicts with UAL120 at 2.898 NM/279.5 ft, so go around DLH112 and reassess separation next turn. Do not reassign SOUTH until AFR110 lands and DLH112 is safely clear; AFR122 remains inbound without an approach clearance. UAL120 continues on CENTER/25C; protect that runway through touchdown. DLH124 remains inbound at 11000 ft; monitor its separation from the approaches before assigning a runway. Runway 18 is available, so KLM123 is cleared for takeoff; queue remaining departures until it clears."
+          },
+          "findings": [
+            {
+              "title": "Emergency response: DLH100",
+              "event_time_s": 15.0,
+              "observation_time_s": 120.0,
+              "event": "MAYDAY DLH100: medical",
+              "commands": [],
+              "final_status": "landed",
+              "emergency_wait_s": 274.0,
+              "input_plan": "Keep DLH100 reserved on CENTER/25C, CFG101 on NW/25R, and UAL102 on SOUTH/25L; do not schedule another arrival on any physical runway until its arrival has cleared. Monitor DLH100’s status and prioritize an emergency touchdown if one is declared. BAW103 is cleared to depart on 18, suitable for the current wind and clear of the arrival runways; wait for its runway occupancy to clear before considering AFR104 and KLM105, using 18 if conditions remain suitable. Reassess runway occupancy, spacing, weather, and any emergency changes at the next observation.",
+              "output_plan": "Maintain the current reservations: DLH100 on CENTER/25C (emergency priority), CFG101 on NW/25R, and UAL102 on SOUTH/25L. Do not issue new arrival clearances on those physical runways until their arrivals clear. BAW103 is climbing outbound; runway 18 remains unavailable for 65 s, so defer AFR104 and KLM105 this interval. Reassess emergency touchdown, runway occupancy, arrival spacing, and weather at the next observation; then resume departures if safe.",
+              "note": "This is the first model observation containing the declared emergency. Simulated emergency wait is measured from declaration to touchdown or terminal failure, not API latency."
+            },
+            {
+              "title": "Emergency response: UAL108",
+              "event_time_s": 262.0,
+              "observation_time_s": 360.0,
+              "event": "MAYDAY UAL108: low_fuel",
+              "commands": [
+                {
+                  "command": "APPROACH UAL108 25L",
+                  "accepted": true,
+                  "message": "UAL108 APPROACH accepted"
+                }
+              ],
+              "final_status": "landed",
+              "emergency_wait_s": 606.0,
+              "input_plan": "Keep DLH100 reserved on CENTER/25C, CFG101 on NW/25R, and UAL102 on SOUTH/25L until each clears its runway. DLH100 has a medical deadline at 735 s; do not interrupt its final and reassess touchdown immediately next turn. Cleared AFR104 to depart on 18, which is available and wind-suitable; keep KLM105 and CFG107 waiting until runway 18 occupancy clears. Hold new inbound DLH106 and UAL108 outside approach assignments while the three physical arrival runways remain reserved. Reassess spacing, occupancy, wind, and emergency status at the next observation.",
+              "output_plan": "DLH100 is in taxi-in; its CENTER/25C reservation remains unavailable for 109 s, so assign nearby DLH106 to 25C only after that availability clears. Keep CFG101 on NW/25R and UAL102 on SOUTH/25L; UAL108 has low fuel and deadline 1262 s, so place it next on 25L behind UAL102, preserving separation and the one-arrival-per-physical-runway rule. TAKEOFF KLM105 on available, wind-suitable runway 18; keep CFG107 and BAW109 waiting until runway 18 clears. Monitor UAL108’s fuel/deadline and arrival sequence, runway occupancy, and weather at the next observation.",
+              "note": "This is the first model observation containing the declared emergency. Simulated emergency wait is measured from declaration to touchdown or terminal failure, not API latency."
+            },
+            {
+              "title": "Emergency response: UAL114",
+              "event_time_s": 662.0,
+              "observation_time_s": 720.0,
+              "event": "MAYDAY UAL114: low_fuel",
+              "commands": [
+                {
+                  "command": "APPROACH UAL114 25R",
+                  "accepted": true,
+                  "message": "UAL114 APPROACH accepted"
+                }
+              ],
+              "final_status": "landed",
+              "emergency_wait_s": 678.0,
+              "input_plan": "Immediate priority is restoring separation: DLH106 and low-fuel UAL108 are only 2.3 NM apart with 104 ft vertical spacing. DLH106 is instructed south, canceling its approach; keep UAL108’s 25L approach intact for its 1262 s deadline. Once separation is at least 3 NM or 1000 ft, reassess DLH106’s position and runway availability before issuing a new approach; retain its CENTER/25C reservation only if safe. CFG101 remains on NW/25R and UAL102 on SOUTH/25L. Do not assign additional arrivals to occupied physical runways. Reassess separation, UAL108 fuel/deadline, and runway occupancy next turn.",
+              "output_plan": "Keep UAL108 on SOUTH/25L through touchdown; its low-fuel deadline is 1262 s, so reassess urgently next turn. UAL102 has landed and CFG101 is taxiing in; NW/25R becomes available in 5 s, so assign low-fuel UAL114 there while tracking its 1662 s deadline. Assign DLH106 to CENTER/25C. Maintain one arrival per physical runway and avoid changing established final clearances. Ground departures remain queued for runway 18; release the next only when safe and available. Recheck separation, runway occupancy, and both low-fuel aircraft at the next observation.",
+              "note": "This is the first model observation containing the declared emergency. Simulated emergency wait is measured from declaration to touchdown or terminal failure, not API latency."
+            }
+          ],
+          "prompt_version": "frankfurt-controller-v3",
+          "model": "openai/gpt-6-luna",
+          "settings": {
+            "temperature": 0,
+            "max_tokens": 8192,
+            "reasoning_effort": "low",
+            "timeout_s": 180,
+            "provider_sort": "throughput",
+            "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
+          },
+          "interruption_records": []
+        },
+        {
+          "agent": "reference",
+          "cohort": "reference",
+          "label": "Reference policy",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "emergency",
+            "duration_s": 1800,
+            "agent": "reference",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 4,
+            "separation_loss_seconds": 136.0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 3,
+            "emergencies_failed": 0,
+            "invalid_commands": 0,
+            "runway_closures": 0,
+            "closure_go_arounds": 0,
+            "score": 179.537,
+            "landed": 6,
+            "departed": 9,
+            "diverted": 0,
+            "crashed": 0,
+            "unfinished": 10,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 5190.0,
+            "airborne_seconds": 17356.0,
+            "ground_wait_seconds": 3562.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 296.833,
+            "ground_wait_max_seconds": 391.0,
+            "ground_wait_score": 50.265,
+            "ground_wait_score_component": -59.367,
+            "emergency_wait_seconds": 1936.0,
+            "emergency_wait_count": 3,
+            "emergency_wait_mean_seconds": 645.333,
+            "emergency_wait_max_seconds": 908.0,
+            "emergency_wait_score": 21.809,
+            "emergency_wait_score_component": -161.333,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 3,
+                "seconds": 1936.0,
+                "mean_seconds": 645.333,
+                "max_seconds": 908.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.6,
+            "safety_violations": 4,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              136.0,
+              0,
+              -15,
+              5190.0,
+              17356.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 11776.0,
+            "landing_wait_mean_seconds": 905.846,
+            "landing_wait_max_seconds": 1684.0,
+            "landing_wait_score": 39.845,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 7,
+                "seconds": 6370.0,
+                "mean_seconds": 910.0,
+                "max_seconds": 1684.0
+              },
+              "pending": {
+                "count": 6,
+                "seconds": 5406.0,
+                "mean_seconds": 901.0,
+                "max_seconds": 1335.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            }
+          },
+          "wall_duration_s": 0.244,
+          "error": null,
+          "record_file": "reference-emergency-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/reference-emergency-seed7.json",
+          "record_sha256": "2d92a0dbdd69a3865b7ba069863cad06c4c26cd1cf10a277ecae5f2b3cd68e95",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "032fe3ca0fbe250b55f69e94bb841bb214a971d4d5846195375dd664a3511af2"
+        },
+        {
+          "agent": "noop",
+          "cohort": "noop",
+          "label": "No commands",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "emergency",
+            "duration_s": 1800,
+            "agent": "noop",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 0,
+            "separation_loss_seconds": 0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 3,
+            "invalid_commands": 0,
+            "runway_closures": 0,
+            "closure_go_arounds": 0,
+            "score": -401266.014,
+            "landed": 0,
+            "departed": 0,
+            "diverted": 9,
+            "crashed": 1,
+            "unfinished": 15,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 15682.0,
+            "airborne_seconds": 11849.0,
+            "ground_wait_seconds": 15682.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 1306.833,
+            "ground_wait_max_seconds": 1800.0,
+            "ground_wait_score": 18.67,
+            "ground_wait_score_component": -261.367,
+            "emergency_wait_seconds": 2910.0,
+            "emergency_wait_count": 3,
+            "emergency_wait_mean_seconds": 970.0,
+            "emergency_wait_max_seconds": 999.0,
+            "emergency_wait_score": 15.652,
+            "emergency_wait_score_component": -242.5,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 3,
+                "seconds": 2910.0,
+                "mean_seconds": 970.0,
+                "max_seconds": 999.0
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.0,
+            "safety_violations": 4,
+            "rank_key": [
+              0,
+              1,
+              3,
+              0,
+              0,
+              0,
+              0,
+              0,
+              15682.0,
+              11849.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 11849.0,
+            "landing_wait_mean_seconds": 911.462,
+            "landing_wait_max_seconds": 1066.0,
+            "landing_wait_score": 39.697,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 3,
+                "seconds": 2053.0,
+                "mean_seconds": 684.333,
+                "max_seconds": 816.0
+              },
+              "failed": {
+                "count": 10,
+                "seconds": 9796.0,
+                "mean_seconds": 979.6,
+                "max_seconds": 1066.0
+              }
+            }
+          },
+          "wall_duration_s": 0.129,
+          "error": null,
+          "record_file": "noop-emergency-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/noop-emergency-seed7.json",
+          "record_sha256": "e3bd97d19cb9b2714102a3759ae7235123d74177ee156c152079658b984e9389",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "032fe3ca0fbe250b55f69e94bb841bb214a971d4d5846195375dd664a3511af2"
+        }
+      ]
+    },
+    {
+      "id": "wind_shift",
+      "title": "Wind shift",
+      "runs": [
+        {
+          "agent": "openrouter",
+          "cohort": "glm",
+          "label": "GLM 5.3 Flash",
+          "status": "partial",
+          "configuration": {
+            "seed": 7,
+            "scenario": "wind_shift",
+            "duration_s": 1800,
+            "agent": "openrouter",
+            "step_seconds": 120
+          },
+          "final_time_s": 1440.0,
+          "metrics": null,
+          "landing_metrics": null,
+          "wall_duration_s": 220.03,
+          "error": "OpenRouter returned HTTP 429; response details withheld",
+          "record_file": "glm-5.3-flash-wind_shift-seed7-interrupted-1440s-1failures.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-wind_shift-seed7-interrupted-1440s-1failures.json",
+          "record_sha256": "4b9c9f101c5afb74c2b6b8cb991b87fbe52ecc00358a9f70b294d3361779b632",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "18926bc77c0d223d0ec7e96610d6c9aec6446ef0b7bbb2cc39f0c5157c58e8cd",
+          "decision_count": 13,
+          "successful_decisions": 12,
+          "mean_call_latency_s": 16.90623076923077,
+          "median_call_latency_s": 17.574,
+          "total_call_latency_s": 219.781,
+          "known_api_cost_usd": 0.006292315,
+          "api_cost_usd": 0.006292315,
+          "reported_cost_calls": 12,
+          "unknown_cost_calls": 0,
+          "reconciled_zero_cost_calls": 1,
+          "failed_attempts": [
+            {
+              "time_s": 1440.0,
+              "error": "OpenRouter returned HTTP 429; response details withheld",
+              "latency_s": 1.846
+            }
+          ],
+          "providers": [
+            "InferenceNet"
+          ],
+          "provider_routing": [
+            {
+              "time_s": 0.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 120.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 240.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 360.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 480.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 600.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 720.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 840.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 960.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1080.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1200.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1320.0,
+              "sort": "price",
+              "provider": "InferenceNet",
+              "status": "ok"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "price",
+              "provider": null,
+              "status": "error"
+            }
+          ],
+          "memory": {
+            "final_input_successful_decisions": 11,
+            "successful_decisions_counter": 12,
+            "final_input_memory_turns": 4,
+            "final_retained_memory_turns": 4,
+            "checked_plan_transitions": 11,
+            "matched_plan_transitions": 11,
+            "last_input_plan": "Keep UAL108 holding at 4000ft until DLH112 lands 07C (~2min), then APPROACH UAL108 07C. UAL120 APPROACH 07C now — its intercept path is long, it will slot behind DLH112; UAL108 follows. AFR110 lands 07L shortly, AFR116 trails; DLH118/UAL114 on 07R. CFG119 TAKEOFF 18 next window once available_in reaches 0 (currently 65s); then BAW121, KLM123. AFR122 (north) queues for 07L behind AFR116. Recheck holding stack next turn.",
+            "last_output_plan": "TAKEOFF CFG119 18 now; BAW121 then KLM123 follow. UAL108 holds at 4000ft until DLH112 lands 07C (~1min) and UAL120's slot is clear — then APPROACH UAL108 07C ahead of UAL120's touchdown if spacing allows, else after. AFR122 APPROACH 07L behind AFR116; DLH124 APPROACH 07R behind DLH118. Recheck UAL108 release next window; if 07C stack too tight, hold again or use 07R gap."
+          },
+          "findings": [
+            {
+              "title": "First decision after the wind shift",
+              "event_time_s": 810.0,
+              "observation_time_s": 840.0,
+              "active_direction": "07",
+              "event": "Wind changed: active runway direction 07",
+              "commands": [
+                {
+                  "command": "APPROACH DLH112 07C",
+                  "accepted": true,
+                  "message": "DLH112 APPROACH accepted"
+                },
+                {
+                  "command": "APPROACH AFR110 07L",
+                  "accepted": true,
+                  "message": "AFR110 APPROACH accepted"
+                },
+                {
+                  "command": "HOLD UAL108",
+                  "accepted": true,
+                  "message": "UAL108 HOLD accepted"
+                },
+                {
+                  "command": "APPROACH UAL114 07R",
+                  "accepted": true,
+                  "message": "UAL114 APPROACH accepted"
+                },
+                {
+                  "command": "TAKEOFF CFG113 18",
+                  "accepted": true,
+                  "message": "CFG113 cleared for takeoff runway 18"
+                }
+              ],
+              "input_plan": "Break the convergence: SPEED UAL108 150, DLH112 145, AFR110 140 to rebuild spacing on their respective finals (25L/25C/25R). UAL102 lands 25L imminently. TAKEOFF KLM111 18 now; CFG113 and BAW115 queue behind (CFG113 is a departure, not approach). UAL114 (A320, SE) cleared to 25L behind UAL108; AFR116 (B738, north) to 25R behind AFR110. Recheck conflicts next window; if still <3NM, consider go-around for the trailing aircraft.",
+              "output_plan": "Wind now easterly: use 07C/07R/07L for arrivals, 18 still OK for departures (crosswind ~18kt within limits). DLH112 cleared 07C, AFR110 07L, UAL114 07R. UAL108 (0.8NM from DLH112) HOLDs to rebuild separation, re-approach next window. AFR116 queues for 07L behind AFR110. TAKEOFF CFG113 18 now; BAW115 and KLM117 follow. Recheck the UAL108/DLH112 pair next turn.",
+              "note": "Accepted new-flow clearances show a command response; separation and throughput outcomes still determine its quality."
+            }
+          ],
+          "prompt_version": "frankfurt-controller-v3",
+          "model": "z-ai/glm-5.3-flash",
+          "settings": {
+            "temperature": 0,
+            "max_tokens": 8192,
+            "reasoning_effort": "low",
+            "timeout_s": 180,
+            "provider_sort": null,
+            "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
+          },
+          "interruption_records": []
+        },
+        {
+          "agent": "openrouter",
+          "cohort": "luna",
+          "label": "GPT 6 Luna",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "wind_shift",
+            "duration_s": 1800,
+            "agent": "openrouter",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 9,
+            "separation_loss_seconds": 370.0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 0,
+            "invalid_commands": 1,
+            "runway_closures": 0,
+            "closure_go_arounds": 0,
+            "score": 107.476,
+            "landed": 4,
+            "departed": 9,
+            "diverted": 0,
+            "crashed": 0,
+            "unfinished": 12,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 5709.0,
+            "airborne_seconds": 17553.0,
+            "ground_wait_seconds": 4402.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 366.833,
+            "ground_wait_max_seconds": 631.0,
+            "ground_wait_score": 44.989,
+            "ground_wait_score_component": -73.367,
+            "emergency_wait_seconds": 0,
+            "emergency_wait_count": 0,
+            "emergency_wait_mean_seconds": null,
+            "emergency_wait_max_seconds": null,
+            "emergency_wait_score": null,
+            "emergency_wait_score_component": 0.0,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.52,
+            "safety_violations": 9,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              370.0,
+              0,
+              -13,
+              5709.0,
+              17553.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 12482.0,
+            "landing_wait_mean_seconds": 960.154,
+            "landing_wait_max_seconds": 1598.0,
+            "landing_wait_score": 38.458,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 5,
+                "seconds": 4139.0,
+                "mean_seconds": 827.8,
+                "max_seconds": 1296.0
+              },
+              "pending": {
+                "count": 8,
+                "seconds": 8343.0,
+                "mean_seconds": 1042.875,
+                "max_seconds": 1598.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            }
+          },
+          "wall_duration_s": 70.383,
+          "error": null,
+          "record_file": "gpt-6-luna-wind_shift-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/gpt-6-luna-wind_shift-seed7.json",
+          "record_sha256": "0683deb197d05872568d7dded4ed38df213bf4b553fc23bfab9aad02a2c35b4e",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "18926bc77c0d223d0ec7e96610d6c9aec6446ef0b7bbb2cc39f0c5157c58e8cd",
+          "decision_count": 15,
+          "successful_decisions": 15,
+          "mean_call_latency_s": 4.672866666666667,
+          "median_call_latency_s": 4.341,
+          "total_call_latency_s": 70.093,
+          "known_api_cost_usd": 0.023294525,
+          "api_cost_usd": 0.023294525,
+          "reported_cost_calls": 15,
+          "unknown_cost_calls": 0,
+          "reconciled_zero_cost_calls": 0,
+          "failed_attempts": [],
+          "providers": [
+            "OpenAI"
+          ],
+          "provider_routing": [
+            {
+              "time_s": 0.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 120.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 240.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 360.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 480.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 600.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 720.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 840.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 960.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1080.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1200.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1320.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1560.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "throughput",
+              "provider": "OpenAI",
+              "status": "ok"
+            }
+          ],
+          "memory": {
+            "final_input_successful_decisions": 14,
+            "successful_decisions_counter": 15,
+            "final_input_memory_turns": 4,
+            "final_retained_memory_turns": 4,
+            "checked_plan_transitions": 14,
+            "matched_plan_transitions": 14,
+            "last_input_plan": "Preserve NW/07L for AFR110 and SOUTH/07R for DLH112 until each has landed and cleared; both remain on final, with DLH112 nearing touchdown. CENTER/07C is available, but defer another approach clearance until the active finals progress and nearby arrivals are reassessed. Keep UAL108, UAL114, AFR116, DLH118, UAL120, AFR122, and DLH124 under current clearances; monitor UAL114/UAL120 separation after the altitude change. CFG119 is cleared for runway 18, which is available and suitable. Keep KLM123 queued, then reassess runway status, traffic spacing, and weather next turn.",
+            "last_output_plan": "AFR110 remains committed to NW/07L until landing and runway clearance. DLH112 has landed, freeing SOUTH/07R. UAL114 is at 13,000 ft and the prior UAL114–UAL120 conflict is no longer present; clear UAL114 for CENTER/07C and monitor its intercept and spacing against AFR110. Keep AFR116, DLH118, UAL108, UAL120, AFR122, and DLH124 on their current clearances; sequence only after checking altitude and proximity. KLM123 remains queued for departure; use runway 18 when available and suitable. Reassess final progress, runway occupancy, and conflicts next turn."
+          },
+          "findings": [
+            {
+              "title": "First decision after the wind shift",
+              "event_time_s": 810.0,
+              "observation_time_s": 840.0,
+              "active_direction": "07",
+              "event": "Wind changed: active runway direction 07",
+              "commands": [
+                {
+                  "command": "APPROACH DLH106 07C",
+                  "accepted": true,
+                  "message": "DLH106 APPROACH accepted"
+                },
+                {
+                  "command": "TAKEOFF CFG113 18",
+                  "accepted": true,
+                  "message": "CFG113 cleared for takeoff runway 18"
+                }
+              ],
+              "input_plan": "Prioritize separation: AFR110 and AFR116 are only 2.889 NM apart at the same altitude. Climb AFR116 to 10,000 ft and reassess their spacing next turn; keep AFR110 holding until safely separated. Preserve CFG101 on NW/25R, UAL102 on SOUTH/25L, and DLH106 on CENTER/25C through touchdown and runway clearance. DLH112, UAL108, and UAL114 remain holding/inbound without approach clearance. KLM111 departs on runway 18; keep 18 clear until it is airborne and outbound. CFG113 and BAW115 remain queued. At the next observation, check conflict status and runway availability before sequencing another arrival onto a clear 25-direction runway.",
+              "output_plan": "Wind direction is now 07. Reserve CENTER/07C for DLH106; it is close in, so monitor its approach progress and do not use the CENTER physical runway for another arrival until it clears. CFG113 departs on runway 18; tailwind component is within the 5-kt limit. Keep other ground departures queued. UAL108, AFR110, DLH112, UAL114, and AFR116 remain unassigned/holding or inbound; reassess their spacing and position before approach clearance. Use compatible open 07-direction runways for subsequent arrivals, one per physical runway, and check wind, runway availability, and conflicts again next observation.",
+              "note": "Accepted new-flow clearances show a command response; separation and throughput outcomes still determine its quality."
+            }
+          ],
+          "prompt_version": "frankfurt-controller-v3",
+          "model": "openai/gpt-6-luna",
+          "settings": {
+            "temperature": 0,
+            "max_tokens": 8192,
+            "reasoning_effort": "low",
+            "timeout_s": 180,
+            "provider_sort": "throughput",
+            "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
+          },
+          "interruption_records": []
+        },
+        {
+          "agent": "reference",
+          "cohort": "reference",
+          "label": "Reference policy",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "wind_shift",
+            "duration_s": 1800,
+            "agent": "reference",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 6,
+            "separation_loss_seconds": 378.0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 0,
+            "invalid_commands": 0,
+            "runway_closures": 0,
+            "closure_go_arounds": 0,
+            "score": 120.299,
+            "landed": 4,
+            "departed": 9,
+            "diverted": 0,
+            "crashed": 0,
+            "unfinished": 12,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 4825.0,
+            "airborne_seconds": 18301.0,
+            "ground_wait_seconds": 3562.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 296.833,
+            "ground_wait_max_seconds": 391.0,
+            "ground_wait_score": 50.265,
+            "ground_wait_score_component": -59.367,
+            "emergency_wait_seconds": 0,
+            "emergency_wait_count": 0,
+            "emergency_wait_mean_seconds": null,
+            "emergency_wait_max_seconds": null,
+            "emergency_wait_score": null,
+            "emergency_wait_score_component": 0.0,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.52,
+            "safety_violations": 6,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              378.0,
+              0,
+              -13,
+              4825.0,
+              18301.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 12815.0,
+            "landing_wait_mean_seconds": 985.769,
+            "landing_wait_max_seconds": 1729.0,
+            "landing_wait_score": 37.837,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 5,
+                "seconds": 4613.0,
+                "mean_seconds": 922.6,
+                "max_seconds": 1729.0
+              },
+              "pending": {
+                "count": 8,
+                "seconds": 8202.0,
+                "mean_seconds": 1025.25,
+                "max_seconds": 1598.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            }
+          },
+          "wall_duration_s": 0.27,
+          "error": null,
+          "record_file": "reference-wind_shift-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/reference-wind_shift-seed7.json",
+          "record_sha256": "47aa655a4c9ad67e2b9211f45294bae2ed8a8a1976ce7862a2311355891b6aea",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "18926bc77c0d223d0ec7e96610d6c9aec6446ef0b7bbb2cc39f0c5157c58e8cd"
+        },
+        {
+          "agent": "noop",
+          "cohort": "noop",
+          "label": "No commands",
+          "status": "completed",
+          "configuration": {
+            "seed": 7,
+            "scenario": "wind_shift",
+            "duration_s": 1800,
+            "agent": "noop",
+            "step_seconds": 120
+          },
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 0,
+            "separation_loss_seconds": 0,
+            "runway_incursions": 0,
+            "wake_violations": 0,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 0,
+            "invalid_commands": 0,
+            "runway_closures": 0,
+            "closure_go_arounds": 0,
+            "score": -973.212,
+            "landed": 0,
+            "departed": 0,
+            "diverted": 10,
+            "crashed": 0,
+            "unfinished": 15,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 15682.0,
+            "airborne_seconds": 11486.0,
+            "ground_wait_seconds": 15682.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 1306.833,
+            "ground_wait_max_seconds": 1800.0,
+            "ground_wait_score": 18.67,
+            "ground_wait_score_component": -261.367,
+            "emergency_wait_seconds": 0,
+            "emergency_wait_count": 0,
+            "emergency_wait_mean_seconds": null,
+            "emergency_wait_max_seconds": null,
+            "emergency_wait_score": null,
+            "emergency_wait_score_component": 0.0,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.0,
+            "safety_violations": 0,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              15682.0,
+              11486.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 11486.0,
+            "landing_wait_mean_seconds": 883.538,
+            "landing_wait_max_seconds": 1050.0,
+            "landing_wait_score": 40.444,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 3,
+                "seconds": 2053.0,
+                "mean_seconds": 684.333,
+                "max_seconds": 816.0
+              },
+              "failed": {
+                "count": 10,
+                "seconds": 9433.0,
+                "mean_seconds": 943.3,
+                "max_seconds": 1050.0
+              }
+            }
+          },
+          "wall_duration_s": 0.123,
+          "error": null,
+          "record_file": "noop-wind_shift-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/noop-wind_shift-seed7.json",
+          "record_sha256": "205a26050a22432d49b1cf4f38addb7fea08ab9b053bec4502aa0ef264b730a8",
+          "resume_info": null,
+          "previous_resumes": [],
+          "initial_world_sha256": "18926bc77c0d223d0ec7e96610d6c9aec6446ef0b7bbb2cc39f0c5157c58e8cd"
+        }
+      ]
+    }
+  ],
+  "aggregates": {
+    "glm": {
+      "label": "GLM 5.3 Flash",
+      "model": "z-ai/glm-5.3-flash",
+      "completed_episodes": 0,
+      "completed_flights": 0,
+      "spawned": 0,
+      "collisions": 0,
+      "crashes": 0,
+      "failed_emergencies": 0,
+      "separation_losses": 0,
+      "separation_loss_seconds": 0,
+      "known_api_cost_usd": 0.021454630000000002,
+      "unknown_cost_calls": 2
+    },
+    "luna": {
+      "label": "GPT 6 Luna",
+      "model": "openai/gpt-6-luna",
+      "completed_episodes": 3,
+      "completed_flights": 42,
+      "spawned": 75,
+      "collisions": 0,
+      "crashes": 0,
+      "failed_emergencies": 0,
+      "separation_losses": 19,
+      "separation_loss_seconds": 880.0,
+      "known_api_cost_usd": 0.068765755,
+      "unknown_cost_calls": 0
+    }
+  },
+  "observations": [
+    "Across 3 completed scenarios, GPT 6 Luna completed 42 flights versus 42 for the matched reference policy, with 880 versus 583 separation-loss pair-seconds. Read individual safety and service outcomes below.",
+    "GPT 6 Luna's runway closure episode ended with 3 failed arrival outcome(s), including diversions or crashes. Its landing-wait mean includes those flights and cannot by itself demonstrate better landing service.",
+    "In the emergency episode, GPT 6 Luna resolved 3 emergency landings with 0 failures; mean emergency wait was 519.3s versus reference 645.3s. Separation loss was 378 versus 136 pair-seconds, and mean departure queue wait 466.8s versus 296.8s."
+  ],
+  "billing_reconciliation_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/billing-reconciliation.json"
+}

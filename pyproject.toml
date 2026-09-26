@@ -11,6 +11,7 @@ dependencies = []
 
 [project.optional-dependencies]
 bluesky = ["bluesky-simulator==1.1.1"]
+videos = ["Pillow>=10"]
 
 [project.scripts]
 atc-bench = "atc_bench.cli:main"
@@ -19,4 +20,4 @@ atc-bench = "atc_bench.cli:main"
 include = ["atc_bench*"]
 
 [tool.setuptools.package-data]
-atc_bench = ["web/*"]
+atc_bench = ["web/*", "web/videos/*"]

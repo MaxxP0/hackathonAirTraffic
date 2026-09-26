@@ -1,0 +1,8 @@
+{
+  "time_unix": 1790431492.761633,
+  "provider_usage_usd": 0.020035355,
+  "confirmed_cost_usd": 0.020035355,
+  "reconciled_zero_cost_requests": 3,
+  "evidence": "After all requests had finished, provider account-key usage equaled the sum of confirmed charges. 3 interrupted requests were reconciled at zero cost; historical decision records still retain their original null cost.",
+  "scope": "Account total at reconciliation, including two dashboard calls; this is not the three-episode subtotal. Reservation identifiers are omitted."
+}

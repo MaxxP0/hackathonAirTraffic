@@ -15,3 +15,8 @@
 .metric-outcomes{display:block;color:#8493a2;font-size:9px;line-height:1.4;margin-top:6px}.metric.alert .metric-outcomes{color:var(--red)}
 
 .decision-window-note{font-size:11px;line-height:1.5;opacity:.7}.controller-plan{margin-top:10px;font-size:12px;line-height:1.6}.controller-plan summary{cursor:pointer}.controller-plan p{white-space:pre-wrap;max-height:220px;overflow:auto}
+.controller-panel .controller-cost{color:var(--teal);font:10px var(--mono);line-height:1.6}
+.radar-heading-actions{display:flex;align-items:center;gap:18px}.event-videos-link{font:10px var(--mono);color:var(--teal);text-decoration:none;white-space:nowrap}.event-videos-link:hover{text-decoration:underline}@media(max-width:1000px){.radar-heading-actions{align-items:flex-end;flex-direction:column;gap:8px}.event-videos-link{font-size:9px}}
+.controller-panel .controller-cost.cost-error{color:var(--red)}
+/* Nine episode diagnostics in balanced rows. */
+@media(min-width:761px){.metric-strip{grid-template-columns:repeat(3,minmax(0,1fr))}.metric:nth-child(n){border-right:1px solid var(--line)}.metric:nth-child(3n){border-right:0}}

@@ -227,7 +227,8 @@ class HttpTests(unittest.TestCase):
     def test_scenario_inventory_and_unknown_endpoint(self):
         status, _, body = self.request("/api/scenarios")
         self.assertEqual(status, 200)
-        self.assertEqual(len(json.loads(body)["scenarios"]), 6)
+        self.assertEqual(len(json.loads(body)["scenarios"]), 7)
+        self.assertIn("runway_closure", json.loads(body)["scenarios"])
         status, _, body = self.request("/api/no-such-endpoint")
         self.assertEqual(status, 404)
         self.assertIn("error", json.loads(body))

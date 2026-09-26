@@ -1,0 +1,92 @@
+{
+  "models": {
+    "glm": "z-ai/glm-5.3-flash",
+    "luna": "openai/gpt-6-luna"
+  },
+  "records": [
+    {
+      "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json",
+      "sha256": "ad8bc392418b4378ddb3fd1febdbb426d288e93ac012d58a52fb70f8ad25d0e8",
+      "source": "results/glm-completed-v3/openrouter-runway_closure-7.json",
+      "status": "partial"
+    },
+    {
+      "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1440s-1failures.json",
+      "sha256": "e2112b13bb9898b67d0510a010dbd18c62d8ad4aacd856e687622198f83f110c",
+      "source": "results/glm-closure-v3/openrouter-runway_closure-7.json",
+      "status": "interrupted_before_resume"
+    },
+    {
+      "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-2failures.json",
+      "sha256": "e8008c1754ca2e01524109b0015ee58e45aeaadf1628545586966272301e42cd",
+      "source": "results/glm-completed-v3/openrouter-runway_closure-7-interrupted-1680s.json",
+      "status": "interrupted_before_resume"
+    },
+    {
+      "file": "gpt-6-luna-runway_closure-seed7.json",
+      "sha256": "da46c587c2ac7a70a99614118d528ad3f113a34ebc558cb614657e8e5ad47acf",
+      "source": "results/luna-v3/openrouter-runway_closure-7.json",
+      "status": "completed"
+    },
+    {
+      "file": "reference-runway_closure-seed7.json",
+      "sha256": "4d177a2d4ed5a38d4a1b53df12f1692dc98658416292f08c25a3ed17d9bdbccd",
+      "source": "results/glm-closure-v3/reference-runway_closure-7.json",
+      "status": "completed"
+    },
+    {
+      "file": "noop-runway_closure-seed7.json",
+      "sha256": "ca7069d6531c92da556dad156b61cae1c57cdd9aa124bf0932862266b5809af6",
+      "source": "results/glm-closure-v3/noop-runway_closure-7.json",
+      "status": "completed"
+    },
+    {
+      "file": "glm-5.3-flash-emergency-seed7-interrupted-1440s-1failures.json",
+      "sha256": "84b5ce4fbadab807f5ec7a51a9936e828f35dce7d682f1713091940e1c2d5e23",
+      "source": "results/glm-emergency-v3/openrouter-emergency-7.json",
+      "status": "partial"
+    },
+    {
+      "file": "gpt-6-luna-emergency-seed7.json",
+      "sha256": "c41284cadbe9cac9b04a5314a8345bf4c781f499a6ded9a60ec786f0c4fe2a05",
+      "source": "results/luna-v3/openrouter-emergency-7.json",
+      "status": "completed"
+    },
+    {
+      "file": "reference-emergency-seed7.json",
+      "sha256": "2d92a0dbdd69a3865b7ba069863cad06c4c26cd1cf10a277ecae5f2b3cd68e95",
+      "source": "results/glm-emergency-v3/reference-emergency-7.json",
+      "status": "completed"
+    },
+    {
+      "file": "noop-emergency-seed7.json",
+      "sha256": "e3bd97d19cb9b2714102a3759ae7235123d74177ee156c152079658b984e9389",
+      "source": "results/glm-emergency-v3/noop-emergency-7.json",
+      "status": "completed"
+    },
+    {
+      "file": "glm-5.3-flash-wind_shift-seed7-interrupted-1440s-1failures.json",
+      "sha256": "4b9c9f101c5afb74c2b6b8cb991b87fbe52ecc00358a9f70b294d3361779b632",
+      "source": "results/glm-wind-v3/openrouter-wind_shift-7.json",
+      "status": "partial"
+    },
+    {
+      "file": "gpt-6-luna-wind_shift-seed7.json",
+      "sha256": "0683deb197d05872568d7dded4ed38df213bf4b553fc23bfab9aad02a2c35b4e",
+      "source": "results/luna-v3/openrouter-wind_shift-7.json",
+      "status": "completed"
+    },
+    {
+      "file": "reference-wind_shift-seed7.json",
+      "sha256": "47aa655a4c9ad67e2b9211f45294bae2ed8a8a1976ce7862a2311355891b6aea",
+      "source": "results/glm-wind-v3/reference-wind_shift-7.json",
+      "status": "completed"
+    },
+    {
+      "file": "noop-wind_shift-seed7.json",
+      "sha256": "205a26050a22432d49b1cf4f38addb7fea08ab9b053bec4502aa0ef264b730a8",
+      "source": "results/glm-wind-v3/noop-wind_shift-7.json",
+      "status": "completed"
+    }
+  ]
+}

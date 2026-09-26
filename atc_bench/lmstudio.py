@@ -159,6 +159,8 @@ def compact_observation(observation: dict) -> dict:
 
 
 class LMStudioAgent:
+    provider_label = "LM Studio"
+
     def __init__(self, base_url: str = "http://127.0.0.1:1234", model: str | None = None,
                  timeout_s: float = 900, max_tokens: int = 8192, temperature: float = 0,
                  max_memory_turns: int = 4):
@@ -312,7 +314,7 @@ class LMStudioAgent:
                 self._discover_model()
             self.last_decision["model"] = self.model
             self._calls += 1
-            print(f"LM Studio call {self._calls}: t={observation.get('time_s')}s model={self.model}", file=sys.stderr, flush=True)
+            print(f"{self.provider_label} call {self._calls}: t={observation.get('time_s')}s model={self.model}", file=sys.stderr, flush=True)
             payload = {
                 "model": self.model,
                 "messages": [{"role": "system", "content": SYSTEM_PROMPT},
@@ -338,30 +340,30 @@ class LMStudioAgent:
                     self._usage[key] = self._usage.get(key, 0) + value
             choices = response.get("choices")
             if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
-                raise LMStudioError("LM Studio returned no completion choice")
+                raise LMStudioError(f"{self.provider_label} returned no completion choice")
             choice = choices[0]
             self.last_decision["finish_reason"] = choice.get("finish_reason")
             if choice.get("finish_reason") not in {"stop", None}:
-                raise LMStudioError(f"LM Studio completion ended with {choice.get('finish_reason')!r}; no commands applied")
+                raise LMStudioError(f"{self.provider_label} completion ended with {choice.get('finish_reason')!r}; no commands applied")
             message = choice.get("message")
             content = message.get("content") if isinstance(message, dict) else None
             if not isinstance(content, str):
-                raise LMStudioError("LM Studio returned no JSON content")
+                raise LMStudioError(f"{self.provider_label} returned no JSON content")
             try:
                 decision = json.loads(content)
             except ValueError as error:
-                raise LMStudioError("LM Studio returned invalid decision JSON; no commands applied") from error
+                raise LMStudioError(f"{self.provider_label} returned invalid decision JSON; no commands applied") from error
             if not isinstance(decision, dict) or set(decision) != {"commands", "summary", "plan"}:
-                raise LMStudioError("LM Studio decision must contain only commands, summary and plan")
+                raise LMStudioError(f"{self.provider_label} decision must contain only commands, summary and plan")
             commands, summary, plan = decision["commands"], decision["summary"], decision["plan"]
             if not isinstance(commands, list) or len(commands) > MAX_COMMANDS or any(
                 not isinstance(command, str) or not command.strip() or len(command) > MAX_COMMAND_CHARS for command in commands
             ):
-                raise LMStudioError(f"LM Studio commands must be at most {MAX_COMMANDS} nonempty strings of at most {MAX_COMMAND_CHARS} characters")
+                raise LMStudioError(f"{self.provider_label} commands must be at most {MAX_COMMANDS} nonempty strings of at most {MAX_COMMAND_CHARS} characters")
             if not isinstance(summary, str) or len(summary) > MAX_SUMMARY_CHARS:
-                raise LMStudioError(f"LM Studio summary must be a string of at most {MAX_SUMMARY_CHARS} characters")
+                raise LMStudioError(f"{self.provider_label} summary must be a string of at most {MAX_SUMMARY_CHARS} characters")
             if not isinstance(plan, str) or not plan.strip() or len(plan) > MAX_PLAN_CHARS:
-                raise LMStudioError(f"LM Studio plan must be a nonempty string of at most {MAX_PLAN_CHARS} characters")
+                raise LMStudioError(f"{self.provider_label} plan must be a nonempty string of at most {MAX_PLAN_CHARS} characters")
             self.latest_plan = plan
             self._successful_decisions += 1
             self._last_decision_error = None
@@ -379,5 +381,5 @@ class LMStudioAgent:
             latency = time.perf_counter() - started
             self._latencies.append(latency)
             self.last_decision["latency_s"] = round(latency, 3)
-            print(f"LM Studio t={observation.get('time_s')}s: {self.last_decision['status']} "
+            print(f"{self.provider_label} t={observation.get('time_s')}s: {self.last_decision['status']} "
                   f"{latency:.2f}s, {len(self.last_decision['commands'])} commands", file=sys.stderr, flush=True)

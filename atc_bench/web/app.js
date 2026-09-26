@@ -7,7 +7,7 @@
   const format = (value, digits = 0) => number(value).toLocaleString('en-US', {maximumFractionDigits: digits, minimumFractionDigits: digits});
   const finished = new Set(['landed', 'departed', 'diverted', 'crashed']);
   const groundStates = new Set(['ground', 'landing_roll', 'taxi_in', 'takeoff_roll']);
-  const scenarioNames = {mixed: 'Mixed traffic', rush_hour: 'Rush hour', low_visibility: 'Low visibility', storm: 'Convective weather', emergency: 'Emergency arrival', wind_shift: 'Wind shift'};
+  const scenarioNames = {mixed: 'Mixed traffic', rush_hour: 'Rush hour', low_visibility: 'Low visibility', storm: 'Convective weather', emergency: 'Emergency arrival', wind_shift: 'Wind shift', runway_closure: 'Surprise runway closure'};
   const canvas = $('radar');
   const context = canvas.getContext('2d');
   let observation = null;
@@ -30,10 +30,14 @@
   let statePollTimer = null;
   let statePollPending = false;
   let externalInferenceStartedAt = null;
+  const defaultHostedModel = 'z-ai/glm-5.3-flash';
+  const modelInputs = {lmstudio: '', openrouter: defaultHostedModel, reference: ''};
+  let modelInputKind = 'lmstudio';
 
   const controllerKind = () => observation?.controller?.kind || 'reference';
-  const controllerName = () => controllerKind() === 'lmstudio' ? 'LM Studio' : 'Reference';
-  const llmEnabled = () => controllerKind() === 'lmstudio' && $('autopilot').checked;
+  const isLLM = (kind = controllerKind()) => ['lmstudio', 'openrouter'].includes(kind);
+  const controllerName = () => ({lmstudio: 'LM Studio', openrouter: 'Hosted OpenRouter', reference: 'Reference'}[controllerKind()] || 'Reference');
+  const llmEnabled = () => isLLM() && $('autopilot').checked;
   const decisionInterval = () => number($('decision-interval').value, 120);
   const externalThinking = () => inferenceStartedAt === null && observation?.controller?.status === 'thinking';
 
@@ -70,7 +74,9 @@
     $('scenario').disabled = busy;
     $('seed').disabled = busy;
     $('controller-kind').disabled = busy;
-    $('controller-model').disabled = busy || $('controller-kind').value !== 'lmstudio';
+    $('controller-model').disabled = busy || !isLLM($('controller-kind').value);
+    $('controller-model').placeholder = $('controller-kind').value === 'openrouter' ? defaultHostedModel : 'Auto-select loaded model';
+    $('controller-model').setAttribute('aria-label', $('controller-kind').value === 'openrouter' ? 'OpenRouter model identifier' : 'LM Studio model identifier');
     $('apply-controller').disabled = busy || !observation;
     $('autopilot').disabled = busy;
     $('decision-interval').disabled = busy;
@@ -143,7 +149,7 @@
   async function advance(seconds, commands = [], autopilot = $('autopilot').checked) {
     if (pending || externalThinking() || !observation || observation.done) return;
     pending = true;
-    if (seconds > 0 && autopilot && controllerKind() === 'lmstudio') {
+    if (seconds > 0 && autopilot && isLLM()) {
       inferenceStartedAt = performance.now();
       pauseRequestedDuringInference = false;
       inferenceTimer = setInterval(renderController, 250);
@@ -181,15 +187,30 @@
 
   function renderController() {
     const controller = observation?.controller;
-    const llm = controllerKind() === 'lmstudio';
+    const llm = isLLM();
     const thinking = inferenceStartedAt !== null || controller?.status === 'thinking';
     const status = thinking ? 'thinking' : controller?.error || controller?.status === 'error' ? 'error' : !$('autopilot').checked ? 'manual' : controller?.status || 'idle';
     $('controller-label').textContent = `${controllerName()} controller`;
     $('controller-status').textContent = status.toUpperCase();
     $('controller-status').className = `controller-status ${status}`;
-    $('controller-model-name').textContent = llm ? controller?.model || 'LM Studio · automatic model selection' : 'Rule-based reference controller';
+    $('controller-model-name').textContent = llm ? controller?.model || (controllerKind() === 'openrouter' ? defaultHostedModel : 'LM Studio · automatic model selection') : 'Rule-based reference controller';
     const decision = controller?.last_decision;
     const latency = decision?.latency_s;
+    const budget = controller?.budget || decision?.budget;
+    const costDetails = [];
+    if (controllerKind() === 'openrouter') {
+      if (controller?.budget_error) costDetails.push(controller.budget_error);
+      else {
+        if (budget?.spent_usd != null && budget?.limit_usd != null) costDetails.push(`Spent $${format(budget.spent_usd, 4)} / $${format(budget.limit_usd, 2)}`);
+        if (controller?.budget_blocked) costDetails.push('Budget guard blocks further model requests');
+        else if (budget?.remaining_usd != null) costDetails.push(`$${format(budget.remaining_usd, 4)} available`);
+        if (number(budget?.reserved_usd) > 0) costDetails.push(`$${format(budget.reserved_usd, 4)} reserved`);
+      }
+      if (decision?.cost_usd != null) costDetails.push(`last call $${format(decision.cost_usd, 6)}`);
+    }
+    $('controller-cost').textContent = costDetails.join(' · ');
+    $('controller-cost').hidden = costDetails.length === 0;
+    $('controller-cost').classList.toggle('cost-error', Boolean(controller?.budget_error || controller?.budget_blocked));
     $('controller-timing').textContent = thinking && inferenceStartedAt !== null ? `${format((performance.now() - inferenceStartedAt) / 1000, 1)}s elapsed · simulation waiting` : thinking && externalInferenceStartedAt !== null ? `Observing for ${format((performance.now() - externalInferenceStartedAt) / 1000, 1)}s · waiting for current decision` : `${number(controller?.decision_count)} decisions${latency != null ? ` · last call ${format(latency, 1)}s` : ''}${decision?.memory_turns != null ? ` · ${decision.memory_turns} turns in memory` : ''}`;
     if (thinking) $('controller-summary').textContent = externalThinking() ? 'A controller decision is already in progress. Waiting for its result before enabling controls.' : pauseRequestedDuringInference ? 'Pause requested. The current decision will finish; no further decisions will run.' : `Planning the next ${decisionInterval()} simulated seconds. Simulation time is paused while the model thinks.`;
     else if (controller?.error) $('controller-summary').textContent = controller.error;
@@ -214,6 +235,7 @@
     if (!state || !Array.isArray(state.aircraft) || !state.airport || !state.weather || !state.metrics) throw new Error('The simulator returned an incomplete observation.');
     observation = state;
     $('controller-kind').value = controllerKind();
+    if (modelInputKind !== controllerKind()) selectModelInput(controllerKind());
     if (state.done) pause();
     if (selected && !state.aircraft.some((aircraft) => aircraft.callsign === selected)) selected = null;
     const active = activeAircraft();
@@ -237,6 +259,11 @@
     const outcomes = metrics.emergency_wait_by_outcome;
     $('emergency-outcomes').textContent = metrics.emergency_wait_score == null || !outcomes ? '' : `${number(outcomes.resolved?.count)} resolved · ${number(outcomes.pending?.count)} pending · ${number(outcomes.failed?.count)} failed`;
     $('metric-emergency-score').parentElement.classList.toggle('alert', number(outcomes?.failed?.count) > 0);
+    const landing = state.landing_metrics || {};
+    $('metric-landing-score').innerHTML = landing.landing_wait_score == null ? '—' : `${format(landing.landing_wait_score, 1)}<span class="metric-unit"> / 100</span>`;
+    $('landing-wait-detail').textContent = landing.landing_wait_mean_seconds == null ? 'No arrivals yet' : `Mean ${clock(landing.landing_wait_mean_seconds)} · max ${clock(landing.landing_wait_max_seconds)}`;
+    const landingOutcomes = landing.landing_wait_by_outcome;
+    $('landing-outcomes').textContent = !landingOutcomes ? '' : `${number(landingOutcomes.landed?.count)} touched down · ${number(landingOutcomes.pending?.count)} pending · ${number(landingOutcomes.failed?.count)} failed/diverting`;
     $('metric-collisions').textContent = format(metrics.collisions);
     $('metric-collisions').parentElement.classList.toggle('alert', number(metrics.collisions) > 0);
     $('collision-detail').innerHTML = `<i class="status-dot"></i>${number(metrics.collisions) ? 'Collision recorded' : 'No collisions recorded'}`;
@@ -533,21 +560,30 @@
     $('command').focus();
   }
 
+  function selectModelInput(kind) {
+    modelInputs[modelInputKind] = $('controller-model').value.trim();
+    modelInputKind = kind;
+    $('controller-model').value = modelInputs[kind] || '';
+  }
+
   $('play').addEventListener('click', () => { if (running) pause(); else { running = true; updateControls(); scheduleTick(true); } });
   $('step').addEventListener('click', () => { pause(); advance(llmEnabled() ? decisionInterval() : 10); });
   $('decision-interval').addEventListener('change', updateControls);
-  $('controller-kind').addEventListener('change', () => { pause(); updateControls(); });
+  $('controller-kind').addEventListener('change', () => { selectModelInput($('controller-kind').value); pause(); updateControls(); });
   $('apply-controller').addEventListener('click', async () => {
     if (pending || externalThinking() || !observation) return;
     pause(); pending = true; updateControls();
     try {
-      const state = await request('/api/controller', {kind: $('controller-kind').value, base_url: observation.controller?.base_url || 'http://127.0.0.1:1234', model: $('controller-model').value.trim()});
+      const config = {kind: $('controller-kind').value, model: $('controller-model').value.trim()};
+      if (config.kind === 'lmstudio') config.base_url = observation.controller?.base_url || 'http://127.0.0.1:1234';
+      const state = await request('/api/controller', config);
       acceptObservation(state);
       addConsoleLine('CONTROLLER', `${controllerName()} selected${state.controller?.model ? ` · ${state.controller.model}` : ''}. Press Run or Step to continue.`, true);
       setNotice(); setConnected(true);
     } catch (error) {
       if (error.controller) observation.controller = error.controller;
       $('controller-kind').value = controllerKind();
+      selectModelInput(controllerKind());
       setNotice(error.message);
       addConsoleLine('CONTROLLER ERROR', error.message, false);
     } finally { pending = false; updateControls(); }
@@ -638,6 +674,8 @@
       }
       $('scenario').value = state.scenario;
       $('controller-model').value = state.controller?.model || '';
+      modelInputKind = state.controller?.kind || 'reference';
+      modelInputs[modelInputKind] = $('controller-model').value;
       acceptObservation(state); setConnected(true);
       addConsoleLine('CONNECTED', `EDDF · ${Math.round(number(state.duration_s) / 60)} minute episode · ${controllerName()} controller ${$('autopilot').checked ? 'on' : 'off'}`, true);
     } catch (error) {

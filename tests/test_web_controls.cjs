@@ -152,3 +152,62 @@ test('a failed status poll keeps mutations disabled and retries until state is r
   assert.equal(ui.get('reset').disabled, false);
   assert.equal(ui.timers.size, 0);
 });
+
+test('OpenRouter runs as an accelerated LLM and displays spend without exposing credentials', async () => {
+  const hosted = state({kind: 'openrouter', model: 'z-ai/glm-5.3-flash',
+    budget: {limit_usd: 10, spent_usd: .02, reserved_usd: .01, remaining_usd: 9.97}});
+  const ui = harness(hosted); await flush();
+  assert.equal(ui.get('controller-label').textContent, 'Hosted OpenRouter controller');
+  assert.equal(ui.get('controller-model').disabled, false);
+  assert.equal(ui.get('speed').disabled, true);
+  assert.match(ui.get('controller-cost').textContent, /Spent \$0.0200 \/ \$10.00/);
+  assert.match(ui.get('controller-cost').textContent, /\$0.0100 reserved/);
+  ui.click('play'); const request = ui.tick(); await flush();
+  assert.equal(ui.get('controller-status').textContent, 'THINKING');
+  assert.equal(ui.requests[1].body.seconds, 120);
+  assert.equal(ui.get('sim-clock').textContent, 'T+ 00:00:00');
+  ui.click('play');
+  ui.resolve({...hosted, time_s: 120, controller: {...hosted.controller, status: 'ready', decision_count: 1,
+    last_decision: {commands: [], plan: 'Protect emergency runway', memory_turns: 1, cost_usd: .000123}}});
+  await request;
+  assert.equal(ui.timers.size, 0);
+  assert.equal(ui.get('sim-clock').textContent, 'T+ 00:02:00');
+  assert.match(ui.get('controller-cost').textContent, /last call \$0.000123/);
+  assert.equal(ui.get('controller-plan').textContent, 'Protect emergency runway');
+});
+
+test('switching to OpenRouter chooses its default model and sends no local base URL', async () => {
+  const ui = harness(); await flush();
+  ui.get('controller-kind').value = 'openrouter';
+  ui.get('controller-kind').events.change();
+  assert.equal(ui.get('controller-model').value, 'z-ai/glm-5.3-flash');
+  const connected = ui.click('apply-controller'); await flush();
+  assert.deepEqual(ui.requests[1], {path: '/api/controller', body: {kind: 'openrouter', model: 'z-ai/glm-5.3-flash'}});
+  ui.resolve(state({kind: 'openrouter', model: 'z-ai/glm-5.3-flash'})); await connected;
+  assert.equal(ui.get('controller-kind').value, 'openrouter');
+  ui.get('controller-kind').value = 'lmstudio';
+  ui.get('controller-kind').events.change();
+  assert.equal(ui.get('controller-model').value, 'mock-model');
+  const local = ui.click('apply-controller'); await flush();
+  assert.equal(ui.requests[2].body.base_url, 'http://127.0.0.1:1234');
+  ui.resolve(state()); await local;
+  assert.equal(ui.get('controller-cost').hidden, true);
+});
+
+test('unavailable hosted budget is visible instead of showing stale remaining credit', async () => {
+  const ui = harness(state({kind: 'openrouter', model: 'z-ai/glm-5.3-flash',
+    budget_error: 'OpenRouter budget information is unavailable.',
+    last_decision: {commands: [], budget: {spent_usd: 0, remaining_usd: 10, limit_usd: 10}}}));
+  await flush();
+  assert.equal(ui.get('controller-cost').hidden, false);
+  assert.match(ui.get('controller-cost').textContent, /unavailable/);
+  assert.doesNotMatch(ui.get('controller-cost').textContent, /available of|\$10/);
+});
+
+test('a blocked hosted budget does not advertise remaining credit as available', async () => {
+  const ui = harness(state({kind: 'openrouter', model: 'z-ai/glm-5.3-flash', budget_blocked: true,
+    budget: {spent_usd: 2, remaining_usd: 8, limit_usd: 10}}));
+  await flush();
+  assert.match(ui.get('controller-cost').textContent, /blocks further model requests/);
+  assert.doesNotMatch(ui.get('controller-cost').textContent, /available/);
+});

@@ -1,0 +1,7957 @@
+{
+  "benchmark_version": "0.3.0",
+  "configuration": {
+    "seed": 7,
+    "scenario": "emergency",
+    "duration_s": 1800,
+    "agent": "reference",
+    "step_seconds": 10
+  },
+  "metrics": {
+    "collisions": 0,
+    "separation_losses": 11,
+    "separation_loss_seconds": 453.0,
+    "runway_incursions": 0,
+    "wake_violations": 0,
+    "weather_exposure_seconds": 0,
+    "emergency_landings": 3,
+    "emergencies_failed": 0,
+    "invalid_commands": 0,
+    "runway_closures": 0,
+    "closure_go_arounds": 0,
+    "score": 80.288,
+    "landed": 6,
+    "departed": 10,
+    "diverted": 0,
+    "crashed": 0,
+    "unfinished": 9,
+    "spawned": 25,
+    "emergencies_unresolved": 0,
+    "ground_delay_seconds": 4495.0,
+    "airborne_seconds": 17735.0,
+    "ground_wait_seconds": 2912.0,
+    "ground_wait_count": 12,
+    "ground_wait_mean_seconds": 242.667,
+    "ground_wait_max_seconds": 310.0,
+    "ground_wait_score": 55.283,
+    "ground_wait_score_component": -48.533,
+    "emergency_wait_seconds": 1979.0,
+    "emergency_wait_count": 3,
+    "emergency_wait_mean_seconds": 659.667,
+    "emergency_wait_max_seconds": 917.0,
+    "emergency_wait_score": 21.437,
+    "emergency_wait_score_component": -164.917,
+    "emergency_wait_by_outcome": {
+      "resolved": {
+        "count": 3,
+        "seconds": 1979.0,
+        "mean_seconds": 659.667,
+        "max_seconds": 917.0
+      },
+      "failed": {
+        "count": 0,
+        "seconds": 0,
+        "mean_seconds": null,
+        "max_seconds": null
+      },
+      "pending": {
+        "count": 0,
+        "seconds": 0,
+        "mean_seconds": null,
+        "max_seconds": null
+      }
+    },
+    "completion_rate": 0.64,
+    "safety_violations": 11,
+    "rank_key": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      453.0,
+      0,
+      -16,
+      4495.0,
+      17735.0
+    ]
+  },
+  "rank_key": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    453.0,
+    0,
+    -16,
+    4495.0,
+    17735.0
+  ],
+  "rank_fields": [
+    "collisions",
+    "crashed",
+    "emergencies_failed",
+    "runway_incursions",
+    "wake_violations",
+    "separation_loss_seconds",
+    "weather_exposure_seconds",
+    "negative_completed",
+    "ground_delay_seconds",
+    "airborne_seconds"
+  ],
+  "initial_observation": {
+    "time_s": 0.0,
+    "duration_s": 1800,
+    "seed": 7,
+    "scenario": "emergency",
+    "done": false,
+    "airport": {
+      "icao": "EDDF",
+      "name": "Frankfurt am Main · benchmark mock",
+      "elevation_ft": 328,
+      "radius_nm": 40,
+      "fixes": {
+        "NORTH": [
+          0,
+          22
+        ],
+        "EAST": [
+          24,
+          0
+        ],
+        "SOUTH": [
+          0,
+          -22
+        ],
+        "WEST": [
+          -24,
+          0
+        ]
+      },
+      "runways": [
+        {
+          "id": "07L",
+          "physical_id": "NW",
+          "heading_deg": 70,
+          "length_m": 2800,
+          "threshold": [
+            -2.2103507932506865,
+            1.2414534553693648
+          ],
+          "end": [
+            -0.7896492067493134,
+            1.7585465446306352
+          ],
+          "arrival": true,
+          "departure": false,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            -11.60727700110977,
+            -2.1787479778873236
+          ]
+        },
+        {
+          "id": "25R",
+          "physical_id": "NW",
+          "heading_deg": 250,
+          "length_m": 2800,
+          "threshold": [
+            -0.7896492067493134,
+            1.7585465446306352
+          ],
+          "end": [
+            -2.2103507932506865,
+            1.2414534553693648
+          ],
+          "arrival": true,
+          "departure": false,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            8.607277001109772,
+            5.178747977887321
+          ]
+        },
+        {
+          "id": "07C",
+          "physical_id": "CENTER",
+          "heading_deg": 70,
+          "length_m": 4000,
+          "threshold": [
+            -1.014786847500981,
+            -0.16935220661519307
+          ],
+          "end": [
+            1.014786847500981,
+            0.569352206615193
+          ],
+          "arrival": true,
+          "departure": true,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            -10.411713055360064,
+            -3.5895536398718813
+          ]
+        },
+        {
+          "id": "25C",
+          "physical_id": "CENTER",
+          "heading_deg": 250,
+          "length_m": 4000,
+          "threshold": [
+            1.014786847500981,
+            0.569352206615193
+          ],
+          "end": [
+            -1.014786847500981,
+            -0.16935220661519307
+          ],
+          "arrival": true,
+          "departure": true,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            10.411713055360066,
+            3.989553639871878
+          ]
+        },
+        {
+          "id": "07R",
+          "physical_id": "SOUTH",
+          "heading_deg": 70,
+          "length_m": 4000,
+          "threshold": [
+            -0.814786847500981,
+            -0.9693522066151931
+          ],
+          "end": [
+            1.2147868475009809,
+            -0.2306477933848069
+          ],
+          "arrival": true,
+          "departure": true,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            -10.211713055360065,
+            -4.389553639871881
+          ]
+        },
+        {
+          "id": "25L",
+          "physical_id": "SOUTH",
+          "heading_deg": 250,
+          "length_m": 4000,
+          "threshold": [
+            1.2147868475009809,
+            -0.2306477933848069
+          ],
+          "end": [
+            -0.814786847500981,
+            -0.9693522066151931
+          ],
+          "arrival": true,
+          "departure": true,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            10.611713055360067,
+            3.1895536398718782
+          ]
+        },
+        {
+          "id": "18",
+          "physical_id": "WEST",
+          "heading_deg": 180,
+          "length_m": 4000,
+          "threshold": [
+            -2.8,
+            -0.4
+          ],
+          "end": [
+            -2.8,
+            -2.559827213822894
+          ],
+          "arrival": false,
+          "departure": true,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            -2.800000000000001,
+            9.6
+          ]
+        }
+      ]
+    },
+    "weather": {
+      "wind_from_deg": 250,
+      "wind_speed_kt": 10,
+      "gust_kt": 14,
+      "visibility_m": 10000,
+      "ceiling_ft": 6000,
+      "precipitation": "none",
+      "active_direction": "25",
+      "cells": [],
+      "description": "Westerly flow · good visibility"
+    },
+    "aircraft": [
+      {
+        "callsign": "DLH100",
+        "type": "B77W",
+        "kind": "arrival",
+        "status": "inbound",
+        "x_nm": 13.388368269665008,
+        "y_nm": 4.872967535552165,
+        "altitude_ft": 4800,
+        "heading_deg": 250,
+        "speed_kt": 220,
+        "target_altitude_ft": 4800,
+        "target_heading_deg": 250,
+        "target_speed_kt": 220,
+        "spawn_time_s": 0,
+        "fuel_s": 2423.2389646070146,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            13.388368269665008,
+            4.872967535552165
+          ]
+        ],
+        "wake": "heavy",
+        "min_speed_kt": 155,
+        "max_speed_kt": 340,
+        "landing_distance_m": 2600,
+        "takeoff_distance_m": 3100,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "CFG101",
+        "type": "B738",
+        "kind": "arrival",
+        "status": "inbound",
+        "x_nm": 11.366494755312075,
+        "y_nm": 24.375526664702356,
+        "altitude_ft": 9000,
+        "heading_deg": 205,
+        "speed_kt": 250,
+        "target_altitude_ft": 9000,
+        "target_heading_deg": 205,
+        "target_speed_kt": 250,
+        "spawn_time_s": 0,
+        "fuel_s": 2777.1029486174984,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            11.366494755312075,
+            24.375526664702356
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 145,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1900,
+        "takeoff_distance_m": 2400,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "UAL102",
+        "type": "A320",
+        "kind": "arrival",
+        "status": "inbound",
+        "x_nm": 28.9588088197658,
+        "y_nm": -13.503714323703303,
+        "altitude_ft": 11000,
+        "heading_deg": 295,
+        "speed_kt": 250,
+        "target_altitude_ft": 11000,
+        "target_heading_deg": 295,
+        "target_speed_kt": 250,
+        "spawn_time_s": 0,
+        "fuel_s": 2246.582680617756,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            28.9588088197658,
+            -13.503714323703303
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "BAW103",
+        "type": "B77W",
+        "kind": "departure",
+        "status": "ground",
+        "x_nm": -0.8,
+        "y_nm": 0.8,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 0,
+        "target_heading_deg": 250,
+        "target_speed_kt": 0,
+        "spawn_time_s": 0,
+        "fuel_s": 4200,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -0.8,
+            0.8
+          ]
+        ],
+        "wake": "heavy",
+        "min_speed_kt": 155,
+        "max_speed_kt": 340,
+        "landing_distance_m": 2600,
+        "takeoff_distance_m": 3100,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "AFR104",
+        "type": "A320",
+        "kind": "departure",
+        "status": "ground",
+        "x_nm": -0.35000000000000003,
+        "y_nm": 0.8,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 0,
+        "target_heading_deg": 250,
+        "target_speed_kt": 0,
+        "spawn_time_s": 0,
+        "fuel_s": 4200,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -0.35000000000000003,
+            0.8
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "KLM105",
+        "type": "A320",
+        "kind": "departure",
+        "status": "ground",
+        "x_nm": 0.09999999999999998,
+        "y_nm": 0.8,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 0,
+        "target_heading_deg": 250,
+        "target_speed_kt": 0,
+        "spawn_time_s": 0,
+        "fuel_s": 4200,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            0.09999999999999998,
+            0.8
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      }
+    ],
+    "metrics": {
+      "collisions": 0,
+      "separation_losses": 0,
+      "separation_loss_seconds": 0,
+      "runway_incursions": 0,
+      "wake_violations": 0,
+      "weather_exposure_seconds": 0,
+      "emergency_landings": 0,
+      "emergencies_failed": 0,
+      "invalid_commands": 0,
+      "runway_closures": 0,
+      "closure_go_arounds": 0,
+      "score": -60.0,
+      "landed": 0,
+      "departed": 0,
+      "diverted": 0,
+      "crashed": 0,
+      "unfinished": 6,
+      "spawned": 6,
+      "emergencies_unresolved": 0,
+      "ground_delay_seconds": 0,
+      "airborne_seconds": 0,
+      "ground_wait_seconds": 0,
+      "ground_wait_count": 3,
+      "ground_wait_mean_seconds": 0.0,
+      "ground_wait_max_seconds": 0,
+      "ground_wait_score": 100.0,
+      "ground_wait_score_component": 0.0,
+      "emergency_wait_seconds": 0,
+      "emergency_wait_count": 0,
+      "emergency_wait_mean_seconds": null,
+      "emergency_wait_max_seconds": null,
+      "emergency_wait_score": null,
+      "emergency_wait_score_component": 0.0,
+      "emergency_wait_by_outcome": {
+        "resolved": {
+          "count": 0,
+          "seconds": 0,
+          "mean_seconds": null,
+          "max_seconds": null
+        },
+        "failed": {
+          "count": 0,
+          "seconds": 0,
+          "mean_seconds": null,
+          "max_seconds": null
+        },
+        "pending": {
+          "count": 0,
+          "seconds": 0,
+          "mean_seconds": null,
+          "max_seconds": null
+        }
+      },
+      "completion_rate": 0.0,
+      "safety_violations": 0,
+      "rank_key": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "events": [
+      {
+        "time_s": 0.0,
+        "type": "spawn",
+        "message": "DLH100 B77W inbound",
+        "callsigns": [
+          "DLH100"
+        ]
+      },
+      {
+        "time_s": 0.0,
+        "type": "spawn",
+        "message": "CFG101 B738 inbound",
+        "callsigns": [
+          "CFG101"
+        ]
+      },
+      {
+        "time_s": 0.0,
+        "type": "spawn",
+        "message": "UAL102 A320 inbound",
+        "callsigns": [
+          "UAL102"
+        ]
+      },
+      {
+        "time_s": 0.0,
+        "type": "spawn",
+        "message": "BAW103 B77W ready for departure",
+        "callsigns": [
+          "BAW103"
+        ]
+      },
+      {
+        "time_s": 0.0,
+        "type": "spawn",
+        "message": "AFR104 A320 ready for departure",
+        "callsigns": [
+          "AFR104"
+        ]
+      },
+      {
+        "time_s": 0.0,
+        "type": "spawn",
+        "message": "KLM105 A320 ready for departure",
+        "callsigns": [
+          "KLM105"
+        ]
+      },
+      {
+        "time_s": 0.0,
+        "type": "episode",
+        "message": "EDDF emergency · seed 7",
+        "callsigns": []
+      }
+    ],
+    "conflicts": [],
+    "command_results": []
+  },
+  "final_observation": {
+    "time_s": 1800.0,
+    "duration_s": 1800,
+    "seed": 7,
+    "scenario": "emergency",
+    "done": true,
+    "airport": {
+      "icao": "EDDF",
+      "name": "Frankfurt am Main · benchmark mock",
+      "elevation_ft": 328,
+      "radius_nm": 40,
+      "fixes": {
+        "NORTH": [
+          0,
+          22
+        ],
+        "EAST": [
+          24,
+          0
+        ],
+        "SOUTH": [
+          0,
+          -22
+        ],
+        "WEST": [
+          -24,
+          0
+        ]
+      },
+      "runways": [
+        {
+          "id": "07L",
+          "physical_id": "NW",
+          "heading_deg": 70,
+          "length_m": 2800,
+          "threshold": [
+            -2.2103507932506865,
+            1.2414534553693648
+          ],
+          "end": [
+            -0.7896492067493134,
+            1.7585465446306352
+          ],
+          "arrival": true,
+          "departure": false,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            -11.60727700110977,
+            -2.1787479778873236
+          ]
+        },
+        {
+          "id": "25R",
+          "physical_id": "NW",
+          "heading_deg": 250,
+          "length_m": 2800,
+          "threshold": [
+            -0.7896492067493134,
+            1.7585465446306352
+          ],
+          "end": [
+            -2.2103507932506865,
+            1.2414534553693648
+          ],
+          "arrival": true,
+          "departure": false,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            8.607277001109772,
+            5.178747977887321
+          ]
+        },
+        {
+          "id": "07C",
+          "physical_id": "CENTER",
+          "heading_deg": 70,
+          "length_m": 4000,
+          "threshold": [
+            -1.014786847500981,
+            -0.16935220661519307
+          ],
+          "end": [
+            1.014786847500981,
+            0.569352206615193
+          ],
+          "arrival": true,
+          "departure": true,
+          "occupied_by": "DLH106",
+          "available_in_s": 112.0,
+          "closed": false,
+          "approach_fix": [
+            -10.411713055360064,
+            -3.5895536398718813
+          ]
+        },
+        {
+          "id": "25C",
+          "physical_id": "CENTER",
+          "heading_deg": 250,
+          "length_m": 4000,
+          "threshold": [
+            1.014786847500981,
+            0.569352206615193
+          ],
+          "end": [
+            -1.014786847500981,
+            -0.16935220661519307
+          ],
+          "arrival": true,
+          "departure": true,
+          "occupied_by": "DLH106",
+          "available_in_s": 112.0,
+          "closed": false,
+          "approach_fix": [
+            10.411713055360066,
+            3.989553639871878
+          ]
+        },
+        {
+          "id": "07R",
+          "physical_id": "SOUTH",
+          "heading_deg": 70,
+          "length_m": 4000,
+          "threshold": [
+            -0.814786847500981,
+            -0.9693522066151931
+          ],
+          "end": [
+            1.2147868475009809,
+            -0.2306477933848069
+          ],
+          "arrival": true,
+          "departure": true,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            -10.211713055360065,
+            -4.389553639871881
+          ]
+        },
+        {
+          "id": "25L",
+          "physical_id": "SOUTH",
+          "heading_deg": 250,
+          "length_m": 4000,
+          "threshold": [
+            1.2147868475009809,
+            -0.2306477933848069
+          ],
+          "end": [
+            -0.814786847500981,
+            -0.9693522066151931
+          ],
+          "arrival": true,
+          "departure": true,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            10.611713055360067,
+            3.1895536398718782
+          ]
+        },
+        {
+          "id": "18",
+          "physical_id": "WEST",
+          "heading_deg": 180,
+          "length_m": 4000,
+          "threshold": [
+            -2.8,
+            -0.4
+          ],
+          "end": [
+            -2.8,
+            -2.559827213822894
+          ],
+          "arrival": false,
+          "departure": true,
+          "occupied_by": null,
+          "available_in_s": 0,
+          "closed": false,
+          "approach_fix": [
+            -2.800000000000001,
+            9.6
+          ]
+        }
+      ]
+    },
+    "weather": {
+      "wind_from_deg": 250,
+      "wind_speed_kt": 10,
+      "gust_kt": 14,
+      "visibility_m": 10000,
+      "ceiling_ft": 6000,
+      "precipitation": "none",
+      "active_direction": "25",
+      "cells": [],
+      "description": "Westerly flow · good visibility"
+    },
+    "aircraft": [
+      {
+        "callsign": "DLH100",
+        "type": "B77W",
+        "kind": "arrival",
+        "status": "landed",
+        "x_nm": -0.7103507932506865,
+        "y_nm": -0.05854654463063513,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 44.84444615484263,
+        "target_heading_deg": 250.11288819256893,
+        "target_speed_kt": 160,
+        "spawn_time_s": 0,
+        "fuel_s": 2134.2389646070146,
+        "runway": "25C",
+        "emergency": {
+          "kind": "medical",
+          "deadline_s": 735.0
+        },
+        "ground_time_s": 180.0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 289.0,
+        "emergency_wait_s": 274.0,
+        "emergency_declared_time_s": 15.0,
+        "emergency_touchdown_time_s": 289.0,
+        "approach_stage": null,
+        "history": [
+          [
+            5.771,
+            2.289
+          ],
+          [
+            5.379,
+            2.148
+          ],
+          [
+            4.987,
+            2.006
+          ],
+          [
+            4.596,
+            1.864
+          ],
+          [
+            4.204,
+            1.722
+          ],
+          [
+            3.812,
+            1.581
+          ],
+          [
+            3.42,
+            1.439
+          ],
+          [
+            3.028,
+            1.297
+          ],
+          [
+            2.636,
+            1.156
+          ],
+          [
+            2.245,
+            1.014
+          ],
+          [
+            1.853,
+            0.872
+          ],
+          [
+            1.461,
+            0.731
+          ],
+          [
+            0.958,
+            0.549
+          ],
+          [
+            0.44,
+            0.36
+          ],
+          [
+            0.019,
+            0.207
+          ],
+          [
+            -0.307,
+            0.088
+          ],
+          [
+            -0.537,
+            0.004
+          ],
+          [
+            -0.672,
+            -0.044
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ]
+        ],
+        "wake": "heavy",
+        "min_speed_kt": 155,
+        "max_speed_kt": 340,
+        "landing_distance_m": 2600,
+        "takeoff_distance_m": 3100,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "CFG101",
+        "type": "B738",
+        "kind": "arrival",
+        "status": "landed",
+        "x_nm": -0.5103507932506866,
+        "y_nm": -0.8585465446306351,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 48.23247585254914,
+        "target_heading_deg": 251.37790645342213,
+        "target_speed_kt": 150,
+        "spawn_time_s": 0,
+        "fuel_s": 2134.1029486174984,
+        "runway": "25L",
+        "emergency": null,
+        "ground_time_s": 160.0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 643.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            6.226,
+            1.448
+          ],
+          [
+            5.857,
+            1.325
+          ],
+          [
+            5.489,
+            1.201
+          ],
+          [
+            5.12,
+            1.078
+          ],
+          [
+            4.751,
+            0.954
+          ],
+          [
+            4.382,
+            0.831
+          ],
+          [
+            4.014,
+            0.707
+          ],
+          [
+            3.645,
+            0.584
+          ],
+          [
+            3.276,
+            0.46
+          ],
+          [
+            2.907,
+            0.336
+          ],
+          [
+            2.539,
+            0.213
+          ],
+          [
+            2.17,
+            0.089
+          ],
+          [
+            1.801,
+            -0.034
+          ],
+          [
+            1.432,
+            -0.158
+          ],
+          [
+            0.664,
+            -0.431
+          ],
+          [
+            0.06,
+            -0.651
+          ],
+          [
+            -0.328,
+            -0.792
+          ],
+          [
+            -0.501,
+            -0.855
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 145,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1900,
+        "takeoff_distance_m": 2400,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "UAL102",
+        "type": "A320",
+        "kind": "arrival",
+        "status": "landed",
+        "x_nm": -1.9972455552754802,
+        "y_nm": 1.3190174187585555,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 49.76432457775746,
+        "target_heading_deg": 248.9424487790741,
+        "target_speed_kt": 145,
+        "spawn_time_s": 0,
+        "fuel_s": 1471.582680617756,
+        "runway": "25R",
+        "emergency": null,
+        "ground_time_s": 160.0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 775.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            4.043,
+            3.627
+          ],
+          [
+            3.694,
+            3.492
+          ],
+          [
+            3.344,
+            3.356
+          ],
+          [
+            2.994,
+            3.221
+          ],
+          [
+            2.644,
+            3.086
+          ],
+          [
+            2.294,
+            2.951
+          ],
+          [
+            1.945,
+            2.816
+          ],
+          [
+            1.595,
+            2.68
+          ],
+          [
+            1.245,
+            2.545
+          ],
+          [
+            0.895,
+            2.41
+          ],
+          [
+            0.546,
+            2.275
+          ],
+          [
+            0.196,
+            2.14
+          ],
+          [
+            -0.154,
+            2.004
+          ],
+          [
+            -0.504,
+            1.869
+          ],
+          [
+            -1.073,
+            1.656
+          ],
+          [
+            -1.526,
+            1.491
+          ],
+          [
+            -1.827,
+            1.381
+          ],
+          [
+            -1.978,
+            1.326
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "BAW103",
+        "type": "B77W",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.46093801538013,
+        "y_nm": -39.99847442751037,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 0,
+        "fuel_s": 3687.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 185.0,
+        "ground_wait_s": 120.0,
+        "airborne_time_s": 513.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.239,
+            -17.104
+          ],
+          [
+            -2.213,
+            -17.872
+          ],
+          [
+            -2.187,
+            -18.64
+          ],
+          [
+            -2.16,
+            -19.409
+          ],
+          [
+            -2.134,
+            -20.177
+          ],
+          [
+            -2.108,
+            -20.945
+          ],
+          [
+            -2.082,
+            -21.713
+          ],
+          [
+            -2.056,
+            -22.482
+          ],
+          [
+            -2.03,
+            -23.25
+          ],
+          [
+            -2.004,
+            -24.018
+          ],
+          [
+            -1.978,
+            -24.787
+          ],
+          [
+            -1.952,
+            -25.555
+          ],
+          [
+            -1.926,
+            -26.323
+          ],
+          [
+            -1.899,
+            -27.091
+          ],
+          [
+            -1.873,
+            -27.86
+          ],
+          [
+            -1.847,
+            -28.628
+          ],
+          [
+            -1.821,
+            -29.396
+          ],
+          [
+            -1.795,
+            -30.165
+          ],
+          [
+            -1.769,
+            -30.933
+          ],
+          [
+            -1.743,
+            -31.701
+          ],
+          [
+            -1.717,
+            -32.469
+          ],
+          [
+            -1.691,
+            -33.238
+          ],
+          [
+            -1.665,
+            -34.006
+          ],
+          [
+            -1.638,
+            -34.774
+          ],
+          [
+            -1.612,
+            -35.542
+          ],
+          [
+            -1.586,
+            -36.311
+          ],
+          [
+            -1.56,
+            -37.079
+          ],
+          [
+            -1.534,
+            -37.847
+          ],
+          [
+            -1.508,
+            -38.616
+          ],
+          [
+            -1.482,
+            -39.384
+          ]
+        ],
+        "wake": "heavy",
+        "min_speed_kt": 155,
+        "max_speed_kt": 340,
+        "landing_distance_m": 2600,
+        "takeoff_distance_m": 3100,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "AFR104",
+        "type": "A320",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4452764717003646,
+        "y_nm": -40.018774091788266,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 0,
+        "fuel_s": 3681.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 45.0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 519.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.431
+          ],
+          [
+            -2.187,
+            -18.2
+          ],
+          [
+            -2.16,
+            -18.968
+          ],
+          [
+            -2.134,
+            -19.736
+          ],
+          [
+            -2.108,
+            -20.505
+          ],
+          [
+            -2.082,
+            -21.273
+          ],
+          [
+            -2.056,
+            -22.041
+          ],
+          [
+            -2.03,
+            -22.809
+          ],
+          [
+            -2.004,
+            -23.578
+          ],
+          [
+            -1.978,
+            -24.346
+          ],
+          [
+            -1.952,
+            -25.114
+          ],
+          [
+            -1.926,
+            -25.882
+          ],
+          [
+            -1.899,
+            -26.651
+          ],
+          [
+            -1.873,
+            -27.419
+          ],
+          [
+            -1.847,
+            -28.187
+          ],
+          [
+            -1.821,
+            -28.956
+          ],
+          [
+            -1.795,
+            -29.724
+          ],
+          [
+            -1.769,
+            -30.492
+          ],
+          [
+            -1.743,
+            -31.26
+          ],
+          [
+            -1.717,
+            -32.029
+          ],
+          [
+            -1.691,
+            -32.797
+          ],
+          [
+            -1.665,
+            -33.565
+          ],
+          [
+            -1.638,
+            -34.334
+          ],
+          [
+            -1.612,
+            -35.102
+          ],
+          [
+            -1.586,
+            -35.87
+          ],
+          [
+            -1.56,
+            -36.638
+          ],
+          [
+            -1.534,
+            -37.407
+          ],
+          [
+            -1.508,
+            -38.175
+          ],
+          [
+            -1.482,
+            -38.943
+          ],
+          [
+            -1.456,
+            -39.711
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "KLM105",
+        "type": "A320",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4452764717003646,
+        "y_nm": -40.018774091788266,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 0,
+        "fuel_s": 3681.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 355.0,
+        "ground_wait_s": 310.0,
+        "airborne_time_s": 519.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.431
+          ],
+          [
+            -2.187,
+            -18.2
+          ],
+          [
+            -2.16,
+            -18.968
+          ],
+          [
+            -2.134,
+            -19.736
+          ],
+          [
+            -2.108,
+            -20.505
+          ],
+          [
+            -2.082,
+            -21.273
+          ],
+          [
+            -2.056,
+            -22.041
+          ],
+          [
+            -2.03,
+            -22.809
+          ],
+          [
+            -2.004,
+            -23.578
+          ],
+          [
+            -1.978,
+            -24.346
+          ],
+          [
+            -1.952,
+            -25.114
+          ],
+          [
+            -1.926,
+            -25.882
+          ],
+          [
+            -1.899,
+            -26.651
+          ],
+          [
+            -1.873,
+            -27.419
+          ],
+          [
+            -1.847,
+            -28.187
+          ],
+          [
+            -1.821,
+            -28.956
+          ],
+          [
+            -1.795,
+            -29.724
+          ],
+          [
+            -1.769,
+            -30.492
+          ],
+          [
+            -1.743,
+            -31.26
+          ],
+          [
+            -1.717,
+            -32.029
+          ],
+          [
+            -1.691,
+            -32.797
+          ],
+          [
+            -1.665,
+            -33.565
+          ],
+          [
+            -1.638,
+            -34.334
+          ],
+          [
+            -1.612,
+            -35.102
+          ],
+          [
+            -1.586,
+            -35.87
+          ],
+          [
+            -1.56,
+            -36.638
+          ],
+          [
+            -1.534,
+            -37.407
+          ],
+          [
+            -1.508,
+            -38.175
+          ],
+          [
+            -1.482,
+            -38.943
+          ],
+          [
+            -1.456,
+            -39.711
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "DLH106",
+        "type": "E190",
+        "kind": "arrival",
+        "status": "landing_roll",
+        "x_nm": 0.7657201006174591,
+        "y_nm": 0.47869932440407664,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 129.5,
+        "target_altitude_ft": 39.801114243825694,
+        "target_heading_deg": 249.66908601582438,
+        "target_speed_kt": 140,
+        "spawn_time_s": 68.0,
+        "fuel_s": 1287.1263591200313,
+        "runway": "25C",
+        "emergency": null,
+        "ground_time_s": 3.0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 1729.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            11.956,
+            4.915
+          ],
+          [
+            11.527,
+            4.657
+          ],
+          [
+            11.097,
+            4.4
+          ],
+          [
+            10.665,
+            4.151
+          ],
+          [
+            10.219,
+            3.985
+          ],
+          [
+            9.777,
+            3.82
+          ],
+          [
+            9.334,
+            3.656
+          ],
+          [
+            8.891,
+            3.492
+          ],
+          [
+            8.449,
+            3.327
+          ],
+          [
+            8.006,
+            3.163
+          ],
+          [
+            7.563,
+            2.999
+          ],
+          [
+            7.142,
+            2.843
+          ],
+          [
+            6.76,
+            2.701
+          ],
+          [
+            6.414,
+            2.572
+          ],
+          [
+            6.075,
+            2.447
+          ],
+          [
+            5.737,
+            2.321
+          ],
+          [
+            5.398,
+            2.196
+          ],
+          [
+            5.059,
+            2.07
+          ],
+          [
+            4.721,
+            1.944
+          ],
+          [
+            4.382,
+            1.819
+          ],
+          [
+            4.044,
+            1.693
+          ],
+          [
+            3.705,
+            1.568
+          ],
+          [
+            3.367,
+            1.442
+          ],
+          [
+            3.028,
+            1.316
+          ],
+          [
+            2.69,
+            1.191
+          ],
+          [
+            2.351,
+            1.065
+          ],
+          [
+            2.012,
+            0.939
+          ],
+          [
+            1.674,
+            0.814
+          ],
+          [
+            1.335,
+            0.688
+          ],
+          [
+            0.766,
+            0.479
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 300,
+        "landing_distance_m": 1600,
+        "takeoff_distance_m": 1900,
+        "crosswind_limit_kt": 28
+      },
+      {
+        "callsign": "CFG107",
+        "type": "A320",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4452764717003646,
+        "y_nm": -40.018774091788266,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 128.0,
+        "fuel_s": 3681.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 347.0,
+        "ground_wait_s": 302.0,
+        "airborne_time_s": 519.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.431
+          ],
+          [
+            -2.187,
+            -18.2
+          ],
+          [
+            -2.16,
+            -18.968
+          ],
+          [
+            -2.134,
+            -19.736
+          ],
+          [
+            -2.108,
+            -20.505
+          ],
+          [
+            -2.082,
+            -21.273
+          ],
+          [
+            -2.056,
+            -22.041
+          ],
+          [
+            -2.03,
+            -22.809
+          ],
+          [
+            -2.004,
+            -23.578
+          ],
+          [
+            -1.978,
+            -24.346
+          ],
+          [
+            -1.952,
+            -25.114
+          ],
+          [
+            -1.926,
+            -25.882
+          ],
+          [
+            -1.899,
+            -26.651
+          ],
+          [
+            -1.873,
+            -27.419
+          ],
+          [
+            -1.847,
+            -28.187
+          ],
+          [
+            -1.821,
+            -28.956
+          ],
+          [
+            -1.795,
+            -29.724
+          ],
+          [
+            -1.769,
+            -30.492
+          ],
+          [
+            -1.743,
+            -31.26
+          ],
+          [
+            -1.717,
+            -32.029
+          ],
+          [
+            -1.691,
+            -32.797
+          ],
+          [
+            -1.665,
+            -33.565
+          ],
+          [
+            -1.638,
+            -34.334
+          ],
+          [
+            -1.612,
+            -35.102
+          ],
+          [
+            -1.586,
+            -35.87
+          ],
+          [
+            -1.56,
+            -36.638
+          ],
+          [
+            -1.534,
+            -37.407
+          ],
+          [
+            -1.508,
+            -38.175
+          ],
+          [
+            -1.482,
+            -38.943
+          ],
+          [
+            -1.456,
+            -39.711
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "UAL108",
+        "type": "B738",
+        "kind": "arrival",
+        "status": "landed",
+        "x_nm": -0.7103507932506865,
+        "y_nm": -0.05854654463063513,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 45.33669147543138,
+        "target_heading_deg": 249.09240680858156,
+        "target_speed_kt": 150,
+        "spawn_time_s": 202.0,
+        "fuel_s": 82.0,
+        "runway": "25C",
+        "emergency": {
+          "kind": "low_fuel",
+          "deadline_s": 1262.0
+        },
+        "ground_time_s": 160.0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 977.0,
+        "emergency_wait_s": 917.0,
+        "emergency_declared_time_s": 262.0,
+        "emergency_touchdown_time_s": 1179.0,
+        "approach_stage": null,
+        "history": [
+          [
+            6.159,
+            2.541
+          ],
+          [
+            5.796,
+            2.402
+          ],
+          [
+            5.433,
+            2.263
+          ],
+          [
+            5.07,
+            2.124
+          ],
+          [
+            4.707,
+            1.984
+          ],
+          [
+            4.343,
+            1.845
+          ],
+          [
+            3.98,
+            1.706
+          ],
+          [
+            3.617,
+            1.567
+          ],
+          [
+            3.254,
+            1.428
+          ],
+          [
+            2.891,
+            1.289
+          ],
+          [
+            2.528,
+            1.149
+          ],
+          [
+            2.165,
+            1.01
+          ],
+          [
+            1.802,
+            0.871
+          ],
+          [
+            1.438,
+            0.732
+          ],
+          [
+            0.93,
+            0.538
+          ],
+          [
+            0.196,
+            0.271
+          ],
+          [
+            -0.321,
+            0.083
+          ],
+          [
+            -0.623,
+            -0.027
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ],
+          [
+            -0.71,
+            -0.059
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 145,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1900,
+        "takeoff_distance_m": 2400,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "BAW109",
+        "type": "B738",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4504969862602863,
+        "y_nm": -40.017785314806744,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 257.0,
+        "fuel_s": 3683.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 338.0,
+        "ground_wait_s": 293.0,
+        "airborne_time_s": 517.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.584
+          ],
+          [
+            -2.187,
+            -18.352
+          ],
+          [
+            -2.16,
+            -19.121
+          ],
+          [
+            -2.134,
+            -19.889
+          ],
+          [
+            -2.108,
+            -20.657
+          ],
+          [
+            -2.082,
+            -21.425
+          ],
+          [
+            -2.056,
+            -22.194
+          ],
+          [
+            -2.03,
+            -22.962
+          ],
+          [
+            -2.004,
+            -23.73
+          ],
+          [
+            -1.978,
+            -24.499
+          ],
+          [
+            -1.952,
+            -25.267
+          ],
+          [
+            -1.926,
+            -26.035
+          ],
+          [
+            -1.899,
+            -26.803
+          ],
+          [
+            -1.873,
+            -27.572
+          ],
+          [
+            -1.847,
+            -28.34
+          ],
+          [
+            -1.821,
+            -29.108
+          ],
+          [
+            -1.795,
+            -29.877
+          ],
+          [
+            -1.769,
+            -30.645
+          ],
+          [
+            -1.743,
+            -31.413
+          ],
+          [
+            -1.717,
+            -32.181
+          ],
+          [
+            -1.691,
+            -32.95
+          ],
+          [
+            -1.665,
+            -33.718
+          ],
+          [
+            -1.638,
+            -34.486
+          ],
+          [
+            -1.612,
+            -35.254
+          ],
+          [
+            -1.586,
+            -36.023
+          ],
+          [
+            -1.56,
+            -36.791
+          ],
+          [
+            -1.534,
+            -37.559
+          ],
+          [
+            -1.508,
+            -38.328
+          ],
+          [
+            -1.482,
+            -39.096
+          ],
+          [
+            -1.456,
+            -39.864
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 145,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1900,
+        "takeoff_distance_m": 2400,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "AFR110",
+        "type": "E190",
+        "kind": "arrival",
+        "status": "landed",
+        "x_nm": -1.9972455552754802,
+        "y_nm": 1.3190174187585555,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 43.56481233630576,
+        "target_heading_deg": 250.66787246309423,
+        "target_speed_kt": 140,
+        "spawn_time_s": 324.0,
+        "fuel_s": 1201.9587128193266,
+        "runway": "25R",
+        "emergency": null,
+        "ground_time_s": 160.0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 1204.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            4.009,
+            3.437
+          ],
+          [
+            3.669,
+            3.318
+          ],
+          [
+            3.328,
+            3.199
+          ],
+          [
+            2.987,
+            3.08
+          ],
+          [
+            2.646,
+            2.96
+          ],
+          [
+            2.305,
+            2.841
+          ],
+          [
+            1.964,
+            2.722
+          ],
+          [
+            1.623,
+            2.603
+          ],
+          [
+            1.283,
+            2.483
+          ],
+          [
+            0.942,
+            2.364
+          ],
+          [
+            0.601,
+            2.245
+          ],
+          [
+            0.26,
+            2.126
+          ],
+          [
+            -0.081,
+            2.006
+          ],
+          [
+            -0.422,
+            1.887
+          ],
+          [
+            -0.907,
+            1.716
+          ],
+          [
+            -1.406,
+            1.534
+          ],
+          [
+            -1.753,
+            1.408
+          ],
+          [
+            -1.949,
+            1.337
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ],
+          [
+            -1.997,
+            1.319
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 300,
+        "landing_distance_m": 1600,
+        "takeoff_distance_m": 1900,
+        "crosswind_limit_kt": 28
+      },
+      {
+        "callsign": "KLM111",
+        "type": "B738",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4504969862602863,
+        "y_nm": -40.017785314806744,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 391.0,
+        "fuel_s": 3683.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 324.0,
+        "ground_wait_s": 279.0,
+        "airborne_time_s": 517.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.584
+          ],
+          [
+            -2.187,
+            -18.352
+          ],
+          [
+            -2.16,
+            -19.121
+          ],
+          [
+            -2.134,
+            -19.889
+          ],
+          [
+            -2.108,
+            -20.657
+          ],
+          [
+            -2.082,
+            -21.425
+          ],
+          [
+            -2.056,
+            -22.194
+          ],
+          [
+            -2.03,
+            -22.962
+          ],
+          [
+            -2.004,
+            -23.73
+          ],
+          [
+            -1.978,
+            -24.499
+          ],
+          [
+            -1.952,
+            -25.267
+          ],
+          [
+            -1.926,
+            -26.035
+          ],
+          [
+            -1.899,
+            -26.803
+          ],
+          [
+            -1.873,
+            -27.572
+          ],
+          [
+            -1.847,
+            -28.34
+          ],
+          [
+            -1.821,
+            -29.108
+          ],
+          [
+            -1.795,
+            -29.877
+          ],
+          [
+            -1.769,
+            -30.645
+          ],
+          [
+            -1.743,
+            -31.413
+          ],
+          [
+            -1.717,
+            -32.181
+          ],
+          [
+            -1.691,
+            -32.95
+          ],
+          [
+            -1.665,
+            -33.718
+          ],
+          [
+            -1.638,
+            -34.486
+          ],
+          [
+            -1.612,
+            -35.254
+          ],
+          [
+            -1.586,
+            -36.023
+          ],
+          [
+            -1.56,
+            -36.791
+          ],
+          [
+            -1.534,
+            -37.559
+          ],
+          [
+            -1.508,
+            -38.328
+          ],
+          [
+            -1.482,
+            -39.096
+          ],
+          [
+            -1.456,
+            -39.864
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 145,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1900,
+        "takeoff_distance_m": 2400,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "DLH112",
+        "type": "A320",
+        "kind": "arrival",
+        "status": "approach",
+        "x_nm": 13.626511063885527,
+        "y_nm": 6.7723329695779615,
+        "altitude_ft": 4999.999999999996,
+        "heading_deg": 252.26006217832614,
+        "speed_kt": 190.0,
+        "target_altitude_ft": 3200,
+        "target_heading_deg": 252.26006217832614,
+        "target_speed_kt": 190,
+        "spawn_time_s": 465.0,
+        "fuel_s": 1450.561863507639,
+        "runway": "25R",
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 1335.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": "intercept",
+        "history": [
+          [
+            20.87,
+            8.058
+          ],
+          [
+            20.456,
+            8.295
+          ],
+          [
+            20.201,
+            8.712
+          ],
+          [
+            20.17,
+            9.214
+          ],
+          [
+            20.377,
+            9.684
+          ],
+          [
+            20.779,
+            10.016
+          ],
+          [
+            21.288,
+            10.133
+          ],
+          [
+            21.792,
+            10.011
+          ],
+          [
+            22.178,
+            9.681
+          ],
+          [
+            22.362,
+            9.221
+          ],
+          [
+            22.307,
+            8.742
+          ],
+          [
+            22.032,
+            8.358
+          ],
+          [
+            21.608,
+            8.162
+          ],
+          [
+            21.14,
+            8.2
+          ],
+          [
+            20.744,
+            8.468
+          ],
+          [
+            20.319,
+            8.722
+          ],
+          [
+            19.823,
+            8.737
+          ],
+          [
+            19.345,
+            8.588
+          ],
+          [
+            18.869,
+            8.437
+          ],
+          [
+            18.392,
+            8.285
+          ],
+          [
+            17.916,
+            8.134
+          ],
+          [
+            17.439,
+            7.983
+          ],
+          [
+            16.963,
+            7.832
+          ],
+          [
+            16.486,
+            7.68
+          ],
+          [
+            16.009,
+            7.529
+          ],
+          [
+            15.533,
+            7.378
+          ],
+          [
+            15.056,
+            7.226
+          ],
+          [
+            14.58,
+            7.075
+          ],
+          [
+            14.103,
+            6.924
+          ],
+          [
+            13.627,
+            6.772
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "CFG113",
+        "type": "B738",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4504969862602863,
+        "y_nm": -40.017785314806744,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 521.0,
+        "fuel_s": 3683.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 314.0,
+        "ground_wait_s": 269.0,
+        "airborne_time_s": 517.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.584
+          ],
+          [
+            -2.187,
+            -18.352
+          ],
+          [
+            -2.16,
+            -19.121
+          ],
+          [
+            -2.134,
+            -19.889
+          ],
+          [
+            -2.108,
+            -20.657
+          ],
+          [
+            -2.082,
+            -21.425
+          ],
+          [
+            -2.056,
+            -22.194
+          ],
+          [
+            -2.03,
+            -22.962
+          ],
+          [
+            -2.004,
+            -23.73
+          ],
+          [
+            -1.978,
+            -24.499
+          ],
+          [
+            -1.952,
+            -25.267
+          ],
+          [
+            -1.926,
+            -26.035
+          ],
+          [
+            -1.899,
+            -26.803
+          ],
+          [
+            -1.873,
+            -27.572
+          ],
+          [
+            -1.847,
+            -28.34
+          ],
+          [
+            -1.821,
+            -29.108
+          ],
+          [
+            -1.795,
+            -29.877
+          ],
+          [
+            -1.769,
+            -30.645
+          ],
+          [
+            -1.743,
+            -31.413
+          ],
+          [
+            -1.717,
+            -32.181
+          ],
+          [
+            -1.691,
+            -32.95
+          ],
+          [
+            -1.665,
+            -33.718
+          ],
+          [
+            -1.638,
+            -34.486
+          ],
+          [
+            -1.612,
+            -35.254
+          ],
+          [
+            -1.586,
+            -36.023
+          ],
+          [
+            -1.56,
+            -36.791
+          ],
+          [
+            -1.534,
+            -37.559
+          ],
+          [
+            -1.508,
+            -38.328
+          ],
+          [
+            -1.482,
+            -39.096
+          ],
+          [
+            -1.456,
+            -39.864
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 145,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1900,
+        "takeoff_distance_m": 2400,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "UAL114",
+        "type": "A320",
+        "kind": "arrival",
+        "status": "landed",
+        "x_nm": -0.5103507932506866,
+        "y_nm": -0.8585465446306351,
+        "altitude_ft": 0,
+        "heading_deg": 250,
+        "speed_kt": 0,
+        "target_altitude_ft": 42.46049785923782,
+        "target_heading_deg": 249.34004242714676,
+        "target_speed_kt": 145,
+        "spawn_time_s": 602.0,
+        "fuel_s": 211.0,
+        "runway": "25L",
+        "emergency": {
+          "kind": "low_fuel",
+          "deadline_s": 1662.0
+        },
+        "ground_time_s": 160.0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 848.0,
+        "emergency_wait_s": 788.0,
+        "emergency_declared_time_s": 662.0,
+        "emergency_touchdown_time_s": 1450.0,
+        "approach_stage": null,
+        "history": [
+          [
+            5.865,
+            1.527
+          ],
+          [
+            5.514,
+            1.395
+          ],
+          [
+            5.163,
+            1.262
+          ],
+          [
+            4.812,
+            1.129
+          ],
+          [
+            4.462,
+            0.997
+          ],
+          [
+            4.111,
+            0.864
+          ],
+          [
+            3.76,
+            0.732
+          ],
+          [
+            3.409,
+            0.599
+          ],
+          [
+            3.058,
+            0.466
+          ],
+          [
+            2.708,
+            0.334
+          ],
+          [
+            2.357,
+            0.201
+          ],
+          [
+            2.006,
+            0.069
+          ],
+          [
+            1.655,
+            -0.064
+          ],
+          [
+            1.215,
+            -0.231
+          ],
+          [
+            0.46,
+            -0.505
+          ],
+          [
+            -0.079,
+            -0.702
+          ],
+          [
+            -0.403,
+            -0.819
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ],
+          [
+            -0.51,
+            -0.859
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "BAW115",
+        "type": "A320",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4452764717003646,
+        "y_nm": -40.018774091788266,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 658.0,
+        "fuel_s": 3681.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 297.0,
+        "ground_wait_s": 252.0,
+        "airborne_time_s": 519.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.431
+          ],
+          [
+            -2.187,
+            -18.2
+          ],
+          [
+            -2.16,
+            -18.968
+          ],
+          [
+            -2.134,
+            -19.736
+          ],
+          [
+            -2.108,
+            -20.505
+          ],
+          [
+            -2.082,
+            -21.273
+          ],
+          [
+            -2.056,
+            -22.041
+          ],
+          [
+            -2.03,
+            -22.809
+          ],
+          [
+            -2.004,
+            -23.578
+          ],
+          [
+            -1.978,
+            -24.346
+          ],
+          [
+            -1.952,
+            -25.114
+          ],
+          [
+            -1.926,
+            -25.882
+          ],
+          [
+            -1.899,
+            -26.651
+          ],
+          [
+            -1.873,
+            -27.419
+          ],
+          [
+            -1.847,
+            -28.187
+          ],
+          [
+            -1.821,
+            -28.956
+          ],
+          [
+            -1.795,
+            -29.724
+          ],
+          [
+            -1.769,
+            -30.492
+          ],
+          [
+            -1.743,
+            -31.26
+          ],
+          [
+            -1.717,
+            -32.029
+          ],
+          [
+            -1.691,
+            -32.797
+          ],
+          [
+            -1.665,
+            -33.565
+          ],
+          [
+            -1.638,
+            -34.334
+          ],
+          [
+            -1.612,
+            -35.102
+          ],
+          [
+            -1.586,
+            -35.87
+          ],
+          [
+            -1.56,
+            -36.638
+          ],
+          [
+            -1.534,
+            -37.407
+          ],
+          [
+            -1.508,
+            -38.175
+          ],
+          [
+            -1.482,
+            -38.943
+          ],
+          [
+            -1.456,
+            -39.711
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "AFR116",
+        "type": "B738",
+        "kind": "arrival",
+        "status": "holding",
+        "x_nm": 11.517979049364133,
+        "y_nm": 24.71788982258455,
+        "altitude_ft": 16000.0,
+        "heading_deg": 349.0000000000073,
+        "speed_kt": 180.0,
+        "target_altitude_ft": 16000.0,
+        "target_heading_deg": 349.0000000000073,
+        "target_speed_kt": 180,
+        "spawn_time_s": 719.0,
+        "fuel_s": 1994.137495573429,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 1081.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            11.976,
+            23.611
+          ],
+          [
+            11.507,
+            23.641
+          ],
+          [
+            11.106,
+            23.901
+          ],
+          [
+            10.873,
+            24.332
+          ],
+          [
+            10.868,
+            24.836
+          ],
+          [
+            11.099,
+            25.296
+          ],
+          [
+            11.517,
+            25.608
+          ],
+          [
+            12.031,
+            25.7
+          ],
+          [
+            12.527,
+            25.553
+          ],
+          [
+            12.895,
+            25.204
+          ],
+          [
+            13.054,
+            24.737
+          ],
+          [
+            12.974,
+            24.263
+          ],
+          [
+            12.679,
+            23.895
+          ],
+          [
+            12.245,
+            23.722
+          ],
+          [
+            11.779,
+            23.787
+          ],
+          [
+            11.396,
+            24.076
+          ],
+          [
+            11.193,
+            24.524
+          ],
+          [
+            11.223,
+            25.029
+          ],
+          [
+            11.484,
+            25.474
+          ],
+          [
+            11.923,
+            25.757
+          ],
+          [
+            12.441,
+            25.815
+          ],
+          [
+            12.925,
+            25.636
+          ],
+          [
+            13.267,
+            25.264
+          ],
+          [
+            13.393,
+            24.789
+          ],
+          [
+            13.279,
+            24.323
+          ],
+          [
+            12.959,
+            23.979
+          ],
+          [
+            12.513,
+            23.839
+          ],
+          [
+            12.052,
+            23.938
+          ],
+          [
+            11.69,
+            24.255
+          ],
+          [
+            11.518,
+            24.718
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 145,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1900,
+        "takeoff_distance_m": 2400,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "KLM117",
+        "type": "A359",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4557175008202081,
+        "y_nm": -40.01101876004745,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 786.0,
+        "fuel_s": 3685.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 309.0,
+        "ground_wait_s": 244.0,
+        "airborne_time_s": 515.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.731
+          ],
+          [
+            -2.187,
+            -18.499
+          ],
+          [
+            -2.16,
+            -19.268
+          ],
+          [
+            -2.134,
+            -20.036
+          ],
+          [
+            -2.108,
+            -20.804
+          ],
+          [
+            -2.082,
+            -21.572
+          ],
+          [
+            -2.056,
+            -22.341
+          ],
+          [
+            -2.03,
+            -23.109
+          ],
+          [
+            -2.004,
+            -23.877
+          ],
+          [
+            -1.978,
+            -24.645
+          ],
+          [
+            -1.952,
+            -25.414
+          ],
+          [
+            -1.926,
+            -26.182
+          ],
+          [
+            -1.899,
+            -26.95
+          ],
+          [
+            -1.873,
+            -27.719
+          ],
+          [
+            -1.847,
+            -28.487
+          ],
+          [
+            -1.821,
+            -29.255
+          ],
+          [
+            -1.795,
+            -30.023
+          ],
+          [
+            -1.769,
+            -30.792
+          ],
+          [
+            -1.743,
+            -31.56
+          ],
+          [
+            -1.717,
+            -32.328
+          ],
+          [
+            -1.691,
+            -33.097
+          ],
+          [
+            -1.665,
+            -33.865
+          ],
+          [
+            -1.638,
+            -34.633
+          ],
+          [
+            -1.612,
+            -35.401
+          ],
+          [
+            -1.586,
+            -36.17
+          ],
+          [
+            -1.56,
+            -36.938
+          ],
+          [
+            -1.534,
+            -37.706
+          ],
+          [
+            -1.508,
+            -38.474
+          ],
+          [
+            -1.482,
+            -39.243
+          ],
+          [
+            -1.456,
+            -40.011
+          ]
+        ],
+        "wake": "heavy",
+        "min_speed_kt": 150,
+        "max_speed_kt": 340,
+        "landing_distance_m": 2400,
+        "takeoff_distance_m": 2900,
+        "crosswind_limit_kt": 32
+      },
+      {
+        "callsign": "DLH118",
+        "type": "A320",
+        "kind": "arrival",
+        "status": "approach",
+        "x_nm": 13.418932464579251,
+        "y_nm": 5.868327627114166,
+        "altitude_ft": 6333.333333333245,
+        "heading_deg": 227.55144321839674,
+        "speed_kt": 190.0,
+        "target_altitude_ft": 3200,
+        "target_heading_deg": 227.55144321839674,
+        "target_speed_kt": 190,
+        "spawn_time_s": 863.0,
+        "fuel_s": 1381.065778254962,
+        "runway": "25L",
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 937.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": "intercept",
+        "history": [
+          [
+            21.647,
+            8.168
+          ],
+          [
+            21.19,
+            8.07
+          ],
+          [
+            20.739,
+            8.211
+          ],
+          [
+            20.405,
+            8.561
+          ],
+          [
+            20.274,
+            9.039
+          ],
+          [
+            20.381,
+            9.537
+          ],
+          [
+            20.707,
+            9.94
+          ],
+          [
+            21.024,
+            10.372
+          ],
+          [
+            21.11,
+            10.901
+          ],
+          [
+            20.945,
+            11.397
+          ],
+          [
+            20.574,
+            11.746
+          ],
+          [
+            20.091,
+            11.87
+          ],
+          [
+            19.613,
+            11.741
+          ],
+          [
+            19.232,
+            11.416
+          ],
+          [
+            18.869,
+            11.069
+          ],
+          [
+            18.506,
+            10.722
+          ],
+          [
+            18.142,
+            10.376
+          ],
+          [
+            17.779,
+            10.029
+          ],
+          [
+            17.416,
+            9.682
+          ],
+          [
+            17.052,
+            9.335
+          ],
+          [
+            16.689,
+            8.989
+          ],
+          [
+            16.326,
+            8.642
+          ],
+          [
+            15.962,
+            8.295
+          ],
+          [
+            15.599,
+            7.949
+          ],
+          [
+            15.236,
+            7.602
+          ],
+          [
+            14.872,
+            7.255
+          ],
+          [
+            14.509,
+            6.908
+          ],
+          [
+            14.146,
+            6.562
+          ],
+          [
+            13.782,
+            6.215
+          ],
+          [
+            13.419,
+            5.868
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "CFG119",
+        "type": "A320",
+        "kind": "departure",
+        "status": "departed",
+        "x_nm": -1.4452764717003646,
+        "y_nm": -40.018774091788266,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 929.0,
+        "fuel_s": 3681.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 336.0,
+        "ground_wait_s": 291.0,
+        "airborne_time_s": 519.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.213,
+            -17.431
+          ],
+          [
+            -2.187,
+            -18.2
+          ],
+          [
+            -2.16,
+            -18.968
+          ],
+          [
+            -2.134,
+            -19.736
+          ],
+          [
+            -2.108,
+            -20.505
+          ],
+          [
+            -2.082,
+            -21.273
+          ],
+          [
+            -2.056,
+            -22.041
+          ],
+          [
+            -2.03,
+            -22.809
+          ],
+          [
+            -2.004,
+            -23.578
+          ],
+          [
+            -1.978,
+            -24.346
+          ],
+          [
+            -1.952,
+            -25.114
+          ],
+          [
+            -1.926,
+            -25.882
+          ],
+          [
+            -1.899,
+            -26.651
+          ],
+          [
+            -1.873,
+            -27.419
+          ],
+          [
+            -1.847,
+            -28.187
+          ],
+          [
+            -1.821,
+            -28.956
+          ],
+          [
+            -1.795,
+            -29.724
+          ],
+          [
+            -1.769,
+            -30.492
+          ],
+          [
+            -1.743,
+            -31.26
+          ],
+          [
+            -1.717,
+            -32.029
+          ],
+          [
+            -1.691,
+            -32.797
+          ],
+          [
+            -1.665,
+            -33.565
+          ],
+          [
+            -1.638,
+            -34.334
+          ],
+          [
+            -1.612,
+            -35.102
+          ],
+          [
+            -1.586,
+            -35.87
+          ],
+          [
+            -1.56,
+            -36.638
+          ],
+          [
+            -1.534,
+            -37.407
+          ],
+          [
+            -1.508,
+            -38.175
+          ],
+          [
+            -1.482,
+            -38.943
+          ],
+          [
+            -1.456,
+            -39.711
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "UAL120",
+        "type": "A359",
+        "kind": "arrival",
+        "status": "holding",
+        "x_nm": 29.400437975342914,
+        "y_nm": -11.62493403112901,
+        "altitude_ft": 12000.0,
+        "heading_deg": 276.9999999999908,
+        "speed_kt": 180.0,
+        "target_altitude_ft": 12000.0,
+        "target_heading_deg": 276.9999999999908,
+        "target_speed_kt": 180,
+        "spawn_time_s": 984.0,
+        "fuel_s": 1872.9631004758057,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 816.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            27.525,
+            -10.609
+          ],
+          [
+            27.646,
+            -10.112
+          ],
+          [
+            27.944,
+            -9.686
+          ],
+          [
+            28.378,
+            -9.392
+          ],
+          [
+            28.888,
+            -9.272
+          ],
+          [
+            29.405,
+            -9.341
+          ],
+          [
+            29.857,
+            -9.588
+          ],
+          [
+            30.181,
+            -9.976
+          ],
+          [
+            30.335,
+            -10.447
+          ],
+          [
+            30.3,
+            -10.93
+          ],
+          [
+            30.084,
+            -11.355
+          ],
+          [
+            29.723,
+            -11.658
+          ],
+          [
+            29.274,
+            -11.793
+          ],
+          [
+            28.805,
+            -11.739
+          ],
+          [
+            28.389,
+            -11.503
+          ],
+          [
+            28.09,
+            -11.118
+          ],
+          [
+            27.955,
+            -10.638
+          ],
+          [
+            28.008,
+            -10.132
+          ],
+          [
+            28.245,
+            -9.673
+          ],
+          [
+            28.635,
+            -9.325
+          ],
+          [
+            29.125,
+            -9.138
+          ],
+          [
+            29.648,
+            -9.138
+          ],
+          [
+            30.131,
+            -9.324
+          ],
+          [
+            30.508,
+            -9.666
+          ],
+          [
+            30.728,
+            -10.115
+          ],
+          [
+            30.762,
+            -10.602
+          ],
+          [
+            30.609,
+            -11.056
+          ],
+          [
+            30.295,
+            -11.41
+          ],
+          [
+            29.871,
+            -11.609
+          ],
+          [
+            29.4,
+            -11.625
+          ]
+        ],
+        "wake": "heavy",
+        "min_speed_kt": 150,
+        "max_speed_kt": 340,
+        "landing_distance_m": 2400,
+        "takeoff_distance_m": 2900,
+        "crosswind_limit_kt": 32
+      },
+      {
+        "callsign": "BAW121",
+        "type": "E190",
+        "kind": "departure",
+        "status": "outbound",
+        "x_nm": -1.7167432288162974,
+        "y_nm": -31.870246577637904,
+        "altitude_ft": 12000.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 1055.0,
+        "fuel_s": 3785.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 330.0,
+        "ground_wait_s": 285.0,
+        "airborne_time_s": 415.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.474,
+            -9.59
+          ],
+          [
+            -2.448,
+            -10.358
+          ],
+          [
+            -2.422,
+            -11.127
+          ],
+          [
+            -2.395,
+            -11.895
+          ],
+          [
+            -2.369,
+            -12.663
+          ],
+          [
+            -2.343,
+            -13.432
+          ],
+          [
+            -2.317,
+            -14.2
+          ],
+          [
+            -2.291,
+            -14.968
+          ],
+          [
+            -2.265,
+            -15.736
+          ],
+          [
+            -2.239,
+            -16.505
+          ],
+          [
+            -2.213,
+            -17.273
+          ],
+          [
+            -2.187,
+            -18.041
+          ],
+          [
+            -2.16,
+            -18.81
+          ],
+          [
+            -2.134,
+            -19.578
+          ],
+          [
+            -2.108,
+            -20.346
+          ],
+          [
+            -2.082,
+            -21.114
+          ],
+          [
+            -2.056,
+            -21.883
+          ],
+          [
+            -2.03,
+            -22.651
+          ],
+          [
+            -2.004,
+            -23.419
+          ],
+          [
+            -1.978,
+            -24.187
+          ],
+          [
+            -1.952,
+            -24.956
+          ],
+          [
+            -1.926,
+            -25.724
+          ],
+          [
+            -1.899,
+            -26.492
+          ],
+          [
+            -1.873,
+            -27.261
+          ],
+          [
+            -1.847,
+            -28.029
+          ],
+          [
+            -1.821,
+            -28.797
+          ],
+          [
+            -1.795,
+            -29.565
+          ],
+          [
+            -1.769,
+            -30.334
+          ],
+          [
+            -1.743,
+            -31.102
+          ],
+          [
+            -1.717,
+            -31.87
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 300,
+        "landing_distance_m": 1600,
+        "takeoff_distance_m": 1900,
+        "crosswind_limit_kt": 28
+      },
+      {
+        "callsign": "AFR122",
+        "type": "B738",
+        "kind": "arrival",
+        "status": "holding",
+        "x_nm": 10.941718018617609,
+        "y_nm": 23.977204739735964,
+        "altitude_ft": 18000.0,
+        "heading_deg": 309.0000000000046,
+        "speed_kt": 180.0,
+        "target_altitude_ft": 18000.0,
+        "target_heading_deg": 309.0000000000046,
+        "target_speed_kt": 180,
+        "spawn_time_s": 1116.0,
+        "fuel_s": 2089.025940277384,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 684.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            11.65,
+            23.845
+          ],
+          [
+            11.284,
+            23.553
+          ],
+          [
+            10.822,
+            23.48
+          ],
+          [
+            10.378,
+            23.645
+          ],
+          [
+            10.063,
+            24.014
+          ],
+          [
+            9.956,
+            24.5
+          ],
+          [
+            10.088,
+            24.993
+          ],
+          [
+            10.435,
+            25.379
+          ],
+          [
+            10.921,
+            25.571
+          ],
+          [
+            11.44,
+            25.525
+          ],
+          [
+            11.874,
+            25.255
+          ],
+          [
+            12.13,
+            24.826
+          ],
+          [
+            12.152,
+            24.34
+          ],
+          [
+            11.943,
+            23.914
+          ],
+          [
+            11.557,
+            23.65
+          ],
+          [
+            11.09,
+            23.611
+          ],
+          [
+            10.658,
+            23.809
+          ],
+          [
+            10.369,
+            24.2
+          ],
+          [
+            10.295,
+            24.695
+          ],
+          [
+            10.461,
+            25.179
+          ],
+          [
+            10.834,
+            25.542
+          ],
+          [
+            11.332,
+            25.702
+          ],
+          [
+            11.845,
+            25.622
+          ],
+          [
+            12.259,
+            25.324
+          ],
+          [
+            12.483,
+            24.88
+          ],
+          [
+            12.471,
+            24.395
+          ],
+          [
+            12.232,
+            23.987
+          ],
+          [
+            11.828,
+            23.752
+          ],
+          [
+            11.359,
+            23.748
+          ],
+          [
+            10.942,
+            23.977
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 145,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1900,
+        "takeoff_distance_m": 2400,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "KLM123",
+        "type": "B77W",
+        "kind": "departure",
+        "status": "outbound",
+        "x_nm": -2.0821792480108154,
+        "y_nm": -21.71347663337567,
+        "altitude_ft": 8300.0,
+        "heading_deg": 180,
+        "speed_kt": 280.0,
+        "target_altitude_ft": 12000,
+        "target_heading_deg": 180,
+        "target_speed_kt": 280,
+        "spawn_time_s": 1193.0,
+        "fuel_s": 3925.0,
+        "runway": "18",
+        "emergency": null,
+        "ground_time_s": 332.0,
+        "ground_wait_s": 267.0,
+        "airborne_time_s": 275.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            -2.8,
+            -1.486
+          ],
+          [
+            -2.8,
+            -1.964
+          ],
+          [
+            -2.787,
+            -2.458
+          ],
+          [
+            -2.761,
+            -2.928
+          ],
+          [
+            -2.735,
+            -3.432
+          ],
+          [
+            -2.709,
+            -3.968
+          ],
+          [
+            -2.683,
+            -4.538
+          ],
+          [
+            -2.656,
+            -5.141
+          ],
+          [
+            -2.63,
+            -5.778
+          ],
+          [
+            -2.604,
+            -6.448
+          ],
+          [
+            -2.578,
+            -7.151
+          ],
+          [
+            -2.552,
+            -7.888
+          ],
+          [
+            -2.526,
+            -8.653
+          ],
+          [
+            -2.5,
+            -9.421
+          ],
+          [
+            -2.474,
+            -10.189
+          ],
+          [
+            -2.448,
+            -10.958
+          ],
+          [
+            -2.422,
+            -11.726
+          ],
+          [
+            -2.395,
+            -12.494
+          ],
+          [
+            -2.369,
+            -13.262
+          ],
+          [
+            -2.343,
+            -14.031
+          ],
+          [
+            -2.317,
+            -14.799
+          ],
+          [
+            -2.291,
+            -15.567
+          ],
+          [
+            -2.265,
+            -16.336
+          ],
+          [
+            -2.239,
+            -17.104
+          ],
+          [
+            -2.213,
+            -17.872
+          ],
+          [
+            -2.187,
+            -18.64
+          ],
+          [
+            -2.16,
+            -19.409
+          ],
+          [
+            -2.134,
+            -20.177
+          ],
+          [
+            -2.108,
+            -20.945
+          ],
+          [
+            -2.082,
+            -21.713
+          ]
+        ],
+        "wake": "heavy",
+        "min_speed_kt": 155,
+        "max_speed_kt": 340,
+        "landing_distance_m": 2600,
+        "takeoff_distance_m": 3100,
+        "crosswind_limit_kt": 30
+      },
+      {
+        "callsign": "DLH124",
+        "type": "A320",
+        "kind": "arrival",
+        "status": "holding",
+        "x_nm": 19.657701476659472,
+        "y_nm": 8.741152296986758,
+        "altitude_ft": 12000.0,
+        "heading_deg": 350.00000000000375,
+        "speed_kt": 180.0,
+        "target_altitude_ft": 12000.0,
+        "target_heading_deg": 350.00000000000375,
+        "target_speed_kt": 180,
+        "spawn_time_s": 1247.0,
+        "fuel_s": 2241.3698771050185,
+        "runway": null,
+        "emergency": null,
+        "ground_time_s": 0,
+        "ground_wait_s": 0,
+        "airborne_time_s": 553.0,
+        "emergency_wait_s": 0,
+        "emergency_declared_time_s": null,
+        "emergency_touchdown_time_s": null,
+        "approach_stage": null,
+        "history": [
+          [
+            20.101,
+            7.613
+          ],
+          [
+            19.633,
+            7.652
+          ],
+          [
+            19.236,
+            7.919
+          ],
+          [
+            19.01,
+            8.355
+          ],
+          [
+            19.014,
+            8.859
+          ],
+          [
+            19.252,
+            9.316
+          ],
+          [
+            19.676,
+            9.62
+          ],
+          [
+            20.191,
+            9.704
+          ],
+          [
+            20.685,
+            9.549
+          ],
+          [
+            21.046,
+            9.194
+          ],
+          [
+            21.197,
+            8.724
+          ],
+          [
+            21.108,
+            8.252
+          ],
+          [
+            20.807,
+            7.89
+          ],
+          [
+            20.369,
+            7.726
+          ],
+          [
+            19.905,
+            7.799
+          ],
+          [
+            19.527,
+            8.095
+          ],
+          [
+            19.332,
+            8.547
+          ],
+          [
+            19.37,
+            9.052
+          ],
+          [
+            19.639,
+            9.493
+          ],
+          [
+            20.082,
+            9.769
+          ],
+          [
+            20.602,
+            9.818
+          ],
+          [
+            21.082,
+            9.631
+          ],
+          [
+            21.417,
+            9.254
+          ],
+          [
+            21.534,
+            8.776
+          ],
+          [
+            21.412,
+            8.314
+          ],
+          [
+            21.086,
+            7.975
+          ],
+          [
+            20.638,
+            7.843
+          ],
+          [
+            20.178,
+            7.951
+          ],
+          [
+            19.822,
+            8.275
+          ],
+          [
+            19.658,
+            8.741
+          ]
+        ],
+        "wake": "medium",
+        "min_speed_kt": 140,
+        "max_speed_kt": 320,
+        "landing_distance_m": 1800,
+        "takeoff_distance_m": 2200,
+        "crosswind_limit_kt": 30
+      }
+    ],
+    "metrics": {
+      "collisions": 0,
+      "separation_losses": 11,
+      "separation_loss_seconds": 453.0,
+      "runway_incursions": 0,
+      "wake_violations": 0,
+      "weather_exposure_seconds": 0,
+      "emergency_landings": 3,
+      "emergencies_failed": 0,
+      "invalid_commands": 0,
+      "runway_closures": 0,
+      "closure_go_arounds": 0,
+      "score": 80.288,
+      "landed": 6,
+      "departed": 10,
+      "diverted": 0,
+      "crashed": 0,
+      "unfinished": 9,
+      "spawned": 25,
+      "emergencies_unresolved": 0,
+      "ground_delay_seconds": 4495.0,
+      "airborne_seconds": 17735.0,
+      "ground_wait_seconds": 2912.0,
+      "ground_wait_count": 12,
+      "ground_wait_mean_seconds": 242.667,
+      "ground_wait_max_seconds": 310.0,
+      "ground_wait_score": 55.283,
+      "ground_wait_score_component": -48.533,
+      "emergency_wait_seconds": 1979.0,
+      "emergency_wait_count": 3,
+      "emergency_wait_mean_seconds": 659.667,
+      "emergency_wait_max_seconds": 917.0,
+      "emergency_wait_score": 21.437,
+      "emergency_wait_score_component": -164.917,
+      "emergency_wait_by_outcome": {
+        "resolved": {
+          "count": 3,
+          "seconds": 1979.0,
+          "mean_seconds": 659.667,
+          "max_seconds": 917.0
+        },
+        "failed": {
+          "count": 0,
+          "seconds": 0,
+          "mean_seconds": null,
+          "max_seconds": null
+        },
+        "pending": {
+          "count": 0,
+          "seconds": 0,
+          "mean_seconds": null,
+          "max_seconds": null
+        }
+      },
+      "completion_rate": 0.64,
+      "safety_violations": 11,
+      "rank_key": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        453.0,
+        0,
+        -16,
+        4495.0,
+        17735.0
+      ]
+    },
+    "events": [
+      {
+        "time_s": 120.0,
+        "type": "command",
+        "message": "BAW103 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 128.0,
+        "type": "spawn",
+        "message": "CFG107 A320 ready for departure",
+        "callsigns": [
+          "CFG107"
+        ]
+      },
+      {
+        "time_s": 185.0,
+        "type": "takeoff",
+        "message": "BAW103 airborne runway 18",
+        "callsigns": [
+          "BAW103"
+        ]
+      },
+      {
+        "time_s": 202.0,
+        "type": "spawn",
+        "message": "UAL108 B738 inbound",
+        "callsigns": [
+          "UAL108"
+        ]
+      },
+      {
+        "time_s": 210.0,
+        "type": "command",
+        "message": "UAL108 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 210.0,
+        "type": "command",
+        "message": "UAL108 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 257.0,
+        "type": "spawn",
+        "message": "BAW109 B738 ready for departure",
+        "callsigns": [
+          "BAW109"
+        ]
+      },
+      {
+        "time_s": 262.0,
+        "type": "emergency",
+        "message": "MAYDAY UAL108: low_fuel",
+        "callsigns": [
+          "UAL108"
+        ]
+      },
+      {
+        "time_s": 289.0,
+        "type": "touchdown",
+        "message": "DLH100 touchdown runway 25C",
+        "callsigns": [
+          "DLH100"
+        ]
+      },
+      {
+        "time_s": 310.0,
+        "type": "command",
+        "message": "KLM105 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 324.0,
+        "type": "spawn",
+        "message": "AFR110 E190 inbound",
+        "callsigns": [
+          "AFR110"
+        ]
+      },
+      {
+        "time_s": 330.0,
+        "type": "command",
+        "message": "AFR110 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 330.0,
+        "type": "command",
+        "message": "AFR110 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 355.0,
+        "type": "takeoff",
+        "message": "KLM105 airborne runway 18",
+        "callsigns": [
+          "KLM105"
+        ]
+      },
+      {
+        "time_s": 391.0,
+        "type": "spawn",
+        "message": "KLM111 B738 ready for departure",
+        "callsigns": [
+          "KLM111"
+        ]
+      },
+      {
+        "time_s": 430.0,
+        "type": "command",
+        "message": "CFG107 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 431.0,
+        "type": "separation",
+        "message": "Loss of separation: CFG101 / UAL102",
+        "callsigns": [
+          "CFG101",
+          "UAL102"
+        ]
+      },
+      {
+        "time_s": 465.0,
+        "type": "spawn",
+        "message": "DLH112 A320 inbound",
+        "callsigns": [
+          "DLH112"
+        ]
+      },
+      {
+        "time_s": 469.0,
+        "type": "landed",
+        "message": "DLH100 arrived at stand (abstract taxi)",
+        "callsigns": [
+          "DLH100"
+        ]
+      },
+      {
+        "time_s": 470.0,
+        "type": "command",
+        "message": "UAL108 APPROACH accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 470.0,
+        "type": "command",
+        "message": "DLH112 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 470.0,
+        "type": "command",
+        "message": "DLH112 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 471.0,
+        "type": "separation",
+        "message": "Loss of separation: DLH106 / DLH112",
+        "callsigns": [
+          "DLH106",
+          "DLH112"
+        ]
+      },
+      {
+        "time_s": 475.0,
+        "type": "takeoff",
+        "message": "CFG107 airborne runway 18",
+        "callsigns": [
+          "CFG107"
+        ]
+      },
+      {
+        "time_s": 521.0,
+        "type": "spawn",
+        "message": "CFG113 B738 ready for departure",
+        "callsigns": [
+          "CFG113"
+        ]
+      },
+      {
+        "time_s": 550.0,
+        "type": "command",
+        "message": "BAW109 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 564.0,
+        "type": "departed",
+        "message": "AFR104 handed off at sector boundary",
+        "callsigns": [
+          "AFR104"
+        ]
+      },
+      {
+        "time_s": 595.0,
+        "type": "takeoff",
+        "message": "BAW109 airborne runway 18",
+        "callsigns": [
+          "BAW109"
+        ]
+      },
+      {
+        "time_s": 602.0,
+        "type": "spawn",
+        "message": "UAL114 A320 inbound",
+        "callsigns": [
+          "UAL114"
+        ]
+      },
+      {
+        "time_s": 610.0,
+        "type": "command",
+        "message": "UAL114 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 610.0,
+        "type": "command",
+        "message": "UAL114 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 643.0,
+        "type": "touchdown",
+        "message": "CFG101 touchdown runway 25L",
+        "callsigns": [
+          "CFG101"
+        ]
+      },
+      {
+        "time_s": 658.0,
+        "type": "spawn",
+        "message": "BAW115 A320 ready for departure",
+        "callsigns": [
+          "BAW115"
+        ]
+      },
+      {
+        "time_s": 662.0,
+        "type": "emergency",
+        "message": "MAYDAY UAL114: low_fuel",
+        "callsigns": [
+          "UAL114"
+        ]
+      },
+      {
+        "time_s": 670.0,
+        "type": "command",
+        "message": "KLM111 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 698.0,
+        "type": "departed",
+        "message": "BAW103 handed off at sector boundary",
+        "callsigns": [
+          "BAW103"
+        ]
+      },
+      {
+        "time_s": 715.0,
+        "type": "takeoff",
+        "message": "KLM111 airborne runway 18",
+        "callsigns": [
+          "KLM111"
+        ]
+      },
+      {
+        "time_s": 719.0,
+        "type": "spawn",
+        "message": "AFR116 B738 inbound",
+        "callsigns": [
+          "AFR116"
+        ]
+      },
+      {
+        "time_s": 720.0,
+        "type": "command",
+        "message": "AFR116 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 720.0,
+        "type": "command",
+        "message": "AFR116 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 760.0,
+        "type": "command",
+        "message": "UAL114 APPROACH accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 771.0,
+        "type": "separation",
+        "message": "Loss of separation: AFR110 / AFR116",
+        "callsigns": [
+          "AFR110",
+          "AFR116"
+        ]
+      },
+      {
+        "time_s": 775.0,
+        "type": "touchdown",
+        "message": "UAL102 touchdown runway 25R",
+        "callsigns": [
+          "UAL102"
+        ]
+      },
+      {
+        "time_s": 786.0,
+        "type": "spawn",
+        "message": "KLM117 A359 ready for departure",
+        "callsigns": [
+          "KLM117"
+        ]
+      },
+      {
+        "time_s": 790.0,
+        "type": "command",
+        "message": "CFG113 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 803.0,
+        "type": "landed",
+        "message": "CFG101 arrived at stand (abstract taxi)",
+        "callsigns": [
+          "CFG101"
+        ]
+      },
+      {
+        "time_s": 835.0,
+        "type": "takeoff",
+        "message": "CFG113 airborne runway 18",
+        "callsigns": [
+          "CFG113"
+        ]
+      },
+      {
+        "time_s": 863.0,
+        "type": "spawn",
+        "message": "DLH118 A320 inbound",
+        "callsigns": [
+          "DLH118"
+        ]
+      },
+      {
+        "time_s": 870.0,
+        "type": "command",
+        "message": "DLH118 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 870.0,
+        "type": "command",
+        "message": "DLH118 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 871.0,
+        "type": "separation",
+        "message": "Loss of separation: DLH106 / DLH118",
+        "callsigns": [
+          "DLH106",
+          "DLH118"
+        ]
+      },
+      {
+        "time_s": 874.0,
+        "type": "departed",
+        "message": "KLM105 handed off at sector boundary",
+        "callsigns": [
+          "KLM105"
+        ]
+      },
+      {
+        "time_s": 890.0,
+        "type": "command",
+        "message": "AFR110 APPROACH accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 910.0,
+        "type": "command",
+        "message": "BAW115 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 919.0,
+        "type": "separation",
+        "message": "Loss of separation: DLH112 / DLH118",
+        "callsigns": [
+          "DLH112",
+          "DLH118"
+        ]
+      },
+      {
+        "time_s": 929.0,
+        "type": "spawn",
+        "message": "CFG119 A320 ready for departure",
+        "callsigns": [
+          "CFG119"
+        ]
+      },
+      {
+        "time_s": 935.0,
+        "type": "landed",
+        "message": "UAL102 arrived at stand (abstract taxi)",
+        "callsigns": [
+          "UAL102"
+        ]
+      },
+      {
+        "time_s": 955.0,
+        "type": "takeoff",
+        "message": "BAW115 airborne runway 18",
+        "callsigns": [
+          "BAW115"
+        ]
+      },
+      {
+        "time_s": 984.0,
+        "type": "spawn",
+        "message": "UAL120 A359 inbound",
+        "callsigns": [
+          "UAL120"
+        ]
+      },
+      {
+        "time_s": 990.0,
+        "type": "command",
+        "message": "UAL120 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 990.0,
+        "type": "command",
+        "message": "UAL120 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 994.0,
+        "type": "departed",
+        "message": "CFG107 handed off at sector boundary",
+        "callsigns": [
+          "CFG107"
+        ]
+      },
+      {
+        "time_s": 1030.0,
+        "type": "command",
+        "message": "KLM117 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 1055.0,
+        "type": "spawn",
+        "message": "BAW121 E190 ready for departure",
+        "callsigns": [
+          "BAW121"
+        ]
+      },
+      {
+        "time_s": 1095.0,
+        "type": "takeoff",
+        "message": "KLM117 airborne runway 18",
+        "callsigns": [
+          "KLM117"
+        ]
+      },
+      {
+        "time_s": 1112.0,
+        "type": "departed",
+        "message": "BAW109 handed off at sector boundary",
+        "callsigns": [
+          "BAW109"
+        ]
+      },
+      {
+        "time_s": 1116.0,
+        "type": "spawn",
+        "message": "AFR122 B738 inbound",
+        "callsigns": [
+          "AFR122"
+        ]
+      },
+      {
+        "time_s": 1120.0,
+        "type": "command",
+        "message": "AFR122 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 1120.0,
+        "type": "command",
+        "message": "AFR122 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 1179.0,
+        "type": "touchdown",
+        "message": "UAL108 touchdown runway 25C",
+        "callsigns": [
+          "UAL108"
+        ]
+      },
+      {
+        "time_s": 1193.0,
+        "type": "spawn",
+        "message": "KLM123 B77W ready for departure",
+        "callsigns": [
+          "KLM123"
+        ]
+      },
+      {
+        "time_s": 1220.0,
+        "type": "command",
+        "message": "CFG119 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 1232.0,
+        "type": "departed",
+        "message": "KLM111 handed off at sector boundary",
+        "callsigns": [
+          "KLM111"
+        ]
+      },
+      {
+        "time_s": 1247.0,
+        "type": "spawn",
+        "message": "DLH124 A320 inbound",
+        "callsigns": [
+          "DLH124"
+        ]
+      },
+      {
+        "time_s": 1250.0,
+        "type": "command",
+        "message": "DLH124 HOLD accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 1250.0,
+        "type": "command",
+        "message": "DLH124 ALTITUDE accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 1265.0,
+        "type": "takeoff",
+        "message": "CFG119 airborne runway 18",
+        "callsigns": [
+          "CFG119"
+        ]
+      },
+      {
+        "time_s": 1271.0,
+        "type": "separation",
+        "message": "Loss of separation: AFR116 / AFR122",
+        "callsigns": [
+          "AFR116",
+          "AFR122"
+        ]
+      },
+      {
+        "time_s": 1287.0,
+        "type": "separation",
+        "message": "Loss of separation: DLH106 / DLH124",
+        "callsigns": [
+          "DLH106",
+          "DLH124"
+        ]
+      },
+      {
+        "time_s": 1299.0,
+        "type": "separation",
+        "message": "Loss of separation: DLH112 / DLH124",
+        "callsigns": [
+          "DLH112",
+          "DLH124"
+        ]
+      },
+      {
+        "time_s": 1300.0,
+        "type": "command",
+        "message": "DLH106 APPROACH accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 1322.0,
+        "type": "separation",
+        "message": "Loss of separation: AFR110 / UAL114",
+        "callsigns": [
+          "AFR110",
+          "UAL114"
+        ]
+      },
+      {
+        "time_s": 1339.0,
+        "type": "landed",
+        "message": "UAL108 arrived at stand (abstract taxi)",
+        "callsigns": [
+          "UAL108"
+        ]
+      },
+      {
+        "time_s": 1340.0,
+        "type": "command",
+        "message": "BAW121 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 1352.0,
+        "type": "departed",
+        "message": "CFG113 handed off at sector boundary",
+        "callsigns": [
+          "CFG113"
+        ]
+      },
+      {
+        "time_s": 1385.0,
+        "type": "takeoff",
+        "message": "BAW121 airborne runway 18",
+        "callsigns": [
+          "BAW121"
+        ]
+      },
+      {
+        "time_s": 1450.0,
+        "type": "touchdown",
+        "message": "UAL114 touchdown runway 25L",
+        "callsigns": [
+          "UAL114"
+        ]
+      },
+      {
+        "time_s": 1460.0,
+        "type": "command",
+        "message": "KLM123 cleared for takeoff runway 18",
+        "callsigns": []
+      },
+      {
+        "time_s": 1474.0,
+        "type": "departed",
+        "message": "BAW115 handed off at sector boundary",
+        "callsigns": [
+          "BAW115"
+        ]
+      },
+      {
+        "time_s": 1525.0,
+        "type": "takeoff",
+        "message": "KLM123 airborne runway 18",
+        "callsigns": [
+          "KLM123"
+        ]
+      },
+      {
+        "time_s": 1528.0,
+        "type": "touchdown",
+        "message": "AFR110 touchdown runway 25R",
+        "callsigns": [
+          "AFR110"
+        ]
+      },
+      {
+        "time_s": 1570.0,
+        "type": "command",
+        "message": "DLH118 APPROACH accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 1600.0,
+        "type": "separation",
+        "message": "Loss of separation: DLH118 / DLH124",
+        "callsigns": [
+          "DLH118",
+          "DLH124"
+        ]
+      },
+      {
+        "time_s": 1610.0,
+        "type": "landed",
+        "message": "UAL114 arrived at stand (abstract taxi)",
+        "callsigns": [
+          "UAL114"
+        ]
+      },
+      {
+        "time_s": 1610.0,
+        "type": "departed",
+        "message": "KLM117 handed off at sector boundary",
+        "callsigns": [
+          "KLM117"
+        ]
+      },
+      {
+        "time_s": 1650.0,
+        "type": "command",
+        "message": "DLH112 APPROACH accepted",
+        "callsigns": []
+      },
+      {
+        "time_s": 1658.0,
+        "type": "separation",
+        "message": "Loss of separation: DLH118 / DLH124",
+        "callsigns": [
+          "DLH118",
+          "DLH124"
+        ]
+      },
+      {
+        "time_s": 1688.0,
+        "type": "landed",
+        "message": "AFR110 arrived at stand (abstract taxi)",
+        "callsigns": [
+          "AFR110"
+        ]
+      },
+      {
+        "time_s": 1784.0,
+        "type": "departed",
+        "message": "CFG119 handed off at sector boundary",
+        "callsigns": [
+          "CFG119"
+        ]
+      },
+      {
+        "time_s": 1797.0,
+        "type": "touchdown",
+        "message": "DLH106 touchdown runway 25C",
+        "callsigns": [
+          "DLH106"
+        ]
+      }
+    ],
+    "conflicts": [],
+    "command_results": []
+  },
+  "replay": [
+    {
+      "time_s": 0.0,
+      "seconds": 10.0,
+      "commands": [
+        "APPROACH UAL102 25R",
+        "APPROACH DLH100 25C",
+        "APPROACH CFG101 25L",
+        "TAKEOFF AFR104 18"
+      ],
+      "command_results": [
+        {
+          "command": "APPROACH UAL102 25R",
+          "accepted": true,
+          "message": "UAL102 APPROACH accepted"
+        },
+        {
+          "command": "APPROACH DLH100 25C",
+          "accepted": true,
+          "message": "DLH100 APPROACH accepted"
+        },
+        {
+          "command": "APPROACH CFG101 25L",
+          "accepted": true,
+          "message": "CFG101 APPROACH accepted"
+        },
+        {
+          "command": "TAKEOFF AFR104 18",
+          "accepted": true,
+          "message": "AFR104 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 0.0,
+          "type": "command",
+          "message": "UAL102 APPROACH accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 0.0,
+          "type": "command",
+          "message": "DLH100 APPROACH accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 0.0,
+          "type": "command",
+          "message": "CFG101 APPROACH accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 0.0,
+          "type": "command",
+          "message": "AFR104 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 10.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 15.0,
+          "type": "emergency",
+          "message": "MAYDAY DLH100: medical",
+          "callsigns": [
+            "DLH100"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 20.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 30.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 40.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 45.0,
+          "type": "takeoff",
+          "message": "AFR104 airborne runway 18",
+          "callsigns": [
+            "AFR104"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 50.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 60.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 68.0,
+          "type": "spawn",
+          "message": "DLH106 E190 inbound",
+          "callsigns": [
+            "DLH106"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 70.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD DLH106",
+        "ALTITUDE DLH106 8000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD DLH106",
+          "accepted": true,
+          "message": "DLH106 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE DLH106 8000",
+          "accepted": true,
+          "message": "DLH106 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 70.0,
+          "type": "command",
+          "message": "DLH106 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 70.0,
+          "type": "command",
+          "message": "DLH106 ALTITUDE accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 80.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 90.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 100.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 110.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 120.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF BAW103 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF BAW103 18",
+          "accepted": true,
+          "message": "BAW103 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 120.0,
+          "type": "command",
+          "message": "BAW103 cleared for takeoff runway 18",
+          "callsigns": []
+        },
+        {
+          "time_s": 128.0,
+          "type": "spawn",
+          "message": "CFG107 A320 ready for departure",
+          "callsigns": [
+            "CFG107"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 130.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 140.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 150.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 160.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 170.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 180.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 185.0,
+          "type": "takeoff",
+          "message": "BAW103 airborne runway 18",
+          "callsigns": [
+            "BAW103"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 190.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 200.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 202.0,
+          "type": "spawn",
+          "message": "UAL108 B738 inbound",
+          "callsigns": [
+            "UAL108"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 210.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD UAL108",
+        "ALTITUDE UAL108 10000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD UAL108",
+          "accepted": true,
+          "message": "UAL108 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE UAL108 10000",
+          "accepted": true,
+          "message": "UAL108 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 210.0,
+          "type": "command",
+          "message": "UAL108 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 210.0,
+          "type": "command",
+          "message": "UAL108 ALTITUDE accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 220.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 230.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 240.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 250.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 257.0,
+          "type": "spawn",
+          "message": "BAW109 B738 ready for departure",
+          "callsigns": [
+            "BAW109"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 260.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 262.0,
+          "type": "emergency",
+          "message": "MAYDAY UAL108: low_fuel",
+          "callsigns": [
+            "UAL108"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 270.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 280.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 289.0,
+          "type": "touchdown",
+          "message": "DLH100 touchdown runway 25C",
+          "callsigns": [
+            "DLH100"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 290.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 300.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 310.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF KLM105 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF KLM105 18",
+          "accepted": true,
+          "message": "KLM105 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 310.0,
+          "type": "command",
+          "message": "KLM105 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 320.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 324.0,
+          "type": "spawn",
+          "message": "AFR110 E190 inbound",
+          "callsigns": [
+            "AFR110"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 330.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD AFR110",
+        "ALTITUDE AFR110 12000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD AFR110",
+          "accepted": true,
+          "message": "AFR110 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE AFR110 12000",
+          "accepted": true,
+          "message": "AFR110 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 330.0,
+          "type": "command",
+          "message": "AFR110 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 330.0,
+          "type": "command",
+          "message": "AFR110 ALTITUDE accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 340.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 350.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 355.0,
+          "type": "takeoff",
+          "message": "KLM105 airborne runway 18",
+          "callsigns": [
+            "KLM105"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 360.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 370.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 380.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 390.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 391.0,
+          "type": "spawn",
+          "message": "KLM111 B738 ready for departure",
+          "callsigns": [
+            "KLM111"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 400.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 410.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 420.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 430.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF CFG107 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF CFG107 18",
+          "accepted": true,
+          "message": "CFG107 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 430.0,
+          "type": "command",
+          "message": "CFG107 cleared for takeoff runway 18",
+          "callsigns": []
+        },
+        {
+          "time_s": 431.0,
+          "type": "separation",
+          "message": "Loss of separation: CFG101 / UAL102",
+          "callsigns": [
+            "CFG101",
+            "UAL102"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 440.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 450.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 460.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 465.0,
+          "type": "spawn",
+          "message": "DLH112 A320 inbound",
+          "callsigns": [
+            "DLH112"
+          ]
+        },
+        {
+          "time_s": 469.0,
+          "type": "landed",
+          "message": "DLH100 arrived at stand (abstract taxi)",
+          "callsigns": [
+            "DLH100"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 470.0,
+      "seconds": 10.0,
+      "commands": [
+        "APPROACH UAL108 25C",
+        "HOLD DLH112",
+        "ALTITUDE DLH112 10000"
+      ],
+      "command_results": [
+        {
+          "command": "APPROACH UAL108 25C",
+          "accepted": true,
+          "message": "UAL108 APPROACH accepted"
+        },
+        {
+          "command": "HOLD DLH112",
+          "accepted": true,
+          "message": "DLH112 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE DLH112 10000",
+          "accepted": true,
+          "message": "DLH112 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 470.0,
+          "type": "command",
+          "message": "UAL108 APPROACH accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 470.0,
+          "type": "command",
+          "message": "DLH112 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 470.0,
+          "type": "command",
+          "message": "DLH112 ALTITUDE accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 471.0,
+          "type": "separation",
+          "message": "Loss of separation: DLH106 / DLH112",
+          "callsigns": [
+            "DLH106",
+            "DLH112"
+          ]
+        },
+        {
+          "time_s": 475.0,
+          "type": "takeoff",
+          "message": "CFG107 airborne runway 18",
+          "callsigns": [
+            "CFG107"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 480.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 490.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 500.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 510.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 520.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 521.0,
+          "type": "spawn",
+          "message": "CFG113 B738 ready for departure",
+          "callsigns": [
+            "CFG113"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 530.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 540.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 550.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF BAW109 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF BAW109 18",
+          "accepted": true,
+          "message": "BAW109 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 550.0,
+          "type": "command",
+          "message": "BAW109 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 560.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 564.0,
+          "type": "departed",
+          "message": "AFR104 handed off at sector boundary",
+          "callsigns": [
+            "AFR104"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 570.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 580.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 590.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 595.0,
+          "type": "takeoff",
+          "message": "BAW109 airborne runway 18",
+          "callsigns": [
+            "BAW109"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 600.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 602.0,
+          "type": "spawn",
+          "message": "UAL114 A320 inbound",
+          "callsigns": [
+            "UAL114"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 610.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD UAL114",
+        "ALTITUDE UAL114 14000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD UAL114",
+          "accepted": true,
+          "message": "UAL114 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE UAL114 14000",
+          "accepted": true,
+          "message": "UAL114 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 610.0,
+          "type": "command",
+          "message": "UAL114 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 610.0,
+          "type": "command",
+          "message": "UAL114 ALTITUDE accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 620.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 630.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 640.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 643.0,
+          "type": "touchdown",
+          "message": "CFG101 touchdown runway 25L",
+          "callsigns": [
+            "CFG101"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 650.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 658.0,
+          "type": "spawn",
+          "message": "BAW115 A320 ready for departure",
+          "callsigns": [
+            "BAW115"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 660.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 662.0,
+          "type": "emergency",
+          "message": "MAYDAY UAL114: low_fuel",
+          "callsigns": [
+            "UAL114"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 670.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF KLM111 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF KLM111 18",
+          "accepted": true,
+          "message": "KLM111 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 670.0,
+          "type": "command",
+          "message": "KLM111 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 680.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 690.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 698.0,
+          "type": "departed",
+          "message": "BAW103 handed off at sector boundary",
+          "callsigns": [
+            "BAW103"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 700.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 710.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 715.0,
+          "type": "takeoff",
+          "message": "KLM111 airborne runway 18",
+          "callsigns": [
+            "KLM111"
+          ]
+        },
+        {
+          "time_s": 719.0,
+          "type": "spawn",
+          "message": "AFR116 B738 inbound",
+          "callsigns": [
+            "AFR116"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 720.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD AFR116",
+        "ALTITUDE AFR116 16000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD AFR116",
+          "accepted": true,
+          "message": "AFR116 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE AFR116 16000",
+          "accepted": true,
+          "message": "AFR116 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 720.0,
+          "type": "command",
+          "message": "AFR116 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 720.0,
+          "type": "command",
+          "message": "AFR116 ALTITUDE accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 730.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 740.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 750.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 760.0,
+      "seconds": 10.0,
+      "commands": [
+        "APPROACH UAL114 25L"
+      ],
+      "command_results": [
+        {
+          "command": "APPROACH UAL114 25L",
+          "accepted": true,
+          "message": "UAL114 APPROACH accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 760.0,
+          "type": "command",
+          "message": "UAL114 APPROACH accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 770.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 771.0,
+          "type": "separation",
+          "message": "Loss of separation: AFR110 / AFR116",
+          "callsigns": [
+            "AFR110",
+            "AFR116"
+          ]
+        },
+        {
+          "time_s": 775.0,
+          "type": "touchdown",
+          "message": "UAL102 touchdown runway 25R",
+          "callsigns": [
+            "UAL102"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 780.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 786.0,
+          "type": "spawn",
+          "message": "KLM117 A359 ready for departure",
+          "callsigns": [
+            "KLM117"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 790.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF CFG113 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF CFG113 18",
+          "accepted": true,
+          "message": "CFG113 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 790.0,
+          "type": "command",
+          "message": "CFG113 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 800.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 803.0,
+          "type": "landed",
+          "message": "CFG101 arrived at stand (abstract taxi)",
+          "callsigns": [
+            "CFG101"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 810.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 820.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 830.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 835.0,
+          "type": "takeoff",
+          "message": "CFG113 airborne runway 18",
+          "callsigns": [
+            "CFG113"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 840.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 850.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 860.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 863.0,
+          "type": "spawn",
+          "message": "DLH118 A320 inbound",
+          "callsigns": [
+            "DLH118"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 870.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD DLH118",
+        "ALTITUDE DLH118 14000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD DLH118",
+          "accepted": true,
+          "message": "DLH118 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE DLH118 14000",
+          "accepted": true,
+          "message": "DLH118 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 870.0,
+          "type": "command",
+          "message": "DLH118 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 870.0,
+          "type": "command",
+          "message": "DLH118 ALTITUDE accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 871.0,
+          "type": "separation",
+          "message": "Loss of separation: DLH106 / DLH118",
+          "callsigns": [
+            "DLH106",
+            "DLH118"
+          ]
+        },
+        {
+          "time_s": 874.0,
+          "type": "departed",
+          "message": "KLM105 handed off at sector boundary",
+          "callsigns": [
+            "KLM105"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 880.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 890.0,
+      "seconds": 10.0,
+      "commands": [
+        "APPROACH AFR110 25R"
+      ],
+      "command_results": [
+        {
+          "command": "APPROACH AFR110 25R",
+          "accepted": true,
+          "message": "AFR110 APPROACH accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 890.0,
+          "type": "command",
+          "message": "AFR110 APPROACH accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 900.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 910.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF BAW115 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF BAW115 18",
+          "accepted": true,
+          "message": "BAW115 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 910.0,
+          "type": "command",
+          "message": "BAW115 cleared for takeoff runway 18",
+          "callsigns": []
+        },
+        {
+          "time_s": 919.0,
+          "type": "separation",
+          "message": "Loss of separation: DLH112 / DLH118",
+          "callsigns": [
+            "DLH112",
+            "DLH118"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 920.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 929.0,
+          "type": "spawn",
+          "message": "CFG119 A320 ready for departure",
+          "callsigns": [
+            "CFG119"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 930.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 935.0,
+          "type": "landed",
+          "message": "UAL102 arrived at stand (abstract taxi)",
+          "callsigns": [
+            "UAL102"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 940.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 950.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 955.0,
+          "type": "takeoff",
+          "message": "BAW115 airborne runway 18",
+          "callsigns": [
+            "BAW115"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 960.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 970.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 980.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 984.0,
+          "type": "spawn",
+          "message": "UAL120 A359 inbound",
+          "callsigns": [
+            "UAL120"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 990.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD UAL120",
+        "ALTITUDE UAL120 12000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD UAL120",
+          "accepted": true,
+          "message": "UAL120 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE UAL120 12000",
+          "accepted": true,
+          "message": "UAL120 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 990.0,
+          "type": "command",
+          "message": "UAL120 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 990.0,
+          "type": "command",
+          "message": "UAL120 ALTITUDE accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 994.0,
+          "type": "departed",
+          "message": "CFG107 handed off at sector boundary",
+          "callsigns": [
+            "CFG107"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1000.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1010.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1020.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1030.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF KLM117 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF KLM117 18",
+          "accepted": true,
+          "message": "KLM117 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1030.0,
+          "type": "command",
+          "message": "KLM117 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 1040.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1050.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1055.0,
+          "type": "spawn",
+          "message": "BAW121 E190 ready for departure",
+          "callsigns": [
+            "BAW121"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1060.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1070.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1080.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1090.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1095.0,
+          "type": "takeoff",
+          "message": "KLM117 airborne runway 18",
+          "callsigns": [
+            "KLM117"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1100.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1110.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1112.0,
+          "type": "departed",
+          "message": "BAW109 handed off at sector boundary",
+          "callsigns": [
+            "BAW109"
+          ]
+        },
+        {
+          "time_s": 1116.0,
+          "type": "spawn",
+          "message": "AFR122 B738 inbound",
+          "callsigns": [
+            "AFR122"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1120.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD AFR122",
+        "ALTITUDE AFR122 18000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD AFR122",
+          "accepted": true,
+          "message": "AFR122 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE AFR122 18000",
+          "accepted": true,
+          "message": "AFR122 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1120.0,
+          "type": "command",
+          "message": "AFR122 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 1120.0,
+          "type": "command",
+          "message": "AFR122 ALTITUDE accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 1130.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1140.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1150.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1160.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1170.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1179.0,
+          "type": "touchdown",
+          "message": "UAL108 touchdown runway 25C",
+          "callsigns": [
+            "UAL108"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1180.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1190.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1193.0,
+          "type": "spawn",
+          "message": "KLM123 B77W ready for departure",
+          "callsigns": [
+            "KLM123"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1200.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1210.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1220.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF CFG119 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF CFG119 18",
+          "accepted": true,
+          "message": "CFG119 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1220.0,
+          "type": "command",
+          "message": "CFG119 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 1230.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1232.0,
+          "type": "departed",
+          "message": "KLM111 handed off at sector boundary",
+          "callsigns": [
+            "KLM111"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1240.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1247.0,
+          "type": "spawn",
+          "message": "DLH124 A320 inbound",
+          "callsigns": [
+            "DLH124"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1250.0,
+      "seconds": 10.0,
+      "commands": [
+        "HOLD DLH124",
+        "ALTITUDE DLH124 12000"
+      ],
+      "command_results": [
+        {
+          "command": "HOLD DLH124",
+          "accepted": true,
+          "message": "DLH124 HOLD accepted"
+        },
+        {
+          "command": "ALTITUDE DLH124 12000",
+          "accepted": true,
+          "message": "DLH124 ALTITUDE accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1250.0,
+          "type": "command",
+          "message": "DLH124 HOLD accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 1250.0,
+          "type": "command",
+          "message": "DLH124 ALTITUDE accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 1260.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1265.0,
+          "type": "takeoff",
+          "message": "CFG119 airborne runway 18",
+          "callsigns": [
+            "CFG119"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1270.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1271.0,
+          "type": "separation",
+          "message": "Loss of separation: AFR116 / AFR122",
+          "callsigns": [
+            "AFR116",
+            "AFR122"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1280.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1287.0,
+          "type": "separation",
+          "message": "Loss of separation: DLH106 / DLH124",
+          "callsigns": [
+            "DLH106",
+            "DLH124"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1290.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1299.0,
+          "type": "separation",
+          "message": "Loss of separation: DLH112 / DLH124",
+          "callsigns": [
+            "DLH112",
+            "DLH124"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1300.0,
+      "seconds": 10.0,
+      "commands": [
+        "APPROACH DLH106 25C"
+      ],
+      "command_results": [
+        {
+          "command": "APPROACH DLH106 25C",
+          "accepted": true,
+          "message": "DLH106 APPROACH accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1300.0,
+          "type": "command",
+          "message": "DLH106 APPROACH accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 1310.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1320.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1322.0,
+          "type": "separation",
+          "message": "Loss of separation: AFR110 / UAL114",
+          "callsigns": [
+            "AFR110",
+            "UAL114"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1330.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1339.0,
+          "type": "landed",
+          "message": "UAL108 arrived at stand (abstract taxi)",
+          "callsigns": [
+            "UAL108"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1340.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF BAW121 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF BAW121 18",
+          "accepted": true,
+          "message": "BAW121 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1340.0,
+          "type": "command",
+          "message": "BAW121 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 1350.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1352.0,
+          "type": "departed",
+          "message": "CFG113 handed off at sector boundary",
+          "callsigns": [
+            "CFG113"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1360.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1370.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1380.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1385.0,
+          "type": "takeoff",
+          "message": "BAW121 airborne runway 18",
+          "callsigns": [
+            "BAW121"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1390.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1400.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1410.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1420.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1430.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1440.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1450.0,
+          "type": "touchdown",
+          "message": "UAL114 touchdown runway 25L",
+          "callsigns": [
+            "UAL114"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1450.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1460.0,
+      "seconds": 10.0,
+      "commands": [
+        "TAKEOFF KLM123 18"
+      ],
+      "command_results": [
+        {
+          "command": "TAKEOFF KLM123 18",
+          "accepted": true,
+          "message": "KLM123 cleared for takeoff runway 18"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1460.0,
+          "type": "command",
+          "message": "KLM123 cleared for takeoff runway 18",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 1470.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1474.0,
+          "type": "departed",
+          "message": "BAW115 handed off at sector boundary",
+          "callsigns": [
+            "BAW115"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1480.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1490.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1500.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1510.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1520.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1525.0,
+          "type": "takeoff",
+          "message": "KLM123 airborne runway 18",
+          "callsigns": [
+            "KLM123"
+          ]
+        },
+        {
+          "time_s": 1528.0,
+          "type": "touchdown",
+          "message": "AFR110 touchdown runway 25R",
+          "callsigns": [
+            "AFR110"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1530.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1540.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1550.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1560.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1570.0,
+      "seconds": 10.0,
+      "commands": [
+        "APPROACH DLH118 25L"
+      ],
+      "command_results": [
+        {
+          "command": "APPROACH DLH118 25L",
+          "accepted": true,
+          "message": "DLH118 APPROACH accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1570.0,
+          "type": "command",
+          "message": "DLH118 APPROACH accepted",
+          "callsigns": []
+        }
+      ]
+    },
+    {
+      "time_s": 1580.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1590.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1600.0,
+          "type": "separation",
+          "message": "Loss of separation: DLH118 / DLH124",
+          "callsigns": [
+            "DLH118",
+            "DLH124"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1600.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1610.0,
+          "type": "landed",
+          "message": "UAL114 arrived at stand (abstract taxi)",
+          "callsigns": [
+            "UAL114"
+          ]
+        },
+        {
+          "time_s": 1610.0,
+          "type": "departed",
+          "message": "KLM117 handed off at sector boundary",
+          "callsigns": [
+            "KLM117"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1610.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1620.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1630.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1640.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1650.0,
+      "seconds": 10.0,
+      "commands": [
+        "APPROACH DLH112 25R"
+      ],
+      "command_results": [
+        {
+          "command": "APPROACH DLH112 25R",
+          "accepted": true,
+          "message": "DLH112 APPROACH accepted"
+        }
+      ],
+      "events": [
+        {
+          "time_s": 1650.0,
+          "type": "command",
+          "message": "DLH112 APPROACH accepted",
+          "callsigns": []
+        },
+        {
+          "time_s": 1658.0,
+          "type": "separation",
+          "message": "Loss of separation: DLH118 / DLH124",
+          "callsigns": [
+            "DLH118",
+            "DLH124"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1660.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1670.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1680.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1688.0,
+          "type": "landed",
+          "message": "AFR110 arrived at stand (abstract taxi)",
+          "callsigns": [
+            "AFR110"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1690.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1700.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1710.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1720.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1730.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1740.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1750.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1760.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1770.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": []
+    },
+    {
+      "time_s": 1780.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1784.0,
+          "type": "departed",
+          "message": "CFG119 handed off at sector boundary",
+          "callsigns": [
+            "CFG119"
+          ]
+        }
+      ]
+    },
+    {
+      "time_s": 1790.0,
+      "seconds": 10.0,
+      "commands": [],
+      "command_results": [],
+      "events": [
+        {
+          "time_s": 1797.0,
+          "type": "touchdown",
+          "message": "DLH106 touchdown runway 25C",
+          "callsigns": [
+            "DLH106"
+          ]
+        }
+      ]
+    }
+  ]
+}

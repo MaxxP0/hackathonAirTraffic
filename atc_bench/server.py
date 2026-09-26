@@ -5,6 +5,7 @@ from __future__ import annotations
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from copy import deepcopy
 import json
+import math
 import mimetypes
 from pathlib import Path
 import sys
@@ -14,10 +15,12 @@ from urllib.parse import unquote, urlsplit
 
 from .cli import SCENARIOS, advance_simulation, load_agent, validate_reset, validate_step
 from .environment import AirTrafficEnv
+from .landing_metrics import landing_metrics
 
 
 WEB_ROOT = Path(__file__).parent / "web"
 MAX_BODY_BYTES = 1_000_000
+OPENROUTER_DEFAULT_MODEL = "z-ai/glm-5.3-flash"
 
 
 class SimulationServer(ThreadingHTTPServer):
@@ -37,21 +40,54 @@ class SimulationServer(ThreadingHTTPServer):
         super().__init__(address, SimulationHandler)
 
     def set_controller(self, kind, options=None):
-        if kind not in {"reference", "lmstudio"}:
-            raise ValueError("controller kind must be reference or lmstudio")
+        if kind not in {"reference", "lmstudio", "openrouter"}:
+            raise ValueError("controller kind must be reference, lmstudio or openrouter")
         options = self.agent_options if options is None else options
-        replacement = load_agent(kind, **options)
+        options = dict(options)
+        if kind == "openrouter":
+            options["model"] = options.get("model") or OPENROUTER_DEFAULT_MODEL
+            # Hosted credentials and endpoint belong to the agent. The HTTP
+            # interface cannot supply an API key or override its destination.
+            agent_options = {key: options[key] for key in ("model", "timeout_s", "max_tokens")}
+        else:
+            agent_options = options
+        replacement = load_agent(kind, **agent_options)
         with self.state_lock:
             self.agent, self.agent_options = replacement, dict(options)
-            self.controller = {"kind": kind, "model": options.get("model") if kind == "lmstudio" else None,
-                               "base_url": options["base_url"], "status": "idle", "message": "Ready for the next simulation step",
+            self.controller = {"kind": kind, "model": options.get("model") if kind != "reference" else None,
+                               "status": "idle", "message": "Ready for the next simulation step",
                                "decision_count": 0, "last_decision": None, "error": None}
+            if kind != "openrouter":
+                self.controller["base_url"] = options["base_url"]
 
     def observation(self):
         with self.state_lock:
             result = self.env.observe()
+            result["landing_metrics"] = landing_metrics(result)
             result["controller"] = deepcopy(self.controller)
             result["controller"]["model"] = getattr(self.agent, "model", self.controller["model"])
+            if self.controller["kind"] == "openrouter":
+                try:
+                    metadata_fn = getattr(self.agent, "metadata", None)
+                    metadata = metadata_fn() if callable(metadata_fn) else {}
+                    budget = metadata.get("budget", {})
+                    if not isinstance(budget, dict):
+                        raise ValueError("invalid budget metadata")
+                    public_budget = {}
+                    for key in ("limit_usd", "spent_usd", "reserved_usd", "remaining_usd"):
+                        if key not in budget:
+                            continue
+                        value = budget[key]
+                        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+                            raise ValueError("invalid budget metadata")
+                        public_budget[key] = value
+                    result["controller"]["budget"] = public_budget
+                    result["controller"]["budget_blocked"] = budget.get("blocked") is True
+                except Exception:
+                    # Optional cost diagnostics must not break state polling or
+                    # expose raw ledger/credential data from an exception. The
+                    # agent's budget guard still gates every paid request.
+                    result["controller"]["budget_error"] = "OpenRouter budget information is unavailable."
             return result
 
 
@@ -147,7 +183,11 @@ class SimulationHandler(BaseHTTPRequestHandler):
     def _configure_controller(self, payload):
         if not isinstance(payload, dict) or set(payload) - {"kind", "base_url", "model"}:
             raise ValueError("controller expects kind, optional base_url and model")
+        if payload.get("kind") == "openrouter" and "base_url" in payload:
+            raise ValueError("OpenRouter uses a fixed hosted endpoint; base_url is only configurable for LM Studio")
         options = dict(self.server.agent_options)
+        if payload.get("kind") != self.server.controller["kind"] and "model" not in payload:
+            options["model"] = None
         for key in ("base_url", "model"):
             if key in payload:
                 if payload[key] is not None and not isinstance(payload[key], str):
@@ -160,7 +200,8 @@ class SimulationHandler(BaseHTTPRequestHandler):
         if autopilot and not self.server.env.done:
             controller = self.server.controller
             with self.server.state_lock:
-                controller.update(status="thinking", message="Requesting a decision from LM Studio" if controller["kind"] == "lmstudio" else "Evaluating reference policy", error=None)
+                provider = {"lmstudio": "LM Studio", "openrouter": "OpenRouter"}.get(controller["kind"])
+                controller.update(status="thinking", message=f"Requesting a decision from {provider}" if provider else "Evaluating reference policy", error=None)
                 before = self.server.env.observe()
                 before["decision_interval_s"] = seconds
             started = time.monotonic()

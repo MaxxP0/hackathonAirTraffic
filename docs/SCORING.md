@@ -85,6 +85,8 @@ These full metrics are available through the environment, radar/HTTP state and s
 | `runway_incursions` | Unsafe arrival sequencing detected near an occupied runway and followed by an automatic go-around. Invalid takeoff commands are rejected before creating an incursion. |
 | `wake_violations` | Arrival sequencing that violates the benchmark's runway wake timer and triggers a go-around. |
 | `weather_exposure_seconds` | Airborne aircraft-seconds inside hazardous weather cells. |
+| `runway_closures` | Activations of the seeded temporary runway disruption; diagnostic only, without an extra direct penalty. |
+| `closure_go_arounds` | Approaches automatically sent around while their physical runway is closed by the disruption; diagnostic only. |
 | `emergency_landings` | Emergency aircraft that touch down before failure; they need not have finished taxiing yet. |
 | `emergencies_failed` | Emergencies whose deadlines are missed, whose aircraft crash, or whose aircraft leave the sector without landing. Each emergency can fail once. |
 | `emergencies_unresolved` | Announced emergencies with neither successful touchdown nor recorded failure. This includes deadlines extending beyond the episode horizon. |
@@ -102,8 +104,29 @@ Ground and airborne time continue accumulating for unfinished aircraft. Do not d
 
 For a given scenario and applied command timeline, the simulator is deterministic. Model outputs can still vary across runs. Retain simulation timestamps, model/prompt/reasoning configuration, control window, simulated horizon, model latency and elapsed `wall_duration_s`; replay the saved commands at their recorded simulation timestamps to reproduce the trajectory. Do not infer end-to-end computational speed from the instantaneous simulation advance or a single unusually fast model call.
 
+## Runway-closure scenario
+
+`runway_closure` temporarily removes one seeded arrival-capable physical runway.
+The closure affects both reciprocal ends and can force existing approaches to
+go around; already-started surface rolls continue. Future runway selection and
+start/reopening times are hidden from the agent, while current closure state
+and events become public when due. The disruption repeats for the same seed and
+horizon, rather than drawing from nondeterministic wall-clock randomness.
+
+`runway_closures` and `closure_go_arounds` do not add separate penalties to the
+score or rank. Evaluate the controller's response through the existing safety,
+completion and waiting metrics, and use those counters to explain the episode.
+A forced go-around can increase airborne/emergency response time even when it
+is the correct response to a closed runway. Compare the same seed, horizon and
+control window: a long window may contain both closure and reopening before
+the next model observation, although the simulator still processes both events.
+
 ## Simplifications that affect results
 
 The simulation uses bounded turn/climb/speed changes, automatic approach guidance, synthetic fuel budgets, shared reciprocal-runway occupancy, leader/follower wake timers and adverse-weather runway checks. A wet runway increases the modeled distance requirement by 15%; low visibility extends wake intervals. Approach assignments need flight time to reach and capture the intercept, so a clearance is not immediate landing credit.
 
 Taxi-in currently lasts 120 seconds after landing-roll completion. There is no taxi routing, gate competition, pushback planning or turnaround optimization. Future ground-activity benchmarks should report additional metrics rather than interpreting current queue time as a detailed surface-operations model.
+
+### Arrival landing wait
+
+CLI results and HTTP state include a separate `landing_metrics` object. Landing wait measures sector entry to touchdown, including normal approach, holding and go-arounds. It reports total, count, mean, maximum and a diagnostic score `100 / (1 + mean_seconds / 600)`. All spawned arrivals count, with separate landed, pending and failed/diverting outcome groups; pending waits end at the current horizon. Empty means and scores are null. Read outcomes alongside time: early diversion or crash can shorten observed waiting. This supplement preserves the existing main score, rank and model input.

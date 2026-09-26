@@ -13,11 +13,12 @@ import sys
 
 from .agents import NoOpAgent, ReferenceAgent
 from .environment import AirTrafficEnv
+from .landing_metrics import landing_metrics
 from .lmstudio import LMStudioAgent, LMStudioError
 from . import __version__
 
 
-SCENARIOS = ("mixed", "rush_hour", "low_visibility", "storm", "emergency", "wind_shift")
+SCENARIOS = ("mixed", "rush_hour", "low_visibility", "storm", "emergency", "wind_shift", "runway_closure")
 BENCHMARK_VERSION = __version__
 RANK_FIELDS = (
     "collisions", "crashed", "emergencies_failed", "runway_incursions", "wake_violations",
@@ -34,8 +35,11 @@ def load_agent(spec: str, **lmstudio_options):
         return NoOpAgent()
     if spec == "lmstudio":
         return LMStudioAgent(**lmstudio_options)
+    if spec == "openrouter":
+        from .openrouter import OpenRouterAgent
+        return OpenRouterAgent(**lmstudio_options)
     if ":" not in spec:
-        raise ValueError("agent must be reference, noop, lmstudio, or module:Class")
+        raise ValueError("agent must be reference, noop, lmstudio, openrouter, or module:Class")
     module_name, class_name = spec.split(":", 1)
     if not module_name or not class_name:
         raise ValueError("custom agent must use module:Class")
@@ -133,6 +137,7 @@ def run_episode(*, seed: int, scenario: str, duration: int, agent_spec: str,
         "configuration": {"seed": seed, "scenario": scenario, "duration_s": duration,
                           "agent": agent_spec, "step_seconds": step_seconds},
         "metrics": metrics,
+        "landing_metrics": landing_metrics(observation),
         "rank_key": rank_key(metrics),
         "rank_fields": RANK_FIELDS,
         "initial_observation": initial,
@@ -232,16 +237,20 @@ def positive_duration(value: str) -> int:
 
 
 def add_agent_arguments(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--agent", default="reference", help="reference, noop, lmstudio, or module:Class")
+    parser.add_argument("--agent", default="reference", help="reference, noop, lmstudio, openrouter, or module:Class")
     parser.add_argument("--base-url", default="http://127.0.0.1:1234", help="LM Studio server URL")
-    parser.add_argument("--model", help="already loaded LM Studio model ID (auto-detected if omitted)")
-    parser.add_argument("--llm-timeout", type=float, default=900, help="seconds allowed for a model request")
-    parser.add_argument("--max-tokens", type=int, default=8192, help="LM Studio output token limit")
+    parser.add_argument("--model", help="model ID; LM Studio auto-detects, OpenRouter defaults to GLM 5.3 Flash")
+    parser.add_argument("--llm-timeout", type=float, help="seconds allowed per request (LM Studio: 900, OpenRouter: 180)")
+    parser.add_argument("--max-tokens", type=int, help="output token limit (LM Studio: 8192, OpenRouter: 8192)")
 
 
 def agent_options(args: argparse.Namespace) -> dict:
-    return {"base_url": args.base_url, "model": args.model,
-            "timeout_s": args.llm_timeout, "max_tokens": args.max_tokens}
+    options = {"model": args.model,
+               "timeout_s": args.llm_timeout if args.llm_timeout is not None else (180 if args.agent == "openrouter" else 900),
+               "max_tokens": args.max_tokens if args.max_tokens is not None else 8192}
+    if args.agent != "openrouter":
+        options["base_url"] = args.base_url
+    return options
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -272,9 +281,10 @@ def main(argv: list[str] | None = None) -> int:
             stdio(args)
         elif args.command == "serve":
             from .server import serve
+            options = agent_options(args)
             serve(port=args.port, seed=args.seed, scenario=args.scenario, duration=args.duration,
                   agent_spec=args.agent, base_url=args.base_url, model=args.model,
-                  llm_timeout=args.llm_timeout, max_tokens=args.max_tokens)
+                  llm_timeout=options["timeout_s"], max_tokens=options["max_tokens"])
         elif args.command == "run":
             result = run_episode(seed=args.seed, scenario=args.scenario, duration=args.duration,
                                  agent_spec=args.agent, step_seconds=args.step_seconds,
@@ -314,7 +324,7 @@ def main(argv: list[str] | None = None) -> int:
             if aborted:
                 print(f"error: {runs[-1]['error']}", file=sys.stderr)
                 return 2
-    except (ValueError, TypeError, ImportError, AttributeError, OSError) as error:
+    except (ValueError, TypeError, ImportError, AttributeError, OSError, LMStudioError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
     except KeyboardInterrupt:

@@ -3,7 +3,24 @@ import math
 import random
 from .models import Aircraft, AIRCRAFT_TYPES
 
-SCENARIOS = ("mixed", "rush_hour", "low_visibility", "storm", "emergency", "wind_shift")
+SCENARIOS = ("mixed", "rush_hour", "low_visibility", "storm", "emergency", "wind_shift", "runway_closure")
+
+
+def runway_closure(seed, scenario, duration_s):
+    """Return a private, seeded disruption schedule, independent of traffic RNG.
+
+    Normal episodes lose one arrival-capable physical runway for 4–8 minutes.
+    Short episodes scale the closure so its onset and reopening still happen
+    within the episode. Only the environment publishes an event when due.
+    """
+    if scenario != "runway_closure":
+        return None
+    rng = random.Random(f"runway_closure:{seed}")
+    physical_id = rng.choice(("NW", "CENTER", "SOUTH"))
+    start_s = round(duration_s * rng.uniform(0.25, 0.40), 3)
+    closed_seconds = min(rng.randint(240, 480), duration_s * 0.30)
+    return {"physical_id": physical_id, "start_s": start_s,
+            "end_s": round(start_s + closed_seconds, 3)}
 
 
 def traffic(seed, scenario, duration_s):

@@ -10,7 +10,7 @@ import shlex
 
 from .airport import FIXES, make_runways
 from .models import AIRBORNE, FINISHED, SURFACE, RunwayState
-from .scenarios import SCENARIOS, traffic, weather_at
+from .scenarios import SCENARIOS, runway_closure, traffic, weather_at
 
 
 def bearing(dx, dy):
@@ -84,6 +84,8 @@ class AirTrafficEnv:
         self._runway_states = {r.physical_id: RunwayState() for r in self.runways.values()}
         self.aircraft = {}
         self._schedule = traffic(self.seed, self.scenario, self.duration_s)
+        self._runway_closure = runway_closure(self.seed, self.scenario, self.duration_s)
+        self._active_runway_closures = set()
         self._next_spawn = 0
         self.weather = weather_at(self.scenario, 0, self.duration_s)
         self.events = []
@@ -95,7 +97,8 @@ class AirTrafficEnv:
         self._landed_emergencies = set()
         self._counters = dict(collisions=0, separation_losses=0, separation_loss_seconds=0,
                               runway_incursions=0, wake_violations=0, weather_exposure_seconds=0,
-                              emergency_landings=0, emergencies_failed=0, invalid_commands=0)
+                              emergency_landings=0, emergencies_failed=0, invalid_commands=0,
+                              runway_closures=0, closure_go_arounds=0)
         self._spawn_due()
         self._event("episode", f"EDDF {self.scenario} · seed {self.seed}")
         return self.observe()
@@ -129,8 +132,29 @@ class AirTrafficEnv:
         return remaining
 
     def _closed(self, runway):
-        return any(math.dist(runway.threshold, (c["x_nm"], c["y_nm"])) < c["radius_nm"]
-                   for c in self.weather["cells"])
+        return (runway.physical_id in self._active_runway_closures
+                or any(math.dist(runway.threshold, (c["x_nm"], c["y_nm"])) < c["radius_nm"]
+                       for c in self.weather["cells"]))
+
+    def _update_runway_closure(self):
+        closure = self._runway_closure
+        if closure is None:
+            return
+        physical_id = closure["physical_id"]
+        due = closure["start_s"] <= self.time_s < closure["end_s"]
+        active = physical_id in self._active_runway_closures
+        if due == active:
+            return
+        ends = sorted(r.id for r in self.runways.values() if r.physical_id == physical_id)
+        names = " / ".join(ends)
+        if due:
+            self._active_runway_closures.add(physical_id)
+            self._counters["runway_closures"] += 1
+            # Do not reveal the future reopening time, even once closure begins.
+            self._event("runway_closed", f"Runway {names} closed unexpectedly for inspection; arrivals must use another runway.")
+        else:
+            self._active_runway_closures.remove(physical_id)
+            self._event("runway_reopened", f"Runway {names} reopened after inspection.")
 
     def _runway_problem(self, a, runway, departure=False):
         if departure and not runway.departure:
@@ -139,6 +163,8 @@ class AirTrafficEnv:
             return "runway is departures only"
         if runway.id != "18" and not runway.id.startswith(self.weather["active_direction"]):
             return "runway is opposite the active wind direction"
+        if runway.physical_id in self._active_runway_closures:
+            return "runway closed for an unscheduled inspection"
         if self._closed(runway):
             return "runway closed by a storm cell"
         angle = math.radians(self.weather["wind_from_deg"] - runway.heading_deg)
@@ -313,6 +339,15 @@ class AirTrafficEnv:
         remaining = min(seconds, self.duration_s - self.time_s)
         while remaining > 0 and not self.done:
             dt = min(1.0, remaining)
+            # Resolve closure boundaries inside a second as well, so short
+            # episodes retain a visible close/reopen event sequence.
+            if self._runway_closure is not None:
+                # Return to the normal integer-second grid after a boundary;
+                # otherwise controller batching would change physics steps.
+                dt = min(dt, math.floor(self.time_s) + 1 - self.time_s)
+                for boundary in (self._runway_closure["start_s"], self._runway_closure["end_s"]):
+                    if self.time_s < boundary < self.time_s + dt:
+                        dt = boundary - self.time_s
             self._tick(dt)
             remaining -= dt
         self.done = self.time_s >= self.duration_s
@@ -358,6 +393,7 @@ class AirTrafficEnv:
         self.weather = weather_at(self.scenario, self.time_s, self.duration_s)
         if old_direction != self.weather["active_direction"]:
             self._event("weather", f"Wind changed: active runway direction {self.weather['active_direction']}")
+        self._update_runway_closure()
         # Aircraft already present move for dt. New traffic spawns at this step's end.
         for a in list(self.aircraft.values()):
             if a.status in FINISHED:
@@ -435,6 +471,8 @@ class AirTrafficEnv:
             runway = self.runways[a.runway]
             problem = self._runway_problem(a, runway)
             if problem:
+                if runway.physical_id in self._active_runway_closures:
+                    self._counters["closure_go_arounds"] += 1
                 self._go_around(a, problem)
             else:
                 if a.approach_stage == "intercept":

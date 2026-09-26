@@ -4,7 +4,7 @@ A command-driven airport simulation for evaluating AI air traffic controllers. T
 
 This first phase covers airborne traffic and runway scheduling. Ground time is already measured through departure queues and abstracted runway/taxi phases; taxi routes, gate allocation, pushback and turnaround operations are future extensions.
 
-For team setup, checks and the branch/pull-request workflow, see [CONTRIBUTING.md](CONTRIBUTING.md).
+For team setup, checks and the branch/pull-request workflow, see [CONTRIBUTING.md](CONTRIBUTING.md). Recorded local-model results are in [the Qwen evaluation](docs/QWEN_RESULTS.md). Hosted runs and matched baselines are in [the GLM and GPT-6 Luna report](docs/GLM_RESULTS.md) and [the interactive comparison](http://127.0.0.1:8000/benchmark-results.html).
 
 ## Run it
 
@@ -14,7 +14,72 @@ Requires Python 3.10+ and a modern browser. The simulator and LM Studio adapter 
 python3 -m atc_bench serve --port 8000
 ```
 
-Open [localhost:8000](http://localhost:8000). The radar starts paused with the reference controller selected. Select a controller, enter commands manually, choose a scenario and seed, and watch traffic, weather, events and scores. The reference controller is a Python heuristic; select LM Studio to use a real language model.
+Open [localhost:8000](http://localhost:8000). The radar starts paused with the reference controller selected. Select a controller, enter commands manually, choose a scenario and seed, and watch traffic, weather, events and scores. The reference controller is a Python heuristic; select LM Studio or OpenRouter to use a real language model.
+
+### Run GLM 5.3 Flash through OpenRouter
+
+Export `OPENROUTER_API_KEY` in your shell, then start the hosted controller:
+
+```sh
+python3 -m atc_bench serve --agent openrouter --model z-ai/glm-5.3-flash --scenario runway_closure --port 8000
+python3 -m examples.evaluate_openrouter --model z-ai/glm-5.3-flash --scenarios mixed emergency runway_closure --seeds 7 --step-seconds 120
+```
+
+The key stays on the server and is never sent to the radar, stored in results, or
+committed to Git. `.env.example` shows the variable name; if you keep a local
+`.env.local`, export it yourself before launching (`set -a; source .env.local;
+set +a`). The application does not automatically read environment files.
+
+OpenRouter defaults to `z-ai/glm-5.3-flash`, 8,192 output tokens, a 180-second
+request timeout, and low reasoning effort. It uses the same compact telemetry,
+four recent exchanges, persistent operational plan, command validation and
+paused simulation clock as the local controller. It sends no screenshots.
+
+A shared ledger at `results/openrouter-budget.json` limits this checkout to
+**$10** across CLI runs, dashboard decisions, resets and restarts. Every request
+reserves a conservative maximum cost before it is sent. Confirmed API costs
+release unused reserves; an uncertain request keeps its reservation. The adapter
+also caps provider prices, prioritizes throughput among eligible providers, disables paid plugins and automatic model fallback,
+and exposes spend and remaining budget in the dashboard and saved results.
+Keep both the ledger and its lock file; deleting the ledger alone blocks further
+requests. A new checkout or deleting both files starts a new local accounting
+history. Set a $10
+limit on the API key in OpenRouter as an independent account-side cap.
+
+Rate-limit responses receive at most two retries with 30/60-second backoff while
+the simulation stays paused. Longer provider retry delays stop the run visibly.
+Each attempt is budgeted; uncertain charges remain reserved until reconciled.
+Interrupted episodes can be resumed without repeating successful model calls:
+
+```sh
+python3 -m examples.resume_openrouter results/interrupted.json --output results/resumed.json
+```
+
+The checkpoint must reproduce exactly before continuation. The same model,
+prompt, recent dialogue and operational plan are restored, and the original
+failure remains in the new replay. Reported active wall time excludes the pause
+between processes.
+
+For a matched GPT-6 Luna comparison, use the same scenarios, seed, horizon and
+control window with `--model openai/gpt-6-luna`. Models without a temperature
+control omit that parameter; saved metadata records whether it was sent.
+
+### Event videos
+
+Open [the event gallery](http://127.0.0.1:8000/replays.html) from the radar to watch
+accelerated replays of runway closures, emergency landings and changing winds.
+Each clip identifies its controller and scenario. Reference demonstrations are
+separate from actual hosted-model results. Videos replay recorded commands
+through the simulator; rendering does not make model calls. To render another
+saved run, install the optional `videos` dependencies and FFmpeg:
+
+```sh
+python3 -m pip install -e '.[videos]'
+python3 examples/render_replay.py results/run.json --output atc_bench/web/videos/my-run.mp4 --start 0 --end 900 --speed 30 --gallery
+```
+
+The renderer checks both the final metrics and aircraft states. The gallery
+links each video to its command replay.
 
 ### Run a local LLM with LM Studio
 
@@ -96,7 +161,7 @@ while not env.done:
 print(env.metrics())
 ```
 
-The full observation includes visible aircraft and their performance limits, current weather, runway geometry and availability, recent events, current conflicts, metrics and previous command results. Future traffic and future weather are not supplied to the controller. Finished aircraft remain visible with a terminal status. The LM Studio adapter packs this value into its compact request format before sending it to the model.
+The full observation includes visible aircraft and their performance limits, current weather, runway geometry and availability, recent events, current conflicts, metrics and previous command results. Future traffic and future weather are not supplied to the controller. Finished aircraft remain visible with a terminal status. Both LLM adapters pack this value into its compact request format before sending it to the model.
 
 Replace the example callsigns below with aircraft from the observation:
 
@@ -154,7 +219,7 @@ The browser uses the same observation/command interface over localhost HTTP:
 | `GET /api/state` | Current observation, selected controller and decision status. |
 | `GET /api/scenarios` | Scenario names. |
 | `POST /api/step` | `{"commands":[],"seconds":120,"autopilot":true}` → ask the selected controller, apply commands, then advance up to 600 seconds in supported simulator chunks. Use `autopilot:false` for manual commands. |
-| `POST /api/controller` | `{"kind":"lmstudio","base_url":"http://127.0.0.1:1234","model":null}` → select the local LLM. Use `{"kind":"reference"}` for the heuristic. |
+| `POST /api/controller` | `{"kind":"lmstudio","base_url":"http://127.0.0.1:1234","model":null}` → select the local LLM. Use `{"kind":"openrouter","model":"z-ai/glm-5.3-flash"}` for the hosted model, or `{"kind":"reference"}` for the heuristic. |
 | `POST /api/reset` | `{"seed":7,"scenario":"mixed","duration_s":1800}` → initial observation; controller selection/settings persist and dialogue restarts. |
 
 Malformed HTTP requests return a JSON `error`. The full schema is in [docs/CONTRACT.md](docs/CONTRACT.md).
@@ -169,6 +234,19 @@ Malformed HTTP requests return a JSON `error`. The full schema is in [docs/CONTR
 | `storm` | Hazardous weather cells and adverse runway conditions. |
 | `emergency` | Urgent aircraft that must be handled before their deadlines. |
 | `wind_shift` | A change in the operating direction of the parallel runways. |
+| `runway_closure` | An unexpected temporary closure forces arrivals to use the remaining runways and revise their sequencing. |
+
+The `runway_closure` scenario selects one arrival-capable physical runway
+(Northwest, Center or South) from the seed. The closure begins 25–40% through the
+configured horizon and lasts 240–480 seconds, capped at 30% of the horizon for
+short episodes. The same seed/horizon reproduces the disruption; its selected
+runway and future start/reopening times remain hidden from the agent. When the
+event occurs, both reciprocal ends report `closed: true`; the event log announces
+closure and later reopening. Aircraft already approaching that runway go around,
+while a takeoff/landing roll already underway continues. New clearances to the
+closed runway are rejected. `runway_closures` and `closure_go_arounds` count these
+disruptions without adding a direct score penalty; extra waiting, airborne time
+and any resulting safety outcomes still affect scores.
 
 Aircraft have different speed envelopes, wake categories, runway distance requirements and crosswind limits. Emergencies carry an absolute deadline in simulation time. Runway occupancy and wake clearance are shared between reciprocal runway ends, so `25C` and `07C` are one physical resource.
 
@@ -211,3 +289,7 @@ python3 -m venv .venv
 ```
 
 The smoke exercises two airborne aircraft near Frankfurt, wind and heading/altitude/speed commands over 120 simulated seconds, then checks a native reset and repeat. It does not test landings, runway scheduling or emergencies. [BlueSky evidence and future-adapter notes](docs/BLUESKY.md) describe the verified scope and important API/unit differences.
+
+### Arrival landing wait
+
+CLI results and HTTP state include a separate `landing_metrics` object. Landing wait measures sector entry to touchdown, including normal approach, holding and go-arounds. It reports total, count, mean, maximum and a diagnostic score `100 / (1 + mean_seconds / 600)`. All spawned arrivals count, with separate landed, pending and failed/diverting outcome groups; pending waits end at the current horizon. Empty means and scores are null. Read outcomes alongside time: early diversion or crash can shorten observed waiting. This supplement preserves the existing main score, rank and model input.
