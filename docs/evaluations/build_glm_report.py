@@ -96,6 +96,7 @@ def evidence(run, reconciled_ids):
         "providers": sorted({d["provider_name"] for _, d in decisions if d.get("provider_name")}),
         "provider_routing": [{"time_s": d.get("observation", {}).get("time_s", d.get("time_s")),
                               "sort": d.get("provider_sort", "price"), "provider": d.get("provider_name"),
+                              "only": d.get("provider_only"),
                               "status": d.get("status")} for _, d in decisions],
         "memory": {"final_input_successful_decisions": last.get("observation", {}).get("controller_memory", {}).get("successful_decisions"),
                    "successful_decisions_counter": run.get("controller", {}).get("successful_decisions"),
@@ -166,17 +167,57 @@ def qualitative(run):
     return findings
 
 
+def route_changes(row):
+    """Keep requested-routing changes, including changes at the same sim time."""
+    changes = []
+    for route in row.get("provider_routing", []):
+        if not changes or (route["sort"], route.get("only")) != (changes[-1]["sort"], changes[-1].get("only")):
+            changes.append(route)
+    return changes
+
+
+def continuation_conditions(scenarios):
+    continuations, routing = [], []
+    for scenario in scenarios:
+        row = next(r for r in scenario["runs"] if r["cohort"] == "glm")
+        history = [*row.get("previous_resumes", []), *([row["resume_info"]] if row.get("resume_info") else [])]
+        times = sorted({resume["resumed_at_sim_s"] for resume in history})
+        if times:
+            continuations.append(f"{scenario['title'].lower()} at " + ", ".join(f"{time:,.0f}s" for time in times))
+        changes = route_changes(row)
+        if changes:
+            routing.append(f"{scenario['title'].lower()}: " + "; ".join(
+                f"{route['sort']} preference" + (f", pinned to {route['only']}" if route.get("only") else "") +
+                f" from {route['time_s']:,.0f}s" for route in changes))
+    continuation = "Saved GLM continuations restored simulator state and conversation memory: " + "; ".join(continuations) + "." if continuations else "No saved GLM continuations are available."
+    execution_note = ("The three original GLM processes ran concurrently alongside two dashboard calls, sharing a provider budget and default prompt caching. "
+                      "All stopped after HTTP 429 interruptions at 1,440 simulated seconds. " + continuation +
+                      " GPT 6 Luna ran sequentially between the interrupted GLM runs and the later GLM completion attempts. "
+                      "Two earlier closure decisions ran sequentially; the final Sail Research continuation then ran one closure, three emergency and three wind windows in sequence. "
+                      "An excluded duplicate emergency attempt through OpenInference overlapped this last phase; its calls and costs are outside the selected episode totals. "
+                      "Wall times are not an isolated throughput benchmark.")
+    routing_note = ("Recorded GLM routing: " + " | ".join(routing) + ". Luna used throughput preference. "
+                    "The GLM model, prompt and provider price caps were retained across provider changes. Later timeout costs remain unconfirmed unless independently reconciled. "
+                    "Routing, provider/quantization changes and interruptions confound wall-time comparisons.")
+    return execution_note, routing_note
+
+
 def build():
     scenarios, records = [], []
     reconciliation_source = ROOT / "results" / "openrouter-reconciliation.json"
     reconciliation = json.loads(reconciliation_source.read_text()) if reconciliation_source.exists() else {}
     reconciled_ids = set(reconciliation.get("settled_zero_cost_reservations", []))
     if reconciliation:
+        additional_checks = clean(reconciliation.get("additional_checks", []))
+        initial_settled = len(reconciled_ids) - sum(check.get("settled_count", 0) for check in additional_checks)
         dump(PUBLIC / "billing-reconciliation.json", {
             "time_unix": reconciliation["time_unix"], "provider_usage_usd": reconciliation["provider_usage_usd"],
             "confirmed_cost_usd": reconciliation["confirmed_cost_usd"], "reconciled_zero_cost_requests": len(reconciled_ids),
-            "evidence": f"After all requests had finished, provider account-key usage equaled the sum of confirmed charges. {len(reconciled_ids)} interrupted requests were reconciled at zero cost; historical decision records still retain their original null cost.",
-            "scope": "Account total at reconciliation, including two dashboard calls; this is not the three-episode subtotal. Reservation identifiers are omitted."})
+            "initial_check_zero_cost_requests": initial_settled, "additional_checks": additional_checks,
+            "evidence": f"At the initial check, provider account-key usage equaled the sum of confirmed charges. {initial_settled} requests were reconciled there; "
+                        f"{len(reconciled_ids) - initial_settled} further zero-cost requests were reconciled in the separately timed additional checks. Historical decision records retain their original null cost.",
+            "scope": "Top-level account totals describe the initial check, including two dashboard calls; additional checks have their own timestamps and totals. "
+                     "No account total here is the model episode subtotal. Reservation identifiers are omitted."})
 
     def publish(source, filename, status):
         run = json.loads(source.read_text())
@@ -195,7 +236,7 @@ def build():
             original = ROOT / "results" / folder / f"{agent}-{key}-7.json"
             if cohort == "glm":
                 resumed = ROOT / "results" / "glm-completed-v3" / f"openrouter-{key}-7.json"
-                checkpoints = list(resumed.parent.glob(f"openrouter-{key}-7-interrupted-*s.json"))
+                checkpoints = list(resumed.parent.glob(f"openrouter-{key}-7-interrupted-*.json"))
                 source = resumed if resumed.exists() else max(
                     [p for p in [original, *checkpoints] if p.exists()],
                     key=lambda p: json.loads(p.read_text())["final_observation"]["time_s"], default=original)
@@ -228,7 +269,7 @@ def build():
                 row["prompt_version"] = run.get("controller", {}).get("prompt_version")
                 row["model"] = MODELS[cohort]
                 row["settings"] = {k: run.get("controller", {}).get(k) for k in
-                                   ("temperature", "max_tokens", "reasoning_effort", "timeout_s", "provider_sort", "prompt_sha256")}
+                                   ("temperature", "max_tokens", "reasoning_effort", "timeout_s", "provider_sort", "provider_only", "prompt_sha256")}
                 row["interruption_records"] = []
                 if cohort == "glm":
                     for checkpoint in [original, *sorted(checkpoints)]:
@@ -282,6 +323,7 @@ def build():
             if failed:
                 observations.append(f"{LABELS[cohort]}'s {model['configuration']['scenario'].replace('_', ' ')} episode ended with {failed} failed arrival outcome(s), "
                                     "including diversions or crashes. Its landing-wait mean includes those flights and cannot by itself demonstrate better landing service.")
+    execution_note, routing_note = continuation_conditions(scenarios)
     report = {
         "title": "GLM 5.3 Flash and GPT 6 Luna — matched ATC episodes", "date": "2026-09-26", "models": MODELS,
         "benchmark_version": "0.3.0", "seed": 7, "duration_s": 1800, "decision_interval_s": 120,
@@ -290,10 +332,10 @@ def build():
                        "All controllers use the same 30-minute horizon and 120-second control windows.",
                        "The simulation pauses during inference and advances immediately afterward; API latency is separate from simulated aircraft waiting.",
                        "Both models use low reasoning effort, an 8,192-token output limit, four recent dialogue exchanges and a persistent operational plan. GLM uses temperature 0; Luna omits temperature because its provider catalog does not support that parameter.",
-                       "The three original GLM processes ran concurrently alongside two dashboard calls, sharing a provider budget and default prompt caching. All stopped after HTTP 429 interruptions at 1,440 simulated seconds. Only closure resumed from saved state and memory, reaching 1,680 seconds before further connection failures; emergency and wind were never resumed. GPT 6 Luna ran sequentially while GLM remained interrupted. Wall times are not an isolated throughput benchmark.",
+                       execution_note,
                        "Active wall time includes initial execution plus continuation/backoff, but excludes the manual checkpoint gap. Summed call latency includes failed controller attempts and internal request retries/backoff where recorded. Resumed runs retain their interruption in the replay.",
                        "Per-run confirmed API cost sums replay decision.cost_usd; other tests/dashboard calls are excluded. Three original GLM HTTP 429 charges were reconciled at zero using provider-account usage; their historical records retain null cost.",
-                       "OpenRouter routing changed from price preference to throughput preference only for the GLM closure continuation at 1,680 seconds; emergency and wind retained their original price preference. Luna used throughput preference. The GLM model, prompt and provider price caps were retained. Later timeout costs remain unconfirmed unless independently reconciled. Routing and interruptions confound wall-time comparisons.",
+                       routing_note,
                        "Partial or failed runs receive no completed score or waiting-time comparison; their raw records remain available.",
                        "Landing wait is arrival sector entry to touchdown, including normal approach flight, holding and go-arounds. Pending arrivals retain elapsed time at the horizon; failed diversions count from the diversion command but accrue airborne time until exit. Mean/max and score include all spawned arrivals. Landed outcome means touchdown, before rollout/taxi are complete. The supplemental score is 100/(1 + mean_seconds/600) and does not change the benchmark score or rank; read it with landed/pending/failed counts.",
                        "Doing nothing can produce few separation losses while completing no flights. Read safety, completions, emergency outcomes and waiting together."],
@@ -373,10 +415,9 @@ def markdown(report):
                          f"simulation reached {number(model['final_time_s']/60,0)} / 30 minutes.", ""])
             if model.get("resume_info"):
                 text.extend([f"Resumed from T+{stamp(model['resume_info']['resumed_at_sim_s'])}; prior observations, commands and plan memory were restored. Manual checkpoint waiting is excluded from active wall time.", ""])
-            routing = model.get("provider_routing", [])
-            route_changes = [(r["time_s"], r["sort"]) for i, r in enumerate(routing)
-                             if i == 0 or r["sort"] != routing[i-1]["sort"]]
-            text.extend(["Provider routing: " + "; ".join(f"{sort} preference from T+{stamp(at)}" for at, sort in route_changes) + ". "
+            changes = route_changes(model)
+            text.extend(["Provider routing: " + "; ".join(f"{r['sort']} preference" + (f", pinned to {r['only']}" if r.get("only") else "") +
+                         f" from T+{stamp(r['time_s'])}" for r in changes) + ". "
                          "Recorded providers: " + (", ".join(model.get("providers", [])) or "not reported") + ".", ""])
             if model.get("failed_attempts"):
                 text.extend(["Recorded interruptions: " + "; ".join(f"T+{stamp(f['time_s'])}: {f.get('error')}" for f in model["failed_attempts"]) + ".", ""])

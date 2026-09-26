@@ -5,15 +5,27 @@
   },
   "records": [
     {
-      "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json",
-      "sha256": "ad8bc392418b4378ddb3fd1febdbb426d288e93ac012d58a52fb70f8ad25d0e8",
+      "file": "glm-5.3-flash-runway_closure-seed7.json",
+      "sha256": "fd6ad4e05851896216c476b9a4daefd283cabd257ba1104b7dad05879f245a51",
       "source": "results/glm-completed-v3/openrouter-runway_closure-7.json",
-      "status": "partial"
+      "status": "completed"
     },
     {
       "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1440s-1failures.json",
       "sha256": "e2112b13bb9898b67d0510a010dbd18c62d8ad4aacd856e687622198f83f110c",
       "source": "results/glm-closure-v3/openrouter-runway_closure-7.json",
+      "status": "interrupted_before_resume"
+    },
+    {
+      "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json",
+      "sha256": "ad8bc392418b4378ddb3fd1febdbb426d288e93ac012d58a52fb70f8ad25d0e8",
+      "source": "results/glm-completed-v3/openrouter-runway_closure-7-interrupted-1680s-3failures.json",
+      "status": "interrupted_before_resume"
+    },
+    {
+      "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-4failures.json",
+      "sha256": "c989b5c3dbef971ae5c2ee33e4ece78d6a421143bf977f69ee43cfebbb360b60",
+      "source": "results/glm-completed-v3/openrouter-runway_closure-7-interrupted-1680s-4failures.json",
       "status": "interrupted_before_resume"
     },
     {
@@ -41,10 +53,16 @@
       "status": "completed"
     },
     {
+      "file": "glm-5.3-flash-emergency-seed7.json",
+      "sha256": "f80b8b281f4b7f0f09c52a52d15eff2804a8a77c8df03c3ecd573a426bb4d179",
+      "source": "results/glm-completed-v3/openrouter-emergency-7.json",
+      "status": "completed"
+    },
+    {
       "file": "glm-5.3-flash-emergency-seed7-interrupted-1440s-1failures.json",
       "sha256": "84b5ce4fbadab807f5ec7a51a9936e828f35dce7d682f1713091940e1c2d5e23",
       "source": "results/glm-emergency-v3/openrouter-emergency-7.json",
-      "status": "partial"
+      "status": "interrupted_before_resume"
     },
     {
       "file": "gpt-6-luna-emergency-seed7.json",
@@ -65,10 +83,16 @@
       "status": "completed"
     },
     {
+      "file": "glm-5.3-flash-wind_shift-seed7.json",
+      "sha256": "622aff1f104e27918450e897bd8bc12123e40afc37a103a64f8c49704da3d5a7",
+      "source": "results/glm-completed-v3/openrouter-wind_shift-7.json",
+      "status": "completed"
+    },
+    {
       "file": "glm-5.3-flash-wind_shift-seed7-interrupted-1440s-1failures.json",
       "sha256": "4b9c9f101c5afb74c2b6b8cb991b87fbe52ecc00358a9f70b294d3361779b632",
       "source": "results/glm-wind-v3/openrouter-wind_shift-7.json",
-      "status": "partial"
+      "status": "interrupted_before_resume"
     },
     {
       "file": "gpt-6-luna-wind_shift-seed7.json",

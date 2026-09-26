@@ -2,7 +2,17 @@
   "time_unix": 1790431492.761633,
   "provider_usage_usd": 0.020035355,
   "confirmed_cost_usd": 0.020035355,
-  "reconciled_zero_cost_requests": 3,
-  "evidence": "After all requests had finished, provider account-key usage equaled the sum of confirmed charges. 3 interrupted requests were reconciled at zero cost; historical decision records still retain their original null cost.",
-  "scope": "Account total at reconciliation, including two dashboard calls; this is not the three-episode subtotal. Reservation identifiers are omitted."
+  "reconciled_zero_cost_requests": 6,
+  "initial_check_zero_cost_requests": 3,
+  "additional_checks": [
+    {
+      "time_unix": 1790433428.727343,
+      "provider_usage_usd": 0.091361155,
+      "pre_attempt_provider_usage_usd": 0.091361155,
+      "settled_count": 3,
+      "evidence": "Sequential DeepInfra HTTP429 attempts older than60seconds, process ended, no billed account-usage increase. Earlier timeout charge remains unresolved."
+    }
+  ],
+  "evidence": "At the initial check, provider account-key usage equaled the sum of confirmed charges. 3 requests were reconciled there; 3 further zero-cost requests were reconciled in the separately timed additional checks. Historical decision records retain their original null cost.",
+  "scope": "Top-level account totals describe the initial check, including two dashboard calls; additional checks have their own timestamps and totals. No account total here is the model episode subtotal. Reservation identifiers are omitted."
 }

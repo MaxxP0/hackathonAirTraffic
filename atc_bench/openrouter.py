@@ -241,7 +241,15 @@ class OpenRouterAgent(LMStudioAgent):
     provider_label = "OpenRouter"
 
     def __init__(self, model=DEFAULT_MODEL, timeout_s=180, max_tokens=8192,
-                 temperature=0, max_memory_turns=4, budget_usd=HARD_BUDGET_USD, budget_path=None):
+                 temperature=0, max_memory_turns=4, budget_usd=HARD_BUDGET_USD, budget_path=None,
+                 provider_only=None, rate_limit_retries=2):
+        if not _integer(rate_limit_retries) or rate_limit_retries > 2:
+            raise OpenRouterError("Rate-limit retries must be an integer from zero to two")
+        self.rate_limit_retries = rate_limit_retries
+        if provider_only is not None and (not isinstance(provider_only, str) or not provider_only
+                or len(provider_only) > 100 or any(c not in "abcdefghijklmnopqrstuvwxyz0123456789-_/" for c in provider_only)):
+            raise OpenRouterError("Provider must be an explicit lowercase OpenRouter provider slug")
+        self.provider_only = provider_only
         model = model or DEFAULT_MODEL
         if (not isinstance(model, str) or not model.strip() or len(model) > 200
                 or ":" in model or "@" in model or model.startswith("openrouter/")):
@@ -284,6 +292,13 @@ class OpenRouterAgent(LMStudioAgent):
                     if isinstance(metadata, dict) and isinstance(metadata.get("provider_name"), str):
                         provider_name = metadata["provider_name"][:100]
                         detail = f"{detail or 'Provider error'} ({provider_name})"
+                    if isinstance(metadata, dict) and isinstance(metadata.get("raw"), str):
+                        try:
+                            raw_error = json.loads(metadata["raw"]).get("error", {})
+                            if isinstance(raw_error, dict) and isinstance(raw_error.get("message"), str):
+                                detail = f"{detail}: {raw_error['message'][:300]}"
+                        except (ValueError, AttributeError):
+                            pass
             except (ValueError, OSError, AttributeError):
                 pass
             try:
@@ -377,13 +392,15 @@ class OpenRouterAgent(LMStudioAgent):
         protected.update(provider={"max_price": dict(PRICE_CAPS), "require_parameters": True,
                                     "allow_fallbacks": False, "sort": "throughput"},
                          plugins=[], reasoning={"effort": "low"})
+        if self.provider_only:
+            protected["provider"]["only"] = [self.provider_only]
         # Some reasoning models do not expose sampling temperature. Omitting
         # unsupported parameters avoids silently changing providers or models.
         if "temperature" not in self.model_info.get("supported_parameters", []):
             protected.pop("temperature", None)
         if set(protected) - {"model", "messages", "temperature", "max_tokens", "response_format", "stream", "provider", "plugins", "reasoning"}:
             raise OpenRouterError("Unexpected OpenRouter request options are blocked by the budget guard")
-        for attempt in range(3):
+        for attempt in range(self.rate_limit_retries + 1):
             reservation = self.ledger.reserve(amount, self.model)
             self._last_charge = {"reservation_id": reservation, "reserved_cost_usd": amount / NANODOLLARS,
                                  "input_byte_token_bound": byte_bound, "reserved_input_tokens": self._context_length,
@@ -402,8 +419,8 @@ class OpenRouterAgent(LMStudioAgent):
                 delay = max(30 * (attempt + 1), error.retry_after_s or 0)
                 self._request_attempts.append({**self._last_charge, "http_status": 429,
                                                "retry_after_s": error.retry_after_s,
-                                               "wait_s": delay if attempt < 2 and delay <= 60 else 0})
-                if attempt == 2 or delay > 60:
+                                               "wait_s": delay if attempt < self.rate_limit_retries and delay <= 60 else 0})
+                if attempt == self.rate_limit_retries or delay > 60:
                     raise
                 print(f"OpenRouter rate limited; retry {attempt + 1}/2 in {delay:g}s while simulation stays paused",
                       file=sys.stderr, flush=True)
@@ -436,7 +453,9 @@ class OpenRouterAgent(LMStudioAgent):
         result.pop("advertised_reasoning_default", None)
         result["temperature_sent"] = "temperature" in self.model_info.get("supported_parameters", [])
         result["provider_sort"] = "throughput"
-        result["rate_limit_retry_policy"] = "at most two retries; 30/60 second backoff; honor Retry-After up to 60 seconds"
+        result["provider_only"] = self.provider_only
+        result["rate_limit_retries"] = self.rate_limit_retries
+        result["rate_limit_retry_policy"] = f"at most {self.rate_limit_retries} retries; 30/60 second backoff; honor Retry-After up to 60 seconds"
         return result
 
     def act(self, observation):
@@ -476,7 +495,7 @@ class OpenRouterAgent(LMStudioAgent):
                     self._last_charge["accounting_status"] = "blocked"
             if self.last_decision is not None:
                 self.last_decision.update(provider="openrouter", cost_usd=(self._last_charge or {}).get("cost_usd"),
-                                          budget=self._public_budget(), provider_sort="throughput")
+                                          budget=self._public_budget(), provider_sort="throughput", provider_only=self.provider_only)
                 self.last_decision.pop("advertised_reasoning_default", None)
                 if self._last_charge:
                     self.last_decision.update(deepcopy(self._last_charge))

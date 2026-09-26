@@ -9,16 +9,16 @@
   "seed": 7,
   "duration_s": 1800,
   "decision_interval_s": 120,
-  "status": "incomplete",
+  "status": "completed",
   "conditions": [
     "One seed (7), three synthetic scenarios, one trajectory per model/scenario; no uncertainty estimate or claim of general superiority.",
     "All controllers use the same 30-minute horizon and 120-second control windows.",
     "The simulation pauses during inference and advances immediately afterward; API latency is separate from simulated aircraft waiting.",
     "Both models use low reasoning effort, an 8,192-token output limit, four recent dialogue exchanges and a persistent operational plan. GLM uses temperature 0; Luna omits temperature because its provider catalog does not support that parameter.",
-    "The three original GLM processes ran concurrently alongside two dashboard calls, sharing a provider budget and default prompt caching. All stopped after HTTP 429 interruptions at 1,440 simulated seconds. Only closure resumed from saved state and memory, reaching 1,680 seconds before further connection failures; emergency and wind were never resumed. GPT 6 Luna ran sequentially while GLM remained interrupted. Wall times are not an isolated throughput benchmark.",
+    "The three original GLM processes ran concurrently alongside two dashboard calls, sharing a provider budget and default prompt caching. All stopped after HTTP 429 interruptions at 1,440 simulated seconds. Saved GLM continuations restored simulator state and conversation memory: runway closure at 1,440s, 1,680s; emergency arrivals at 1,440s; wind shift at 1,440s. GPT 6 Luna ran sequentially between the interrupted GLM runs and the later GLM completion attempts. Two earlier closure decisions ran sequentially; the final Sail Research continuation then ran one closure, three emergency and three wind windows in sequence. An excluded duplicate emergency attempt through OpenInference overlapped this last phase; its calls and costs are outside the selected episode totals. Wall times are not an isolated throughput benchmark.",
     "Active wall time includes initial execution plus continuation/backoff, but excludes the manual checkpoint gap. Summed call latency includes failed controller attempts and internal request retries/backoff where recorded. Resumed runs retain their interruption in the replay.",
     "Per-run confirmed API cost sums replay decision.cost_usd; other tests/dashboard calls are excluded. Three original GLM HTTP 429 charges were reconciled at zero using provider-account usage; their historical records retain null cost.",
-    "OpenRouter routing changed from price preference to throughput preference only for the GLM closure continuation at 1,680 seconds; emergency and wind retained their original price preference. Luna used throughput preference. The GLM model, prompt and provider price caps were retained. Later timeout costs remain unconfirmed unless independently reconciled. Routing and interruptions confound wall-time comparisons.",
+    "Recorded GLM routing: runway closure: price preference from 0s; throughput preference from 1,680s; throughput preference, pinned to deepinfra/fp4 from 1,680s; throughput preference, pinned to sail-research/fp8 from 1,680s | emergency arrivals: price preference from 0s; throughput preference, pinned to sail-research/fp8 from 1,440s | wind shift: price preference from 0s; throughput preference, pinned to sail-research/fp8 from 1,440s. Luna used throughput preference. The GLM model, prompt and provider price caps were retained across provider changes. Later timeout costs remain unconfirmed unless independently reconciled. Routing, provider/quantization changes and interruptions confound wall-time comparisons.",
     "Partial or failed runs receive no completed score or waiting-time comparison; their raw records remain available.",
     "Landing wait is arrival sector entry to touchdown, including normal approach flight, holding and go-arounds. Pending arrivals retain elapsed time at the horizon; failed diversions count from the diversion command but accrue airborne time until exit. Mean/max and score include all spawned arrivals. Landed outcome means touchdown, before rollout/taxi are complete. The supplemental score is 100/(1 + mean_seconds/600) and does not change the benchmark score or rank; read it with landed/pending/failed counts.",
     "Doing nothing can produce few separation losses while completing no flights. Read safety, completions, emergency outcomes and waiting together."
@@ -32,7 +32,7 @@
           "agent": "openrouter",
           "cohort": "glm",
           "label": "GLM 5.3 Flash",
-          "status": "partial",
+          "status": "completed",
           "configuration": {
             "seed": 7,
             "scenario": "runway_closure",
@@ -40,21 +40,116 @@
             "agent": "openrouter",
             "step_seconds": 120
           },
-          "final_time_s": 1680.0,
-          "metrics": null,
-          "landing_metrics": null,
-          "wall_duration_s": 701.13,
-          "error": "OpenRouter returned HTTP 429; response details withheld",
-          "record_file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json",
-          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json",
-          "record_sha256": "ad8bc392418b4378ddb3fd1febdbb426d288e93ac012d58a52fb70f8ad25d0e8",
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 21,
+            "separation_loss_seconds": 1107.0,
+            "runway_incursions": 0,
+            "wake_violations": 1,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 0,
+            "invalid_commands": 10,
+            "runway_closures": 1,
+            "closure_go_arounds": 2,
+            "score": -311.913,
+            "landed": 6,
+            "departed": 7,
+            "diverted": 0,
+            "crashed": 0,
+            "unfinished": 12,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 5778.0,
+            "airborne_seconds": 15344.0,
+            "ground_wait_seconds": 4282.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 356.833,
+            "ground_wait_max_seconds": 902.0,
+            "ground_wait_score": 45.674,
+            "ground_wait_score_component": -71.367,
+            "emergency_wait_seconds": 0,
+            "emergency_wait_count": 0,
+            "emergency_wait_mean_seconds": null,
+            "emergency_wait_max_seconds": null,
+            "emergency_wait_score": null,
+            "emergency_wait_score_component": 0.0,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.52,
+            "safety_violations": 22,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              1,
+              1107.0,
+              0,
+              -13,
+              5778.0,
+              15344.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 10872.0,
+            "landing_wait_mean_seconds": 836.308,
+            "landing_wait_max_seconds": 1800.0,
+            "landing_wait_score": 41.774,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 7,
+                "seconds": 4340.0,
+                "mean_seconds": 620.0,
+                "max_seconds": 911.0
+              },
+              "pending": {
+                "count": 6,
+                "seconds": 6532.0,
+                "mean_seconds": 1088.667,
+                "max_seconds": 1800.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            }
+          },
+          "wall_duration_s": 874.032,
+          "error": null,
+          "record_file": "glm-5.3-flash-runway_closure-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-runway_closure-seed7.json",
+          "record_sha256": "fd6ad4e05851896216c476b9a4daefd283cabd257ba1104b7dad05879f245a51",
           "resume_info": {
-            "source_file": "openrouter-runway_closure-7-interrupted-1680s.json",
-            "source_sha256": "59f749b882a2ee68f30a98f76412b7be1f2595f2cded18487677696111fc3fce",
+            "source_file": "openrouter-runway_closure-7-interrupted-1680s-4failures.json",
+            "source_sha256": "ce4d008867ec81973cb51363fd16f699e2ae57f8ad1ab290af3662d4260209e7",
             "resumed_at_sim_s": 1680.0,
-            "prior_wall_duration_s": 607.597,
-            "continuation_wall_duration_s": 93.533,
+            "prior_wall_duration_s": 793.554,
+            "continuation_wall_duration_s": 80.478,
             "checkpoint_verified_exactly": true,
+            "provider_only": "sail-research/fp8",
             "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."
           },
           "previous_resumes": [
@@ -65,19 +160,38 @@
               "continuation_wall_duration_s": 321.365,
               "checkpoint_verified_exactly": true,
               "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."
+            },
+            {
+              "source_file": "openrouter-runway_closure-7-interrupted-1680s.json",
+              "source_sha256": "59f749b882a2ee68f30a98f76412b7be1f2595f2cded18487677696111fc3fce",
+              "resumed_at_sim_s": 1680.0,
+              "prior_wall_duration_s": 607.597,
+              "continuation_wall_duration_s": 93.533,
+              "checkpoint_verified_exactly": true,
+              "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."
+            },
+            {
+              "source_file": "openrouter-runway_closure-7-interrupted-1680s-3failures.json",
+              "source_sha256": "cc7d1ad907e6a10bc4b58e81d9596c12460096f8ba946c87b6a0d5a360679092",
+              "resumed_at_sim_s": 1680.0,
+              "prior_wall_duration_s": 701.13,
+              "continuation_wall_duration_s": 92.424,
+              "checkpoint_verified_exactly": true,
+              "provider_only": "deepinfra/fp4",
+              "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."
             }
           ],
           "initial_world_sha256": "914d328979e4fa4fbf1cf3bb95b1404649d7ddc9fb211cbd609a6d3c67499d15",
-          "decision_count": 17,
-          "successful_decisions": 14,
-          "mean_call_latency_s": 41.226705882352945,
-          "median_call_latency_s": 25.695,
-          "total_call_latency_s": 700.854,
-          "known_api_cost_usd": 0.00881107,
+          "decision_count": 19,
+          "successful_decisions": 15,
+          "mean_call_latency_s": 45.98584210526316,
+          "median_call_latency_s": 29.624,
+          "total_call_latency_s": 873.731,
+          "known_api_cost_usd": 0.01007653,
           "api_cost_usd": null,
-          "reported_cost_calls": 14,
+          "reported_cost_calls": 15,
           "unknown_cost_calls": 2,
-          "reconciled_zero_cost_calls": 1,
+          "reconciled_zero_cost_calls": 2,
           "failed_attempts": [
             {
               "time_s": 1440.0,
@@ -93,124 +207,162 @@
               "time_s": 1680.0,
               "error": "OpenRouter returned HTTP 429; response details withheld",
               "latency_s": 93.532
+            },
+            {
+              "time_s": 1680.0,
+              "error": "OpenRouter returned HTTP 429: Provider returned error (DeepInfra)",
+              "latency_s": 92.422
             }
           ],
           "providers": [
-            "InferenceNet"
+            "DeepInfra",
+            "InferenceNet",
+            "Sail Research"
           ],
           "provider_routing": [
             {
               "time_s": 0.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 120.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 240.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 360.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 480.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 600.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 720.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 840.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 960.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1080.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1200.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1320.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1440.0,
               "sort": "price",
               "provider": null,
+              "only": null,
               "status": "error"
             },
             {
               "time_s": 1440.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1560.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1680.0,
               "sort": "price",
               "provider": null,
+              "only": null,
               "status": "error"
             },
             {
               "time_s": 1680.0,
               "sort": "throughput",
               "provider": null,
+              "only": null,
               "status": "error"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "throughput",
+              "provider": "DeepInfra",
+              "only": "deepinfra/fp4",
+              "status": "error"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "throughput",
+              "provider": "Sail Research",
+              "only": "sail-research/fp8",
+              "status": "ok"
             }
           ],
           "memory": {
-            "final_input_successful_decisions": 13,
-            "successful_decisions_counter": 14,
+            "final_input_successful_decisions": 14,
+            "successful_decisions_counter": 15,
             "final_input_memory_turns": 4,
             "final_retained_memory_turns": 4,
-            "checked_plan_transitions": 13,
-            "matched_plan_transitions": 13,
-            "last_input_plan": "CFG101 missed its 25L approach (now inbound, 3372ft, 1.7NM west). AFR116 is on 25L intercept at 7.2NM, so APPROACH CFG101 25L slots it behind AFR116. UAL108 keeps holding at 6000ft (3.4NM) until the 25L sequence (AFR116, CFG101) clears, then re-approach first next window. DLH118 on 25C intercept (8.3NM): APPROACH UAL120 25C behind it (heavy, 11NM out). Departures: TAKEOFF BAW115 25C (DLH118 8NM out, roll completes first; wake timer long expired). CFG119/BAW121/KLM123 queue: CFG119 on 25L after CFG101 lands, BAW121 on 18 once KLM117's wake clears, KLM123 after. AFR122 (2.5NM, 9000ft) and DLH124 (8NM, 7000ft) need slots next windows — AFR122 may need holding altitude separation from UAL108. 25R/07L open as overflow. Next window: re-approach UAL108, slot AFR122/DLH124, launch CFG119.",
-            "last_output_plan": "CFG101 on 25L intercept (2NM) lands in ~1min. AFR116 went around (10NM, 3237ft): APPROACH AFR116 25L behind CFG101. UAL108 keeps holding 6000ft; after CFG101 lands, UAL108 approaches 25L before AFR116 (it's closer). DLH118 on 25C final (9.5NM), UAL120 behind on intercept (3.3NM, descending) — watch closure; go-around UAL120 if it overtakes. DLH124 (0.5NM from field, 7000ft): APPROACH 25R (arrival-only, free, A320 fits). AFR122 (0.7NM west, 9000ft): HOLD to keep it in sector; slot on 25L after UAL108/AFR116, or 25R behind DLH124. Departures: TAKEOFF BAW115 18 (free, avoids 25C final traffic). CFG119 next on 25L after CFG101 sequence; BAW121/KLM123 follow on 18/25C. Next window: re-approach UAL108, slot AFR122, launch CFG119, verify UAL120/DLH118 spacing."
+            "checked_plan_transitions": 14,
+            "matched_plan_transitions": 14,
+            "last_input_plan": "CFG101 on 25L intercept (2NM) lands in ~1min. AFR116 went around (10NM, 3237ft): APPROACH AFR116 25L behind CFG101. UAL108 keeps holding 6000ft; after CFG101 lands, UAL108 approaches 25L before AFR116 (it's closer). DLH118 on 25C final (9.5NM), UAL120 behind on intercept (3.3NM, descending) — watch closure; go-around UAL120 if it overtakes. DLH124 (0.5NM from field, 7000ft): APPROACH 25R (arrival-only, free, A320 fits). AFR122 (0.7NM west, 9000ft): HOLD to keep it in sector; slot on 25L after UAL108/AFR116, or 25R behind DLH124. Departures: TAKEOFF BAW115 18 (free, avoids 25C final traffic). CFG119 next on 25L after CFG101 sequence; BAW121/KLM123 follow on 18/25C. Next window: re-approach UAL108, slot AFR122, launch CFG119, verify UAL120/DLH118 spacing.",
+            "last_output_plan": "AFR116 on 25L final (5.5NM, 1595ft) lands ~2min; CFG101 on 25L intercept (7.8NM) behind it — spacing OK. DLH118 on 25C final (4.6NM) with UAL120 trailing on intercept (10NM) — spacing fine. AFR116/DLH118 flagged 1.52NM on converging finals but different runways; DLH118 lands first, monitor next window. UAL108 (3.2NM, 6000ft): APPROACH 25L, slots behind CFG101. AFR122 (holding 9000ft): APPROACH 25R behind DLH124 (2.6NM intercept, lands first). Departures: TAKEOFF BAW121 18 (free). CFG119/KLM123 queue: CFG119 on 25L after UAL108 lands, KLM123 on 25C after UAL120. KLM117/BAW115 outbound clear sector. Next window: launch CFG119, verify AFR116/DLH118 resolved, slot remaining arrivals."
           },
           "findings": [
             {
@@ -253,6 +405,7 @@
             "reasoning_effort": "low",
             "timeout_s": 180,
             "provider_sort": "throughput",
+            "provider_only": "sail-research/fp8",
             "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
           },
           "interruption_records": [
@@ -260,6 +413,16 @@
               "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1440s-1failures.json",
               "time_s": 1440.0,
               "url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-runway_closure-seed7-interrupted-1440s-1failures.json"
+            },
+            {
+              "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json",
+              "time_s": 1680.0,
+              "url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-runway_closure-seed7-interrupted-1680s-3failures.json"
+            },
+            {
+              "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-4failures.json",
+              "time_s": 1680.0,
+              "url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-runway_closure-seed7-interrupted-1680s-4failures.json"
             },
             {
               "file": "glm-5.3-flash-runway_closure-seed7-interrupted-1680s-2failures.json",
@@ -404,90 +567,105 @@
               "time_s": 0.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 120.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 240.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 360.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 480.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 600.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 720.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 840.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 960.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1080.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1200.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1320.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1440.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1560.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1680.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             }
           ],
@@ -537,6 +715,7 @@
             "reasoning_effort": "low",
             "timeout_s": 180,
             "provider_sort": "throughput",
+            "provider_only": null,
             "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
           },
           "interruption_records": []
@@ -787,7 +966,7 @@
           "agent": "openrouter",
           "cohort": "glm",
           "label": "GLM 5.3 Flash",
-          "status": "partial",
+          "status": "completed",
           "configuration": {
             "seed": 7,
             "scenario": "emergency",
@@ -795,25 +974,128 @@
             "agent": "openrouter",
             "step_seconds": 120
           },
-          "final_time_s": 1440.0,
-          "metrics": null,
-          "landing_metrics": null,
-          "wall_duration_s": 223.494,
-          "error": "OpenRouter returned HTTP 429; response details withheld",
-          "record_file": "glm-5.3-flash-emergency-seed7-interrupted-1440s-1failures.json",
-          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-emergency-seed7-interrupted-1440s-1failures.json",
-          "record_sha256": "84b5ce4fbadab807f5ec7a51a9936e828f35dce7d682f1713091940e1c2d5e23",
-          "resume_info": null,
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 10,
+            "separation_loss_seconds": 506.0,
+            "runway_incursions": 0,
+            "wake_violations": 1,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 3,
+            "emergencies_failed": 0,
+            "invalid_commands": 3,
+            "runway_closures": 0,
+            "closure_go_arounds": 0,
+            "score": 24.525,
+            "landed": 7,
+            "departed": 9,
+            "diverted": 0,
+            "crashed": 0,
+            "unfinished": 9,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 5475.0,
+            "airborne_seconds": 16430.0,
+            "ground_wait_seconds": 3682.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 306.833,
+            "ground_wait_max_seconds": 391.0,
+            "ground_wait_score": 49.437,
+            "ground_wait_score_component": -61.367,
+            "emergency_wait_seconds": 1532.0,
+            "emergency_wait_count": 3,
+            "emergency_wait_mean_seconds": 510.667,
+            "emergency_wait_max_seconds": 638.0,
+            "emergency_wait_score": 26.062,
+            "emergency_wait_score_component": -127.667,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 3,
+                "seconds": 1532.0,
+                "mean_seconds": 510.667,
+                "max_seconds": 638.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.64,
+            "safety_violations": 11,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              1,
+              506.0,
+              0,
+              -16,
+              5475.0,
+              16430.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 10850.0,
+            "landing_wait_mean_seconds": 834.615,
+            "landing_wait_max_seconds": 1333.0,
+            "landing_wait_score": 41.823,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 8,
+                "seconds": 6779.0,
+                "mean_seconds": 847.375,
+                "max_seconds": 1333.0
+              },
+              "pending": {
+                "count": 5,
+                "seconds": 4071.0,
+                "mean_seconds": 814.2,
+                "max_seconds": 1081.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            }
+          },
+          "wall_duration_s": 382.703,
+          "error": null,
+          "record_file": "glm-5.3-flash-emergency-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-emergency-seed7.json",
+          "record_sha256": "f80b8b281f4b7f0f09c52a52d15eff2804a8a77c8df03c3ecd573a426bb4d179",
+          "resume_info": {
+            "source_file": "openrouter-emergency-7.json",
+            "source_sha256": "ddeabd20532377ee2637c415675c5ee55f2351e32c5e8ded78eb8cefa8594efb",
+            "resumed_at_sim_s": 1440.0,
+            "prior_wall_duration_s": 223.494,
+            "continuation_wall_duration_s": 159.209,
+            "checkpoint_verified_exactly": true,
+            "provider_only": "sail-research/fp8",
+            "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."
+          },
           "previous_resumes": [],
           "initial_world_sha256": "032fe3ca0fbe250b55f69e94bb841bb214a971d4d5846195375dd664a3511af2",
-          "decision_count": 13,
-          "successful_decisions": 12,
-          "mean_call_latency_s": 17.17323076923077,
-          "median_call_latency_s": 19.513,
-          "total_call_latency_s": 223.252,
-          "known_api_cost_usd": 0.006351245,
-          "api_cost_usd": 0.006351245,
-          "reported_cost_calls": 12,
+          "decision_count": 16,
+          "successful_decisions": 15,
+          "mean_call_latency_s": 23.8988125,
+          "median_call_latency_s": 20.814999999999998,
+          "total_call_latency_s": 382.381,
+          "known_api_cost_usd": 0.009518879,
+          "api_cost_usd": 0.009518879,
+          "reported_cost_calls": 15,
           "unknown_cost_calls": 0,
           "reconciled_zero_cost_calls": 1,
           "failed_attempts": [
@@ -824,97 +1106,132 @@
             }
           ],
           "providers": [
-            "InferenceNet"
+            "InferenceNet",
+            "Sail Research"
           ],
           "provider_routing": [
             {
               "time_s": 0.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 120.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 240.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 360.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 480.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 600.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 720.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 840.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 960.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1080.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1200.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1320.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1440.0,
               "sort": "price",
               "provider": null,
+              "only": null,
               "status": "error"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "throughput",
+              "provider": "Sail Research",
+              "only": "sail-research/fp8",
+              "status": "ok"
+            },
+            {
+              "time_s": 1560.0,
+              "sort": "throughput",
+              "provider": "Sail Research",
+              "only": "sail-research/fp8",
+              "status": "ok"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "throughput",
+              "provider": "Sail Research",
+              "only": "sail-research/fp8",
+              "status": "ok"
             }
           ],
           "memory": {
-            "final_input_successful_decisions": 11,
-            "successful_decisions_counter": 12,
+            "final_input_successful_decisions": 14,
+            "successful_decisions_counter": 15,
             "final_input_memory_turns": 4,
             "final_retained_memory_turns": 4,
-            "checked_plan_transitions": 11,
-            "matched_plan_transitions": 11,
-            "last_input_plan": "UAL114 lands 25C within ~2min (fuel 461s). DLH106->25R and AFR110->25L touchdown imminent; AFR116 and DLH112 finals behind. APPROACH DLH118 25R now (transit covers DLH106 release). UAL120 stays 11000ft, sequence to 25C next; AFR122 (9000ft) behind it. CFG119 TAKEOFF 18 now; BAW121 and KLM123 queue. Recheck UAL114 touchdown and DLH118 intercept next window.",
-            "last_output_plan": "UAL114 touchdown complete. DLH112 (25C) leads DLH118 (25R) by only ~2NM at same altitude; slow DLH118 to 150kt to restore spacing, both finals continue. DLH106 and AFR110 touchdown imminent; AFR116 final 25L behind. UAL120 stays 11000ft, then AFR122 9000ft, DLH124 7000ft — sequence UAL120->25C, AFR122->25L, DLH124->25R next windows. CFG119 TAKEOFF 18 retry (wake from KLM117 should lapse); BAW121, KLM123 queue. Recheck DLH112/DLH118 spacing next window; go-around DLH118 if still <3NM."
+            "checked_plan_transitions": 14,
+            "matched_plan_transitions": 14,
+            "last_input_plan": "DLH112 lands 25C shortly; DLH118 re-sequenced APPROACH 25R (runway free). AFR116 went around off 25L (runway was occupied by AFR110) — re-issue APPROACH 25L, it climbs to 3200 and re-intercepts. UAL120 stays HOLD at 11000ft, then AFR122 (9000ft) and DLH124 (7000ft) follow: UAL120->25C, AFR122->25L, DLH124->25R next windows. KLM123 TAKEOFF 18 now. Recheck DLH112 touchdown, AFR116 intercept and UAL120 hold next window.",
+            "last_output_plan": "DLH112 on final 25C (~4NM); DLH118 intercepting 25R, AFR116 intercepting 25L. APPROACH UAL120 25C now (transit covers DLH112 landing). APPROACH AFR122 25L (long transit covers AFR116 landing). DLH124 stays 7000ft, APPROACH 25R next window after DLH118 clears. KLM123 climbing out of 18. Recheck DLH112 touchdown and spacing between DLH118/AFR116 finals next window."
           },
           "findings": [
             {
@@ -959,7 +1276,7 @@
                   "message": "UAL114 APPROACH accepted"
                 }
               ],
-              "final_status": "taxi_in",
+              "final_status": "landed",
               "emergency_wait_s": 638.0,
               "input_plan": "CFG101 lands 25R and UAL102 lands 25L within minutes; UAL108 lands 25C shortly after (fuel 661s > ETA). BAW109 TAKEOFF 18 now; KLM111 and CFG113 queue behind. Arrival stack: DLH106 holds 7000ft, AFR110 holds 9000ft, DLH112 at 6000ft — keep vertical separation; sequence DLH106->25C after UAL108 clears, then AFR110->25L, then DLH112->25R next windows. Recheck UAL108 fuel vs ETA and stack spacing next observation.",
               "output_plan": "UAL114 -> APPROACH 25C behind UAL108 (long transit covers runway release). HOLD AFR110 near field at 9000ft to keep it in sequence. DLH106 holds 7000ft, DLH112 6000ft; DLH106 -> 25C next window after UAL108 clears, then AFR110, DLH112. KLM111 TAKEOFF 18 now; CFG113 and BAW115 queue. UAL102 lands 25L momentarily. Recheck UAL108/UAL114 fuel vs ETA and stack next window.",
@@ -973,10 +1290,17 @@
             "max_tokens": 8192,
             "reasoning_effort": "low",
             "timeout_s": 180,
-            "provider_sort": null,
+            "provider_sort": "throughput",
+            "provider_only": "sail-research/fp8",
             "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
           },
-          "interruption_records": []
+          "interruption_records": [
+            {
+              "file": "glm-5.3-flash-emergency-seed7-interrupted-1440s-1failures.json",
+              "time_s": 1440.0,
+              "url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-emergency-seed7-interrupted-1440s-1failures.json"
+            }
+          ]
         },
         {
           "agent": "openrouter",
@@ -1114,90 +1438,105 @@
               "time_s": 0.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 120.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 240.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 360.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 480.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 600.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 720.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 840.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 960.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1080.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1200.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1320.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1440.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1560.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1680.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             }
           ],
@@ -1269,6 +1608,7 @@
             "reasoning_effort": "low",
             "timeout_s": 180,
             "provider_sort": "throughput",
+            "provider_only": null,
             "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
           },
           "interruption_records": []
@@ -1519,7 +1859,7 @@
           "agent": "openrouter",
           "cohort": "glm",
           "label": "GLM 5.3 Flash",
-          "status": "partial",
+          "status": "completed",
           "configuration": {
             "seed": 7,
             "scenario": "wind_shift",
@@ -1527,25 +1867,128 @@
             "agent": "openrouter",
             "step_seconds": 120
           },
-          "final_time_s": 1440.0,
-          "metrics": null,
-          "landing_metrics": null,
-          "wall_duration_s": 220.03,
-          "error": "OpenRouter returned HTTP 429; response details withheld",
-          "record_file": "glm-5.3-flash-wind_shift-seed7-interrupted-1440s-1failures.json",
-          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-wind_shift-seed7-interrupted-1440s-1failures.json",
-          "record_sha256": "4b9c9f101c5afb74c2b6b8cb991b87fbe52ecc00358a9f70b294d3361779b632",
-          "resume_info": null,
+          "final_time_s": 1800.0,
+          "metrics": {
+            "collisions": 0,
+            "separation_losses": 23,
+            "separation_loss_seconds": 1799.0,
+            "runway_incursions": 0,
+            "wake_violations": 1,
+            "weather_exposure_seconds": 0,
+            "emergency_landings": 0,
+            "emergencies_failed": 0,
+            "invalid_commands": 7,
+            "runway_closures": 0,
+            "closure_go_arounds": 0,
+            "score": -451.019,
+            "landed": 8,
+            "departed": 9,
+            "diverted": 0,
+            "crashed": 0,
+            "unfinished": 8,
+            "spawned": 25,
+            "emergencies_unresolved": 0,
+            "ground_delay_seconds": 5822.0,
+            "airborne_seconds": 15895.0,
+            "ground_wait_seconds": 3922.0,
+            "ground_wait_count": 12,
+            "ground_wait_mean_seconds": 326.833,
+            "ground_wait_max_seconds": 505.0,
+            "ground_wait_score": 47.86,
+            "ground_wait_score_component": -65.367,
+            "emergency_wait_seconds": 0,
+            "emergency_wait_count": 0,
+            "emergency_wait_mean_seconds": null,
+            "emergency_wait_max_seconds": null,
+            "emergency_wait_score": null,
+            "emergency_wait_score_component": 0.0,
+            "emergency_wait_by_outcome": {
+              "resolved": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              },
+              "pending": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            },
+            "completion_rate": 0.68,
+            "safety_violations": 24,
+            "rank_key": [
+              0,
+              0,
+              0,
+              0,
+              1,
+              1799.0,
+              0,
+              -17,
+              5822.0,
+              15895.0
+            ]
+          },
+          "landing_metrics": {
+            "landing_wait_count": 13,
+            "landing_wait_seconds": 10649.0,
+            "landing_wait_mean_seconds": 819.154,
+            "landing_wait_max_seconds": 1598.0,
+            "landing_wait_score": 42.279,
+            "landing_wait_by_outcome": {
+              "landed": {
+                "count": 8,
+                "seconds": 6061.0,
+                "mean_seconds": 757.625,
+                "max_seconds": 1065.0
+              },
+              "pending": {
+                "count": 5,
+                "seconds": 4588.0,
+                "mean_seconds": 917.6,
+                "max_seconds": 1598.0
+              },
+              "failed": {
+                "count": 0,
+                "seconds": 0,
+                "mean_seconds": null,
+                "max_seconds": null
+              }
+            }
+          },
+          "wall_duration_s": 346.714,
+          "error": null,
+          "record_file": "glm-5.3-flash-wind_shift-seed7.json",
+          "record_url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-wind_shift-seed7.json",
+          "record_sha256": "622aff1f104e27918450e897bd8bc12123e40afc37a103a64f8c49704da3d5a7",
+          "resume_info": {
+            "source_file": "openrouter-wind_shift-7.json",
+            "source_sha256": "3653803fd97f3a467395df42ada1f5dd02a81c497afbdafda8e8661acbe2dbc2",
+            "resumed_at_sim_s": 1440.0,
+            "prior_wall_duration_s": 220.03,
+            "continuation_wall_duration_s": 126.684,
+            "checkpoint_verified_exactly": true,
+            "provider_only": "sail-research/fp8",
+            "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."
+          },
           "previous_resumes": [],
           "initial_world_sha256": "18926bc77c0d223d0ec7e96610d6c9aec6446ef0b7bbb2cc39f0c5157c58e8cd",
-          "decision_count": 13,
-          "successful_decisions": 12,
-          "mean_call_latency_s": 16.90623076923077,
-          "median_call_latency_s": 17.574,
-          "total_call_latency_s": 219.781,
-          "known_api_cost_usd": 0.006292315,
-          "api_cost_usd": 0.006292315,
-          "reported_cost_calls": 12,
+          "decision_count": 16,
+          "successful_decisions": 15,
+          "mean_call_latency_s": 21.6494375,
+          "median_call_latency_s": 17.881999999999998,
+          "total_call_latency_s": 346.391,
+          "known_api_cost_usd": 0.009460084,
+          "api_cost_usd": 0.009460084,
+          "reported_cost_calls": 15,
           "unknown_cost_calls": 0,
           "reconciled_zero_cost_calls": 1,
           "failed_attempts": [
@@ -1556,97 +1999,132 @@
             }
           ],
           "providers": [
-            "InferenceNet"
+            "InferenceNet",
+            "Sail Research"
           ],
           "provider_routing": [
             {
               "time_s": 0.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 120.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 240.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 360.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 480.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 600.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 720.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 840.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 960.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1080.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1200.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1320.0,
               "sort": "price",
               "provider": "InferenceNet",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1440.0,
               "sort": "price",
               "provider": null,
+              "only": null,
               "status": "error"
+            },
+            {
+              "time_s": 1440.0,
+              "sort": "throughput",
+              "provider": "Sail Research",
+              "only": "sail-research/fp8",
+              "status": "ok"
+            },
+            {
+              "time_s": 1560.0,
+              "sort": "throughput",
+              "provider": "Sail Research",
+              "only": "sail-research/fp8",
+              "status": "ok"
+            },
+            {
+              "time_s": 1680.0,
+              "sort": "throughput",
+              "provider": "Sail Research",
+              "only": "sail-research/fp8",
+              "status": "ok"
             }
           ],
           "memory": {
-            "final_input_successful_decisions": 11,
-            "successful_decisions_counter": 12,
+            "final_input_successful_decisions": 14,
+            "successful_decisions_counter": 15,
             "final_input_memory_turns": 4,
             "final_retained_memory_turns": 4,
-            "checked_plan_transitions": 11,
-            "matched_plan_transitions": 11,
-            "last_input_plan": "Keep UAL108 holding at 4000ft until DLH112 lands 07C (~2min), then APPROACH UAL108 07C. UAL120 APPROACH 07C now — its intercept path is long, it will slot behind DLH112; UAL108 follows. AFR110 lands 07L shortly, AFR116 trails; DLH118/UAL114 on 07R. CFG119 TAKEOFF 18 next window once available_in reaches 0 (currently 65s); then BAW121, KLM123. AFR122 (north) queues for 07L behind AFR116. Recheck holding stack next turn.",
-            "last_output_plan": "TAKEOFF CFG119 18 now; BAW121 then KLM123 follow. UAL108 holds at 4000ft until DLH112 lands 07C (~1min) and UAL120's slot is clear — then APPROACH UAL108 07C ahead of UAL120's touchdown if spacing allows, else after. AFR122 APPROACH 07L behind AFR116; DLH124 APPROACH 07R behind DLH118. Recheck UAL108 release next window; if 07C stack too tight, hold again or use 07R gap."
+            "checked_plan_transitions": 14,
+            "matched_plan_transitions": 14,
+            "last_input_plan": "UAL108 keeps holding at 4000ft: UAL120 is still on 07C intercept west of the field and an APPROACH for UAL108 would route it toward the same fix, risking conflict. Release UAL108 to 07C next window once UAL120 is on short final/landed. AFR116 lands 07L shortly, AFR122 follows; UAL114 then DLH118 then DLH124 on 07R. TAKEOFF BAW121 18 now; KLM123 follows. Monitor AFR116/UAL114 crossing finals. Reconsider UAL108 release and 07R queue spacing next turn.",
+            "last_output_plan": "AFR122 and UAL120 finals converged (1.4NM/93ft): GO_AROUND AFR122 to restore separation; re-clear AFR122 APPROACH 07L next window once clear of UAL120. UAL120 lands 07C shortly; then APPROACH UAL108 07C. DLH118 went around and is climbing to 4000ft near the field; re-clear APPROACH 07R after DLH124 lands. DLH124 continues 07R final. KLM123 TAKEOFF 18 now. Keep UAL108 holding until UAL120 clears 07C."
           },
           "findings": [
             {
@@ -1694,10 +2172,17 @@
             "max_tokens": 8192,
             "reasoning_effort": "low",
             "timeout_s": 180,
-            "provider_sort": null,
+            "provider_sort": "throughput",
+            "provider_only": "sail-research/fp8",
             "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
           },
-          "interruption_records": []
+          "interruption_records": [
+            {
+              "file": "glm-5.3-flash-wind_shift-seed7-interrupted-1440s-1failures.json",
+              "time_s": 1440.0,
+              "url": "https://github.com/MaxxP0/hackathonAirTraffic/blob/main/docs/evaluations/glm-5.3-flash-wind_shift-seed7-interrupted-1440s-1failures.json"
+            }
+          ]
         },
         {
           "agent": "openrouter",
@@ -1835,90 +2320,105 @@
               "time_s": 0.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 120.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 240.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 360.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 480.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 600.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 720.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 840.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 960.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1080.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1200.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1320.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1440.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1560.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             },
             {
               "time_s": 1680.0,
               "sort": "throughput",
               "provider": "OpenAI",
+              "only": null,
               "status": "ok"
             }
           ],
@@ -1964,6 +2464,7 @@
             "reasoning_effort": "low",
             "timeout_s": 180,
             "provider_sort": "throughput",
+            "provider_only": null,
             "prompt_sha256": "d6d0732e6e95d8d995732ccff3c069f0a563aed6e8c3599b108244a916a755a5"
           },
           "interruption_records": []
@@ -2211,15 +2712,15 @@
     "glm": {
       "label": "GLM 5.3 Flash",
       "model": "z-ai/glm-5.3-flash",
-      "completed_episodes": 0,
-      "completed_flights": 0,
-      "spawned": 0,
+      "completed_episodes": 3,
+      "completed_flights": 46,
+      "spawned": 75,
       "collisions": 0,
       "crashes": 0,
       "failed_emergencies": 0,
-      "separation_losses": 0,
-      "separation_loss_seconds": 0,
-      "known_api_cost_usd": 0.021454630000000002,
+      "separation_losses": 54,
+      "separation_loss_seconds": 3412.0,
+      "known_api_cost_usd": 0.029055493,
       "unknown_cost_calls": 2
     },
     "luna": {
@@ -2238,6 +2739,8 @@
     }
   },
   "observations": [
+    "Across 3 completed scenarios, GLM 5.3 Flash completed 46 flights versus 42 for the matched reference policy, with 3,412 versus 583 separation-loss pair-seconds. Read individual safety and service outcomes below.",
+    "In the emergency episode, GLM 5.3 Flash resolved 3 emergency landings with 0 failures; mean emergency wait was 510.7s versus reference 645.3s. Separation loss was 506 versus 136 pair-seconds, and mean departure queue wait 306.8s versus 296.8s.",
     "Across 3 completed scenarios, GPT 6 Luna completed 42 flights versus 42 for the matched reference policy, with 880 versus 583 separation-loss pair-seconds. Read individual safety and service outcomes below.",
     "GPT 6 Luna's runway closure episode ended with 3 failed arrival outcome(s), including diversions or crashes. Its landing-wait mean includes those flights and cannot by itself demonstrate better landing service.",
     "In the emergency episode, GPT 6 Luna resolved 3 emergency landings with 0 failures; mean emergency wait was 519.3s versus reference 645.3s. Separation loss was 378 versus 136 pair-seconds, and mean departure queue wait 466.8s versus 296.8s."

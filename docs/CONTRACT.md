@@ -234,3 +234,15 @@ retain command rejection feedback. Standard output is reserved for the protocol.
 ### Arrival landing wait
 
 CLI results and HTTP state include a separate `landing_metrics` object. Landing wait measures sector entry to touchdown, including normal approach, holding and go-arounds. It reports total, count, mean, maximum and a diagnostic score `100 / (1 + mean_seconds / 600)`. All spawned arrivals count, with separate landed, pending and failed/diverting outcome groups; pending waits end at the current horizon. Empty means and scores are null. Read outcomes alongside time: early diversion or crash can shorten observed waiting. This supplement preserves the existing main score, rank and model input.
+
+### Human-controller demo
+
+`/human.html` uses isolated in-memory episodes and never invokes the configured radar controller. Each episode has a 1,800-second horizon and 120-second turns. The model input comes from the same `compact_observation` function and `SYSTEM_PROMPT` used by the LLM adapters. Memory retains four observation/decision exchanges plus the latest operational plan.
+
+| Endpoint | Contract |
+| --- | --- |
+| `POST /api/human/start` | `{scenario,seed}` creates a session for `runway_closure`, `emergency` or `wind_shift`. Defaults: closure and seed 7. |
+| `GET /api/human/state?id=SESSION_ID` | Reads that episode without advancing time. Unknown/expired IDs return 404. |
+| `POST /api/human/step` | `{id,expected_time_s,commands,plan,summary}` submits one decision. Require at most 32 distinct nonempty command strings, each at most 80 characters, a 1–1,200-character plan and a summary of at most 240 characters. Empty command arrays are allowed. |
+
+State includes `id`, `observation`, `model_observation`, `system_prompt`, `conversation`, `decision_count`, `latest_plan`, `landing_metrics`, `replay`, `initial_observation` and `done`. Decision records include input time, commands, plan, summary, elapsed simulated seconds, command results and public events. Malformed batches return 400 without advancing. Rejected individual simulation commands appear in feedback while the turn advances, matching the model runner. Stale timestamps and decisions after completion return 409. A shared session lock prevents duplicate concurrent submissions. Server restart clears the sessions, and creating a 33rd session expires the oldest.

@@ -63,7 +63,7 @@ def restore(run, agent):
     return env
 
 
-def resume(source, destination):
+def resume(source, destination, *, provider_only=None, rate_limit_retries=2):
     source, destination = Path(source), Path(destination)
     if source.resolve() == destination.resolve():
         raise ValueError("Preserve the original interrupted result; use another output file")
@@ -71,7 +71,9 @@ def resume(source, destination):
     controller = run["controller"]
     agent = OpenRouterAgent(model=controller["model"], timeout_s=controller["timeout_s"],
                             max_tokens=controller["max_tokens"], temperature=controller["temperature"],
-                            max_memory_turns=controller["max_memory_turns"])
+                            max_memory_turns=controller["max_memory_turns"],
+                            provider_only=provider_only or controller.get("provider_only"),
+                            rate_limit_retries=rate_limit_retries)
     env = restore(run, agent)
     started, resume_time = time.monotonic(), env.time_s
     run.pop("error", None)
@@ -103,6 +105,7 @@ def resume(source, destination):
                           "resumed_at_sim_s": resume_time,
                           "prior_wall_duration_s": prior_wall, "continuation_wall_duration_s": round(elapsed, 3),
                           "checkpoint_verified_exactly": True,
+                          "provider_only": agent.provider_only,
                           "note": "Active execution time excludes the manual pause between processes; original failure remains in replay."}
     if env.done:
         run["status"] = "completed"
@@ -116,5 +119,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("source")
     parser.add_argument("--output", required=True)
+    parser.add_argument("--provider", help="pin this continuation to one OpenRouter provider slug")
+    parser.add_argument("--rate-limit-retries", type=int, default=2, choices=(0, 1, 2))
     args = parser.parse_args()
-    raise SystemExit(0 if resume(args.source, args.output)["status"] == "completed" else 2)
+    raise SystemExit(0 if resume(args.source, args.output, provider_only=args.provider,
+                               rate_limit_retries=args.rate_limit_retries)["status"] == "completed" else 2)

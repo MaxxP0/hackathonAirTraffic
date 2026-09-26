@@ -178,6 +178,20 @@ class OpenRouterTests(unittest.TestCase):
     def posts(self):
         return [entry for entry in self.transport.requests if entry[1] is not None]
 
+    def test_explicit_provider_retains_model_and_price_guards(self):
+        agent = self.agent(provider_only="deepinfra/fp4")
+        agent.act(self.env.observe())
+        body = self.posts()[0][1]
+        self.assertEqual(body["model"], DEFAULT_MODEL)
+        self.assertEqual(body["provider"]["only"], ["deepinfra/fp4"])
+        self.assertEqual(body["provider"]["max_price"], PRICE_CAPS)
+        self.assertFalse(body["provider"]["allow_fallbacks"])
+        self.assertEqual(agent.last_decision["provider_only"], "deepinfra/fp4")
+        self.assertEqual(agent.metadata()["provider_only"], "deepinfra/fp4")
+        for bad in ("", ["deepinfra"], "https://example.com", "deepinfra\n"):
+            with self.subTest(provider=bad), self.assertRaises(OpenRouterError):
+                self.agent(provider_only=bad)
+
     def test_rate_limit_retries_pause_without_losing_memory_or_escaping_budget(self):
         agent = self.agent()
         self.transport.responses = [completion(plan="Reserve the center runway."),
@@ -195,6 +209,19 @@ class OpenRouterTests(unittest.TestCase):
         self.assertEqual(agent.last_decision["rate_limit_attempts"][0]["http_status"], 429)
         self.assertEqual(agent.metadata()["budget"]["reserved_usd"], 1.327104)
         self.assertEqual(agent.metadata()["budget"]["spent_usd"], .006)
+
+    def test_rate_limit_can_stop_after_one_attempt_and_redacts_provider_detail(self):
+        body = {"error": {"message": "Provider returned error", "metadata": {
+            "provider_name": "Example", "raw": json.dumps({"error": {"message": "rate limited " + FAKE_KEY}})}}}
+        self.transport.responses = [HTTPError(BASE_URL, 429, "rate limit", {}, io.BytesIO(json.dumps(body).encode()))]
+        agent = self.agent(rate_limit_retries=0)
+        with patch("atc_bench.openrouter.time.sleep") as sleep, self.assertRaises(OpenRouterError) as caught:
+            agent.act(self.env.observe())
+        sleep.assert_not_called()
+        self.assertEqual(len(self.posts()), 1)
+        self.assertNotIn(FAKE_KEY, str(caught.exception))
+        self.assertIn("rate limited [REDACTED]", str(caught.exception))
+        self.assertEqual(agent.last_decision["rate_limit_attempts"][0]["wait_s"], 0)
 
     def test_retry_after_above_bound_stops_without_retrying_early(self):
         self.transport.responses = [HTTPError(BASE_URL, 429, "rate limit", {"Retry-After": "120"}, io.BytesIO())]

@@ -11,11 +11,12 @@ from pathlib import Path
 import sys
 import threading
 import time
-from urllib.parse import unquote, urlsplit
+from urllib.parse import unquote, urlsplit, parse_qs
 
 from .cli import SCENARIOS, advance_simulation, load_agent, validate_reset, validate_step
 from .environment import AirTrafficEnv
 from .landing_metrics import landing_metrics
+from .human import HumanSessions, HumanError
 
 
 WEB_ROOT = Path(__file__).parent / "web"
@@ -34,6 +35,7 @@ class SimulationServer(ThreadingHTTPServer):
         # Model inference may take seconds. Serialize mutations but allow state
         # reads while it runs, and never advance the clock on a failed request.
         self.operation_lock = threading.Lock()
+        self.human_sessions = HumanSessions()
         self.agent_options = dict(base_url=base_url, model=model, timeout_s=llm_timeout,
                                   max_tokens=max_tokens)
         self.set_controller(agent_spec)
@@ -111,6 +113,12 @@ class SimulationHandler(BaseHTTPRequestHandler):
         path = unquote(urlsplit(self.path).path)
         if path == "/api/state":
             self._json(self.server.observation())
+        elif path == "/api/human/state":
+            try:
+                identity = parse_qs(urlsplit(self.path).query).get("id", [None])[0]
+                self._json(self.server.human_sessions.state(identity))
+            except HumanError as error:
+                self._json({"error": str(error)}, error.status)
         elif path == "/api/scenarios":
             self._json({"scenarios": list(SCENARIOS)})
         elif path.startswith("/api/"):
@@ -138,7 +146,7 @@ class SimulationHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path = urlsplit(self.path).path
-        if path not in {"/api/step", "/api/reset", "/api/controller"}:
+        if path not in {"/api/step", "/api/reset", "/api/controller", "/api/human/start", "/api/human/step"}:
             self._json({"error": "unknown endpoint"}, 404)
             return
         try:
@@ -156,6 +164,13 @@ class SimulationHandler(BaseHTTPRequestHandler):
                 raise ValueError(f"non-finite JSON number: {value}")
 
             payload = json.loads(self.rfile.read(length), parse_constant=reject_constant)
+            if path.startswith("/api/human/"):
+                try:
+                    action = self.server.human_sessions.start if path.endswith("/start") else self.server.human_sessions.step
+                    self._json(action(payload))
+                except HumanError as error:
+                    self._json({"error": str(error)}, error.status)
+                return
             if not self.server.operation_lock.acquire(blocking=False):
                 self._json({"error": "A controller decision is in progress; wait for it to finish.",
                             "controller": self.server.observation()["controller"]}, 409)
